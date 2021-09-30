@@ -37,8 +37,8 @@ subroutine generate_laplacian_sparse(idx,idy,A,imin,imax,jmin,jmax)
     A = 0.0d0
         
     ! Center Nodes
-    do j = jminL+1,jmaxL-1
-        do i = iminL+1,imaxL-1
+    do concurrent (j = jminL+1:jmaxL-1)
+        do concurrent (i = iminL+1:imaxL-1)
             
             ! d^2P/dx^2
             A(i,j,CENTER)   = -2*idx2      ! Center
@@ -53,8 +53,8 @@ subroutine generate_laplacian_sparse(idx,idy,A,imin,imax,jmin,jmax)
     end do
     
     ! Left Boundary Nodes (Excluding corners)
-    do j = jminL+1,jmaxL-1
-        do i = iminL,iminL
+    do concurrent (j = jminL+1:jmaxL-1)
+        do concurrent (i = iminL:iminL)
             
             ! d^2P/dx^2
             A(i,j,LEFT)    = 0                                ! Left
@@ -69,7 +69,7 @@ subroutine generate_laplacian_sparse(idx,idy,A,imin,imax,jmin,jmax)
     end do
     
     ! Right Boundary Nodes (Excluding corners)
-    do j = jminL+1,jmaxL-1
+    do concurrent (j = jminL+1:jmaxL-1)
         do i = imaxL,imaxL
             
             ! d^2P/dx^2
@@ -85,8 +85,8 @@ subroutine generate_laplacian_sparse(idx,idy,A,imin,imax,jmin,jmax)
     end do
     
     ! Top Boundary Nodes (Excluding corners)
-    do j = jmaxL,jmaxL
-        do i = iminL+1,imaxL-1
+    do concurrent (j = jmaxL:jmaxL)
+        do concurrent (i = iminL+1:imaxL-1)
             
             ! d^2P/dy^2
             A(i,j,TOP)      = 0                               ! Top
@@ -101,8 +101,8 @@ subroutine generate_laplacian_sparse(idx,idy,A,imin,imax,jmin,jmax)
     end do
         
     ! Bottom Boundary Nodes (Excluding corners)
-    do j = jminL,jminL
-        do i = iminL+1,imaxL-1
+    do concurrent (j = jminL:jminL)
+        do concurrent (i = iminL+1:imaxL-1)
             
             ! d^2P/dy^2
             A(i,j,BOTTOM)   = 0                                ! Bottom
@@ -185,7 +185,7 @@ subroutine calculate_pressure_sparse(imin,imax,jmin,jmax,R,A,PIN)
     integer(int64) :: i,j,ITER
 
     ! Parameters for SOR
-    real(real32),   parameter :: OMEGA      = 1.9
+    real(real32),   parameter :: OMEGA      = 1.99
     real(real32),   parameter :: TOLERANCE  = 1E-10
     integer(int64), parameter :: MAXITER    = 1E5
     integer(int32), parameter :: BOTTOM     = 1
@@ -229,8 +229,8 @@ subroutine calculate_pressure_sparse(imin,imax,jmin,jmax,R,A,PIN)
         end do
 
         ! Calculate Residual
-        do j = jmin,jmax
-            do i = imin,imax
+        do concurrent (j = jmin:jmax)
+            do concurrent (i = imin:imax)
                 RSDL(i,j) = A(i,j,BOTTOM)   *   P(i,j-1)    +   &
                             A(i,j,LEFT)     *   P(i-1,j)    +   &
                             A(i,j,CENTER)   *   P(i,j)      +   &
