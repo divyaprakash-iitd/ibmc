@@ -3,7 +3,7 @@ CC=gcc
 FORT= /opt/nvidia/hpc_sdk/Linux_x86_64/2021/compilers/bin/nvfortran
 #OPTS = -O3 -g -fbounds-check
 #OPTS = -O3 -g -fcheck=bounds
-OPTS = -O3 -g
+OPTS = -O3 -g -stdpar -Minfo=accel
 
 OBJECTS=ibmc.o mod_pressure.o
 
