@@ -3,6 +3,9 @@ program ibmc
     use mod_pressure, only: generate_laplacian_sparse, calculate_pressure_sparse
     implicit none
 
+    ! Execution time
+    real(real64) :: start, finish
+
     ! Computational Domain
     real(real32)    :: Lx = 1.0
     real(real32)    :: Ly = 1.0
@@ -40,6 +43,8 @@ program ibmc
     ! Temporary/Miscellaneous variable
     real(real64) :: ucenter, vcenter
     integer(int32) :: n, NN
+
+    call cpu_time(start)
 
     ! Define boundary conditions
     utop    = 1.0
@@ -200,6 +205,9 @@ program ibmc
 
         print *, 'time = ', t
     end do
+
+    call cpu_time(finish)
+    print '("Time = ",f6.3," seconds.")',finish-start 
 
     open(unit=55, file='u.txt', ACTION="write", STATUS="replace")
     do i=imin,imax+1
