@@ -14,18 +14,16 @@ program ibmc
     real(real32) :: dy, dyi
 
     ! Simulation Paramaters
-    real(real32) :: tsim    = 1.0
-    real(real32) :: dt      = 0.0005
+    real(real32) :: tsim    = 5
+    real(real32) :: dt      = 0.001
     real(real32) :: t
 
     ! Physical Constants
-    real(real32) :: nu = 1.0/200.0
+    real(real32) :: nu = 1.0/100.0
     real(real32) :: rho = 1.0d0
 
     ! Index ranges
     integer(int32) :: imin, imax, jmin, jmax
-    integer(int32), dimension(:), allocatable :: iu,ju,iv,jv,ip,jp
-    integer(int32), dimension(:), allocatable :: iuc,juc,ivc,jvc,ipc,jpc
     integer(int32) :: i,j
 
     ! Boundary values
@@ -33,7 +31,7 @@ program ibmc
                     uleft, vleft, uright, vright
 
     ! Matrices to store fields
-    real(real64), allocatable :: u(:,:), v(:,:), us(:,:), vs(:,:), R(:), P(:,:), Pv(:)
+    real(real64), allocatable :: u(:,:), v(:,:), us(:,:), vs(:,:), R(:,:), P(:,:), A(:,:,:)
 
     ! Limits of arrays
     integer(int32) :: iuS, iuE, juS, juE, ivS, ivE, jvS, jvE, ipS, ipE, jpS, jpE  
@@ -43,8 +41,15 @@ program ibmc
     real(real64) :: ucenter, vcenter
     integer(int32) :: n, NN
 
-    ! Declaration for subroutines
-    real(real64), allocatable :: A(:,:,:)
+    ! Define boundary conditions
+    utop    = 1.0
+    vtop    = 0.0
+    ubottom = 0.0
+    vbottom = 0.0
+    uleft   = 0.0
+    vleft   = 0.0
+    uright  = 0.0
+    vright  = 0.0
 
     ! Define ranges
     imin = 2
@@ -82,34 +87,14 @@ program ibmc
     jpS = jmin
     jpE = jmax
 
-    ! ! Complete index range
-    ! iu = [  (i, i = imin      ,   imax+1) ]
-    ! ju = [  (i, i = jmin-1    ,   jmax+1) ]
-    ! iv = [  (i, i = imin-1    ,   imax+1) ]
-    ! jv = [  (i, i = jmin      ,   jmax+1) ]
-    ! ip = [  (i, i = imin      ,   imax)   ]
-    ! jp = [  (i, i = jmin      ,   jmax)   ]
-
-    ! ! Indices range for unknowns/calculated cells
-    ! iuc = [ (i, i = jmin+1  ,   imax)   ]
-    ! juc = [ (i, i = jmin    ,   jmax)   ]
-    ! ivc = [ (i, i = imin    ,   imax)   ]
-    ! jvc = [ (i, i = jmin+1  ,   jmax)   ]
-    ! ipc = [ (i, i = imin    ,   imax)   ]
-    ! jpc = [ (i, i = jmin    ,   jmax)   ]
-
-
-
     ! Allocate matrices ofr u,v,us,vs,rhs
     allocate(u(iuS:iuE,juS:juE))    
     allocate(v(ivS:ivE,jvS:jvE))
     allocate(us(iuS:iuE,juS:juE))    
     allocate(vs(ivS:ivE,jvS:jvE))
-    allocate(R(Nx*Ny))
+    allocate(R(ipS:ipE,jpS:jpE))
     allocate(P(ipS:ipE,jpS:jpE))
-    allocate(Pv(Nx*Ny))
-
-    ! Allocation for sub-routines
+    NN = 5
     allocate(A(imin:imax,jmin:jmax,NN))
 
     ! Initialize
@@ -118,16 +103,16 @@ program ibmc
     us  = 0.0d0
     vs  = 0.0d0
     R   = 0.0d0
+    A   = 0.0d0
 
     ! Mesh values
     dx  = Lx/Nx
     dy  = Ly/Ny
-    dxi = 1/dx
-    dyi = 1/dy
+    dxi = 1.0/dx
+    dyi = 1.0/dy
 
     ! Generate Laplacian matrix
     call generate_laplacian_sparse(dxi,dyi,A,imin,imax,jmin,jmax)
-
     ! Start time loop
     t = 0.0d0
     do while (t.lt.tsim)
@@ -145,13 +130,12 @@ program ibmc
         v(:,jvE)    = vtop;
         v(:,jvS)    = vbottom;
 
-
         ! Perform predictor step
         ! us 
         ! (u-velocity cell)
         do j = jucS,jucE
             do i = iucS,iucE
-                vcenter = 0.25*(v(i-1,j) + v(i-1,j+1) + v(i,j) + v(i,j+1));
+                vcenter = 0.25*(v(i-1,j) + v(i-1,j+1) + v(i,j) + v(i,j+1))
                 us(i,j) = u(i,j) + dt* &
                             ( nu*(u(i-1,j) - 2*u(i,j) + u(i+1,j))*dxi**2 &
                             + nu*(u(i,j-1) -2*u(i,j) + u(i,j+1))*dyi**2 &
@@ -164,7 +148,7 @@ program ibmc
         ! (v-velocity cell)
         do j = jvcS,jvcE
             do i = ivcS,ivcE
-                ucenter = 0.25*(u(i,j-1)+u(i,j)+u(i+1,j-1)+u(i+1,j));
+                ucenter = 0.25*(u(i,j-1)+u(i,j)+u(i+1,j-1)+u(i+1,j))
                 vs(i,j) = v(i,j) + dt* &
                             ( nu*(v(i-1,j) - 2*v(i,j) + v(i+1,j))*dxi**2 &
                             + nu*(v(i,j-1) - 2*v(i,j) + v(i,j+1))*dyi**2 &
@@ -175,17 +159,15 @@ program ibmc
 
         ! Form the right hand side of the pressure poisson equation
         ! (Pressure cell)
-        n = 0;
         do j = jpS,jpE
             do i = ipS,ipE
-                n = n + 1
-                R(n) = -rho/dt* &
+                R(i,j) = -rho/dt* &
                         ( (us(i+1,j) - us(i,j))*dxi &
                         + (vs(i,j+1) - vs(i,j))*dyi)
             end do
         end do
 
-        ! Solve for presssure   
+        ! Solve for presssure
         call calculate_pressure_sparse(imin,imax,jmin,jmax,R,A,P)
 
         ! ! Convert p to mesh representation
@@ -204,7 +186,7 @@ program ibmc
         ! (u-velocity cell)
         do j = jucS,jucE
             do i = iucS,iucE
-                u(i,j) = us(i,j) - dt/rho * (p(i,j) - p(i-1,j)) * dxi;
+                u(i,j) = us(i,j) - dt/rho * (p(i,j) - p(i-1,j)) * dxi
             end do
         end do
         
@@ -212,10 +194,26 @@ program ibmc
         ! (v-velocity cell)
         do j = jvcS,jvcE
             do i = ivcS,ivcE
-                v(i,j) = vs(i,j) - dt/rho * (p(i,j) - p(i,j-1)) * dyi;
+                v(i,j) = vs(i,j) - dt/rho * (p(i,j) - p(i,j-1)) * dyi
             end do
         end do
 
+        print *, 'time = ', t
+    end do
+
+    open(unit=55, file='u.txt', ACTION="write", STATUS="replace")
+    do i=imin,imax+1
+        write(55, '(*(F14.7))')( real(u(i,j)) ,j=jmin-1,jmax+1)
+    end do
+
+    open(unit=65, file='v.txt', ACTION="write", STATUS="replace")
+    do i=imin-1,imax+1
+        write(65, '(*(F14.7))')( real(v(i,j)) ,j=jmin,jmax+1)
+    end do
+
+    open(unit=75, file='p.txt', ACTION="write", STATUS="replace")
+    do i=imin-1,imax+1
+        write(75, '(*(F14.7))')( real(p(i,j)) ,j=jmin-1,jmax+1)
     end do
 
 end program ibmc

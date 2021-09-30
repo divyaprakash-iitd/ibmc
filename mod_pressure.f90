@@ -1,7 +1,6 @@
 module mod_pressure
     use iso_fortran_env, only: int32, int64, real32, real64 
     implicit none
-    save
 
     private
     public :: generate_laplacian_sparse, calculate_pressure_sparse
@@ -11,12 +10,12 @@ contains
 subroutine generate_laplacian_sparse(idx,idy,A,imin,imax,jmin,jmax)
 
 
-    real(real32), intent(in) :: idx, idy
-    integer(int32), intent(in) :: imin,imax,jmin,jmax
-    real(real64), intent(in out) :: A(imin:imax,jmin:jmax,5)
-    real(real64) :: idx2, idy2 ! Squared inverse of dx and dy
-
-
+    integer(int32), intent(in)      :: imin,imax,jmin,jmax
+    real(real32),   intent(in)      :: idx, idy
+    real(real64),   intent(in out)  :: A(imin:imax,jmin:jmax,5)
+    
+    
+    real(real64)                    :: idx2, idy2 ! Squared inverse of dx and dy
     ! Indices
     integer(int32) :: i,j,iminL,jminL,imaxL,jmaxL
     integer(int32), parameter :: BOTTOM = 1
@@ -173,13 +172,12 @@ subroutine generate_laplacian_sparse(idx,idy,A,imin,imax,jmin,jmax)
 end subroutine generate_laplacian_sparse
 
 
-subroutine calculate_pressure_sparse(imin,imax,jmin,jmax,RHS,A,PIN)
+subroutine calculate_pressure_sparse(imin,imax,jmin,jmax,R,A,PIN)
 
-    integer(int32), intent(in) :: imin, imax, jmin, jmax
-    real(real64), intent(in) :: RHS(:), A(imin:imax,jmin:jmax,5)
-    real(real64), intent(in out) :: PIN(imin:imax,jmin:jmax)
+    integer(int32),     intent(in)      :: imin, imax, jmin, jmax
+    real(real64),       intent(in)      :: R(imin:imax,jmin:jmax), A(imin:imax,jmin:jmax,5)
+    real(real64),       intent(in out)  :: PIN(imin:imax,jmin:jmax)
 
-    real(real64):: R(imin:imax,jmin:jmax)
     real(real64) :: P(imin-1:imax+1,jmin-1:jmax+1)
     integer(int32) :: Nx, Ny
 
@@ -209,15 +207,11 @@ subroutine calculate_pressure_sparse(imin,imax,jmin,jmax,RHS,A,PIN)
 
     ! Pressure array with zero padding on the boundaries
     P = 0.0d0
+    PIN = 0.0d0
     P(imin:imax,jmin:jmax) = PIN
-
-    ! Reshape the RHS vector
-    R = 0.0d0
-    R = reshape(RHS,[Nx,Ny])
 
     allocate(RSDLV(Nx*Ny))        
     RSDL = 0.0d0
-
     ERROR = 1.0d0
 
     ITER = 0
@@ -251,9 +245,9 @@ subroutine calculate_pressure_sparse(imin,imax,jmin,jmax,RHS,A,PIN)
 
         ITER = ITER + 1
     end do
+    PIN = P(imin:imax,jmin:jmax)
     print *, 'Error = ', ERROR
     print *, 'Iteration = ', ITER
 end subroutine calculate_pressure_sparse
-
 
 end module mod_pressure
