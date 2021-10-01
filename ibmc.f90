@@ -1,6 +1,7 @@
 program ibmc
     use iso_fortran_env, only: int32, real32, real64
     use mod_pressure, only: generate_laplacian_sparse, calculate_pressure_sparse
+    use mod_amgx, only: calculate_pressure_amgx
     implicit none
 
     ! Execution time
@@ -9,8 +10,8 @@ program ibmc
     ! Computational Domain
     real(real32)    :: Lx = 1.0
     real(real32)    :: Ly = 1.0
-    integer(int32)  :: Nx = 60
-    integer(int32)  :: Ny = 60
+    integer(int32)  :: Nx = 30
+    integer(int32)  :: Ny = 30
 
     ! Mesh Paramaters
     real(real32) :: dx, dxi
@@ -18,7 +19,7 @@ program ibmc
 
     ! Simulation Paramaters
     real(real32) :: tsim    = 5
-    real(real32) :: dt      = 0.0001
+    real(real32) :: dt      = 0.001
     real(real32) :: t
 
     ! Physical Constants
@@ -43,6 +44,7 @@ program ibmc
     ! Temporary/Miscellaneous variable
     real(real64) :: ucenter, vcenter
     integer(int32) :: n, NN
+    logical :: init_status
 
     call cpu_time(start)
 
@@ -120,6 +122,7 @@ program ibmc
     call generate_laplacian_sparse(dxi,dyi,A,imin,imax,jmin,jmax)
     ! Start time loop
     t = 0.0d0
+    init_status = .False.
     do while (t.lt.tsim)
         t = t+dt 
 
@@ -173,7 +176,9 @@ program ibmc
         end do
 
         ! Solve for presssure
-        call calculate_pressure_sparse(imin,imax,jmin,jmax,R,A,P)
+        !call calculate_pressure_sparse(imin,imax,jmin,jmax,R,A,P)
+
+        call calculate_pressure_amgx(A,P,R,init_status)
 
         ! ! Convert p to mesh representation
         ! ! (Pressure cell)
@@ -219,9 +224,9 @@ program ibmc
         write(65, '(*(F14.7))')( real(v(i,j)) ,j=jmin,jmax+1)
     end do
 
-    open(unit=75, file='p.txt', ACTION="write", STATUS="replace")
-    do i=imin-1,imax+1
-        write(75, '(*(F14.7))')( real(p(i,j)) ,j=jmin-1,jmax+1)
-    end do
+    ! open(unit=75, file='p.txt', ACTION="write", STATUS="replace")
+    ! do i=imin-1,imax+1
+    !     write(75, '(*(F14.7))')( real(p(i,j)) ,j=jmin-1,jmax+1)
+    ! end do
 
 end program ibmc
