@@ -5,7 +5,7 @@ module mod_amgx
     save
 
     private
-    public :: calculate_pressure_amgx, generate_crs_matrix, init_amgx, solve_amgx
+    public :: calculate_pressure_amgx
 
     ! CRS data (Common across all the subroutines in this module)
     real(c_double), allocatable, target :: val(:)
@@ -22,17 +22,14 @@ module mod_amgx
 
     contains
 
-    subroutine calculate_pressure_amgx(A,x,b)
+    subroutine calculate_pressure_amgx(A,x,b,init_status)
 
         real(real64), intent(in)        :: A(:,:,:)    ! Coefficient matrix
         real(real64), intent(in out)    :: x(:,:)        ! Pressure matrix
-        real(real64), intent(in)        :: b(:,:)        ! Divergence matrix
-
-        integer(int32), save :: flag_init
-
+        real(real64), intent(in)        :: b(:,:)        ! Divergence matrix 
+        logical, intent(in out) :: init_status
         
-        flag_init = 0
-        if (flag_init.eq.0) then
+        if (init_status .eqv..False.) then
             call generate_crs_matrix(A)
             NNZ = size(col_ind)
 
@@ -44,7 +41,7 @@ module mod_amgx
             ! Reshape divergence matrix
             rhsv = reshape(b,[Nx*Ny])
             call init_amgx()
-            flag_init = 1
+            init_status = .True.
         else
             rhsv = reshape(b,[Nx*Ny])
             call solve_amgx()
