@@ -18,7 +18,7 @@ program ibmc
     real(real32) :: dy, dyi
 
     ! Simulation Paramaters
-    real(real32) :: tsim    = 10
+    real(real32) :: tsim    = 20
     real(real32) :: dt      = 0.001
     real(real32) :: t
 
@@ -43,7 +43,7 @@ program ibmc
 
     ! Temporary/Miscellaneous variable
     real(real64) :: ucenter, vcenter
-    integer(int32) :: n, NN
+    integer(int32) :: NN
     logical :: init_status
 
     call cpu_time(start)
@@ -119,7 +119,7 @@ program ibmc
     dyi = 1.0/dy
 
     ! Generate Laplacian matrix
-    call generate_laplacian_sparse(dxi,dyi,A,imin,imax,jmin,jmax)
+    call generate_laplacian_sparse(A,dxi,dyi)
     ! Start time loop
     t = 0.0d0
     init_status = .False.
@@ -141,38 +141,32 @@ program ibmc
         ! Perform predictor step
         ! us 
         ! (u-velocity cell)
-        do concurrent (j = jucS:jucE)
-            do concurrent (i = iucS:iucE)
-                vcenter = 0.25*(v(i-1,j) + v(i-1,j+1) + v(i,j) + v(i,j+1))
-                us(i,j) = u(i,j) + dt* &
-                            ( nu*(u(i-1,j) - 2*u(i,j) + u(i+1,j))*dxi**2 &
-                            + nu*(u(i,j-1) -2*u(i,j) + u(i,j+1))*dyi**2 &
-                            - u(i,j)*(u(i+1,j) - u(i-1,j))*0.5*dxi &
-                            - vcenter*(u(i,j+1)-u(i,j-1))*0.5*dyi)
-            end do
+        do concurrent (j = jucS:jucE, i = iucS:iucE)
+            vcenter = 0.25*(v(i-1,j) + v(i-1,j+1) + v(i,j) + v(i,j+1))
+            us(i,j) = u(i,j) + dt* &
+                        ( nu*(u(i-1,j) - 2*u(i,j) + u(i+1,j))*dxi**2 &
+                        + nu*(u(i,j-1) -2*u(i,j) + u(i,j+1))*dyi**2 &
+                        - u(i,j)*(u(i+1,j) - u(i-1,j))*0.5*dxi &
+                        - vcenter*(u(i,j+1)-u(i,j-1))*0.5*dyi)
         end do
 
         ! vs 
         ! (v-velocity cell)
-        do concurrent (j = jvcS:jvcE)
-            do concurrent (i = ivcS:ivcE)
-                ucenter = 0.25*(u(i,j-1)+u(i,j)+u(i+1,j-1)+u(i+1,j))
-                vs(i,j) = v(i,j) + dt* &
-                            ( nu*(v(i-1,j) - 2*v(i,j) + v(i+1,j))*dxi**2 &
-                            + nu*(v(i,j-1) - 2*v(i,j) + v(i,j+1))*dyi**2 &
-                            - ucenter*(v(i+1,j) - v(i-1,j))*0.5*dxi &
-                            - v(i,j)*(v(i,j+1)-v(i,j-1))*0.5*dyi)
-            end do
+        do concurrent (j = jvcS:jvcE, i = ivcS:ivcE)
+            ucenter = 0.25*(u(i,j-1)+u(i,j)+u(i+1,j-1)+u(i+1,j))
+            vs(i,j) = v(i,j) + dt* &
+                        ( nu*(v(i-1,j) - 2*v(i,j) + v(i+1,j))*dxi**2 &
+                        + nu*(v(i,j-1) - 2*v(i,j) + v(i,j+1))*dyi**2 &
+                        - ucenter*(v(i+1,j) - v(i-1,j))*0.5*dxi &
+                        - v(i,j)*(v(i,j+1)-v(i,j-1))*0.5*dyi)
         end do
 
         ! Form the right hand side of the pressure poisson equation
         ! (Pressure cell)
-        do concurrent (j = jpS:jpE)
-            do concurrent (i = ipS:ipE)
-                R(i,j) = -rho/dt* &
-                        ( (us(i+1,j) - us(i,j))*dxi &
-                        + (vs(i,j+1) - vs(i,j))*dyi)
-            end do
+        do concurrent (j = jpS:jpE, i = ipS:ipE)
+            R(i,j) = -rho/dt* &
+                    ( (us(i+1,j) - us(i,j))*dxi &
+                    + (vs(i,j+1) - vs(i,j))*dyi)
         end do
 
         ! Solve for presssure
@@ -183,18 +177,14 @@ program ibmc
         ! Perform the corrector steps
         ! u 
         ! (u-velocity cell)
-        do concurrent (j = jucS:jucE)
-            do concurrent (i = iucS:iucE)
-                u(i,j) = us(i,j) - dt/rho * (p(i,j) - p(i-1,j)) * dxi
-            end do
+        do concurrent (j = jucS:jucE, i = iucS:iucE)
+            u(i,j) = us(i,j) - dt/rho * (p(i,j) - p(i-1,j)) * dxi
         end do
         
         ! v
         ! (v-velocity cell)
-        do concurrent (j = jvcS:jvcE)
-            do concurrent (i = ivcS:ivcE)
-                v(i,j) = vs(i,j) - dt/rho * (p(i,j) - p(i,j-1)) * dyi
-            end do
+        do concurrent (j = jvcS:jvcE, i = ivcS:ivcE)
+            v(i,j) = vs(i,j) - dt/rho * (p(i,j) - p(i,j-1)) * dyi
         end do
 
         print *, 'time = ', t
