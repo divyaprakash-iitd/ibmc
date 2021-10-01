@@ -172,13 +172,13 @@ subroutine generate_laplacian_sparse(idx,idy,A,imin,imax,jmin,jmax)
 end subroutine generate_laplacian_sparse
 
 
-subroutine calculate_pressure_sparse(imin,imax,jmin,jmax,R,A,PIN)
+subroutine calculate_pressure_sparse(A,PIN,R)
 
-    integer(int32),     intent(in)      :: imin, imax, jmin, jmax
-    real(real64),       intent(in)      :: R(imin:imax,jmin:jmax), A(imin:imax,jmin:jmax,5)
-    real(real64),       intent(in out)  :: PIN(imin:imax,jmin:jmax)
+    real(real64),       intent(in)      :: R(:,:), A(:,:,:)
+    real(real64),       intent(in out)  :: PIN(:,:)
 
-    real(real64) :: P(imin-1:imax+1,jmin-1:jmax+1)
+    integer(int32)      :: imin, imax, jmin, jmax
+    real(real64), allocatable :: P(:,:)
     integer(int32) :: Nx, Ny
 
     ! Indices 
@@ -198,12 +198,21 @@ subroutine calculate_pressure_sparse(imin,imax,jmin,jmax,R,A,PIN)
     real(real64) :: ERROR
     real(real64) :: PTEMP
 
-    real(real64) :: RSDL(imin:imax,jmin:jmax)     ! Residual Matrix
+    real(real64), allocatable :: RSDL(:,:)     ! Residual Matrix
     real(real64), allocatable :: RSDLV(:)    ! Residual Vector
     
+    imin = lbound(A,1)
+    imax = ubound(A,1)
+    jmin = lbound(A,2)
+    jmax = ubound(A,2)
+   
     ! Domain Size
     Nx = size(PIN,1)
     Ny = size(PIN,2)
+
+    ! Allocate variables
+    allocate(P(imin-1:imax+1,jmin-1:jmax+1))
+    allocate(RSDL(Nx,Ny))
 
     ! Pressure array with zero padding on the boundaries
     P = 0.0d0
