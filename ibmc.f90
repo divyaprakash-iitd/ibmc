@@ -10,15 +10,15 @@ program ibmc
     ! Computational Domain
     real(real32)    :: Lx = 1.0
     real(real32)    :: Ly = 1.0
-    integer(int32)  :: Nx = 30
-    integer(int32)  :: Ny = 30
+    integer(int32)  :: Nx = 20
+    integer(int32)  :: Ny = 20
 
     ! Mesh Paramaters
     real(real32) :: dx, dxi
     real(real32) :: dy, dyi
 
     ! Simulation Paramaters
-    real(real32) :: tsim    = 5
+    real(real32) :: tsim    = 10
     real(real32) :: dt      = 0.001
     real(real32) :: t
 
@@ -176,20 +176,9 @@ program ibmc
         end do
 
         ! Solve for presssure
-        !call calculate_pressure_sparse(imin,imax,jmin,jmax,R,A,P)
+        call calculate_pressure_sparse(A,P,R)
 
-        call calculate_pressure_amgx(A,P,R,init_status)
-
-        ! ! Convert p to mesh representation
-        ! ! (Pressure cell)
-        ! n = 0
-        ! P = 0.0d0
-        ! do j = jpS,jpE
-        !     do i = ipS,ipE
-        !         n = n + 1;
-        !         P(i,j) = Pv(n);
-        !     end do
-        ! end do
+        !call calculate_pressure_amgx(A,P,R,init_status)
 
         ! Perform the corrector steps
         ! u 
