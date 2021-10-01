@@ -94,11 +94,10 @@ subroutine calculate_pressure_sparse(A,PIN,R)
     print *, 'Iteration = ', ITER
 end subroutine calculate_pressure_sparse
 
-subroutine generate_laplacian_sparse(idx,idy,A,imin,imax,jmin,jmax)
+subroutine generate_laplacian_sparse(A,idx,idy)
 
-    integer(int32), intent(in)      :: imin,imax,jmin,jmax
     real(real32),   intent(in)      :: idx, idy
-    real(real64),   intent(in out)  :: A(imin:imax,jmin:jmax,5)
+    real(real64),   intent(in out)  :: A(:,:,:)
     
     
     real(real64)                    :: idx2, idy2 ! Squared inverse of dx and dy
@@ -110,6 +109,13 @@ subroutine generate_laplacian_sparse(idx,idy,A,imin,imax,jmin,jmax)
     integer(int32), parameter :: RIGHT  = 4
     integer(int32), parameter :: TOP    = 5
     integer(int32), parameter :: NN     = 5
+    integer(int32) :: imin, imax, jmin, jmax
+
+    ! Define limits
+    imin = lbound(A,1)
+    imax = ubound(A,1)
+    jmin = lbound(A,2)
+    jmax = ubound(A,2)
 
     idx2 = idx**2
     idy2 = idy**2
@@ -118,19 +124,16 @@ subroutine generate_laplacian_sparse(idx,idy,A,imin,imax,jmin,jmax)
     A = 0.0d0
         
     ! Center Nodes
-    do concurrent (j = jmin+1:jmax-1)
-        do concurrent (i = imin+1:imax-1)
-            
-            ! d^2P/dx^2
-            A(i,j,CENTER)   = -2*idx2      ! Center
-            A(i,j,RIGHT)    = idx2         ! Right
-            A(i,j,LEFT)     = idx2         ! Left
-            
-            ! d^2P/dy^2
-            A(i,j,CENTER)   = A(i,j,CENTER) + (-2*idy2)       ! Center
-            A(i,j,TOP)      = idy2                            ! Top
-            A(i,j,BOTTOM)   = idy2                            ! Bottom
-        end do
+    do concurrent (j = jmin+1:jmax-1, i = imin+1:imax-1)
+        ! d^2P/dx^2
+        A(i,j,CENTER)   = -2*idx2      ! Center
+        A(i,j,RIGHT)    = idx2         ! Right
+        A(i,j,LEFT)     = idx2         ! Left
+        
+        ! d^2P/dy^2
+        A(i,j,CENTER)   = A(i,j,CENTER) + (-2*idy2)       ! Center
+        A(i,j,TOP)      = idy2                            ! Top
+        A(i,j,BOTTOM)   = idy2                            ! Bottom
     end do
     
     ! Left Boundary Nodes (Excluding corners)
