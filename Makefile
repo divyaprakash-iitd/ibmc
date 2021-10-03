@@ -5,7 +5,7 @@ FORT= gfortran
 OPTS = -O3 -g -fcheck=bounds
 #OPTS = -O3 -g -stdpar -Minfo=accel
 
-OBJECTS= ibmc.o mod_pressure.o mod_amgx.o ftn_c.o mod_field.o
+OBJECTS= ibmc.o mod_pressure.o mod_amgx.o ftn_c.o mod_field.o mod_dims.o mod_diff.o
 
 LIB_DIR= -L/home/divyaprakash/wrappers/amgx_code/axb_amgx
 
@@ -27,10 +27,16 @@ mod_amgx.o: mod_amgx.f90 ftn_c.o Makefile
 ftn_c.o: ftn_c.f90 Makefile
 	$(FORT) -c $<
 
-mod_field.o: mod_field.f90 Makefile
+mod_field.o: mod_field.f90 mod_dims.o mod_diff.o Makefile
 	$(FORT) -c $<
 
-ibmc.o: ibmc.f90 mod_pressure.o mod_amgx.o mod_field.o Makefile
+mod_dims.o: mod_dims.f90 Makefile
+	$(FORT) -c $<
+
+mod_diff.o: mod_diff.f90 Makefile
+	$(FORT) -c $<
+
+ibmc.o: ibmc.f90 mod_pressure.o mod_amgx.o mod_field.o mod_dims.o mod_diff.o Makefile
 	$(FORT) -c $(OPTS) $<
 
 clean:
