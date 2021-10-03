@@ -152,8 +152,11 @@ program ibmc
         v%data(:,v%y%lb) = vbottom
         v%data(:,v%y%ub) = vtop
 
-        call u%write_field(10)
-        exit
+        ! call u%write_field(10)
+
+
+        ! Predictor Step
+        u%data = u%data + dt* (nu*(u%diff2x()/dxi**2 + u%diff2y()/dyi**2) - (u%diffx()/dx + u%diffy()/dy))
 
     !     ! Perform predictor step
     !     ! us 
