@@ -15,10 +15,13 @@ module mod_field
         real(real64), allocatable       :: data(:,:)
 
         contains
-            procedure, public, pass(self)   :: diffx
             procedure, public, pass(self)   :: apply_boundary_conditions
             procedure, public, pass(self)   :: print_field
             procedure, public, pass(self)   :: write_field
+            procedure, public, pass(self)   :: diffx
+            procedure, public, pass(self)   :: diffy
+            procedure, public, pass(self)   :: diff2x
+            procedure, public, pass(self)   :: diff2y
     end type Field
 
     interface Field
