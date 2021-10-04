@@ -5,6 +5,7 @@ program ibmc
     use mod_mesh
     use mod_time
     use mod_boundary
+    use mod_time_stepping
     implicit none
 
     ! Execution time
@@ -13,16 +14,16 @@ program ibmc
     ! Computational Domain
     real(real32)    :: Lx = 1.0
     real(real32)    :: Ly = 1.0
-    integer(int32)  :: Nx = 20
-    integer(int32)  :: Ny = 20
+    integer(int32)  :: Nx = 30
+    integer(int32)  :: Ny = 30
 
     ! Mesh Paramaters
     real(real32) :: dx, dxi
     real(real32) :: dy, dyi
 
     ! Simulation Paramaters
-    real(real32) :: tsim    = 1
-    real(real32) :: dt      = 0.001
+    real(real32) :: tsim    = 10
+    real(real32) :: dt      = 0.03
     real(real32) :: t
 
     ! Physical Constants
@@ -96,15 +97,14 @@ program ibmc
         call apply_boundary(M,u,v,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
 
         ! Perform predictor step
-        call predictor(M,u,v,us,vs,nu,dt) 
+        ! call predictor(M,u,v,us,vs,nu,dt) 
+
+        ! call euler(M,u,v,us,vs,nu,dt)
+        call RK2(M,u,v,us,vs,nu,dt)
+        ! call RK4(M,u,v,us,vs,nu,dt)
         
         ! Form the right hand side of the pressure poisson equation
-        ! (Pressure cell)
-        do concurrent (j = M%yp%lb:M%yp%ub, i = M%xp%lb:M%xp%ub)
-            R(i,j) = -rho/dt* &
-                    ( (us(i+1,j) - us(i,j))*dxi &
-                    + (vs(i,j+1) - vs(i,j))*dyi)
-        end do
+        call calculate_rhs(M,us,vs,R,rho,dt)
 
         ! Solve for presssure
         call calculate_pressure_sparse(A,P,R)
