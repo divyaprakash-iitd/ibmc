@@ -4,7 +4,8 @@ module mod_mesh
     
     implicit none
 
-    Private
+    private
+    public :: mesh
 
     type :: mesh
         character(len=:), allocatable :: name
