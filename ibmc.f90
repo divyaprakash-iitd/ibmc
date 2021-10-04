@@ -27,8 +27,7 @@ program ibmc
     real(real32) :: nu = 1.0/100.0
     real(real32) :: rho = 1.0d0
 
-    ! Index ranges
-    integer(int32) :: imin, imax, jmin, jmax
+    ! Indices
     integer(int32) :: i,j
 
     ! Boundary values
@@ -80,10 +79,8 @@ program ibmc
     A   = 0.0d0
 
     ! Mesh values
-    dx  = Lx/Nx
-    dy  = Ly/Ny
-    dxi = 1.0/dx
-    dyi = 1.0/dy
+    dxi = 1.0/M%dx
+    dyi = 1.0/M%dy
 
     ! Generate Laplacian matrix
     call generate_laplacian_sparse(A,dxi,dyi)
