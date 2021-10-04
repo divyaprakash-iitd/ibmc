@@ -91,13 +91,13 @@ contains
         end do
     end subroutine calculate_rhs
 
-    function fu(M,u,v,nu)
+    subroutine fu(M,u,v,us,nu)
         ! Calculates convection and diffusion terms for u
         class(mesh), intent(in) :: M
         real(real64), intent(in) :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub) 
         real(real32), intent(in) :: nu 
 
-        real(real64) :: fu(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub)
+        real(real64), intent(in out) :: us(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub)
         integer(int32) :: i,j
         real(real64) :: vcenter, dxi, dyi
 
@@ -107,21 +107,21 @@ contains
         ! (u-velocity cell)
         do concurrent (j = M%yu%lb+1:M%yu%ub-1, i = M%xu%lb+1:M%xu%ub-1)
             vcenter = 0.25*(v(i-1,j) + v(i-1,j+1) + v(i,j) + v(i,j+1))
-            fu(i,j) =   nu*(u(i-1,j) - 2*u(i,j) + u(i+1,j))*dxi**2 &
+            us(i,j) =   nu*(u(i-1,j) - 2*u(i,j) + u(i+1,j))*dxi**2 &
                         + nu*(u(i,j-1) -2*u(i,j) + u(i,j+1))*dyi**2 &
                         - u(i,j)*(u(i+1,j) - u(i-1,j))*0.5*dxi &
                         - vcenter*(u(i,j+1)-u(i,j-1))*0.5*dyi
         end do
 
-    end function fu
+    end subroutine fu
 
-    function fv(M,u,v,nu)
+    subroutine fv(M,u,v,vs,nu)
         ! Calculates convection and diffusion terms for u
         class(mesh), intent(in) :: M
         real(real64), intent(in) :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub) 
         real(real32), intent(in) :: nu 
 
-        real(real64) :: fv(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
+        real(real64), intent(in out) :: vs(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
         integer(int32) :: i,j
         real(real64) :: ucenter, dxi, dyi
 
@@ -132,12 +132,12 @@ contains
         ! (v-velocity cell)
         do concurrent (j = M%yv%lb+1:M%yv%ub-1, i = M%xv%lb+1:M%xv%ub-1)
             ucenter = 0.25*(u(i,j-1)+u(i,j)+u(i+1,j-1)+u(i+1,j))
-            fv(i,j) =   nu*(v(i-1,j) - 2*v(i,j) + v(i+1,j))*dxi**2 &
+            vs(i,j) =   nu*(v(i-1,j) - 2*v(i,j) + v(i+1,j))*dxi**2 &
                         + nu*(v(i,j-1) - 2*v(i,j) + v(i,j+1))*dyi**2 &
                         - ucenter*(v(i+1,j) - v(i-1,j))*0.5*dxi &
                         - v(i,j)*(v(i,j+1)-v(i,j-1))*0.5*dyi
         end do
 
-    end function fv
+    end subroutine fv
 
 end module mod_time
