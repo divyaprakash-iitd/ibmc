@@ -38,10 +38,6 @@ program ibmc
     ! Matrices to store fields
     real(real64), allocatable :: u(:,:), v(:,:), us(:,:), vs(:,:), R(:,:), P(:,:), A(:,:,:)
 
-    ! Limits of arrays
-    integer(int32) :: iuS, iuE, juS, juE, ivS, ivE, jvS, jvE, ipS, ipE, jpS, jpE  
-    integer(int32) :: iucS, iucE, jucS, jucE, ivcS, ivcE, jvcS, jvcE  
-
     ! Temporary/Miscellaneous variable
     real(real64) :: ucenter, vcenter
     integer(int32) :: NN
@@ -65,51 +61,15 @@ program ibmc
     uright  = 0.0
     vright  = 0.0
 
-    ! Define ranges
-    imin = 1
-    imax = imin + Nx - 1
-    jmin = 1
-    jmax = jmin + Ny - 1
-
-    ! u: u-complete
-    iuS = imin
-    iuE = imax+1
-    juS = jmin-1
-    juE = jmax+1
-
-    ! v: v-complete
-    ivS = imin-1
-    ivE = imax+1
-    jvS = jmin
-    jvE = jmax+1
-
-    ! uc: u-calculated     
-    iucS = imin+1
-    iucE = imax
-    jucS = jmin
-    jucE = jmax
-
-    ! vc: v-calculated
-    ivcS = imin
-    ivcE = imax
-    jvcS = jmin+1
-    jvcE = jmax
-
-    ! p: p-complete
-    ipS = imin
-    ipE = imax
-    jpS = jmin
-    jpE = jmax
-
     ! Allocate matrices ofr u,v,us,vs,rhs
-    allocate(u(iuS:iuE,juS:juE))    
-    allocate(v(ivS:ivE,jvS:jvE))
-    allocate(us(iuS:iuE,juS:juE))    
-    allocate(vs(ivS:ivE,jvS:jvE))
-    allocate(R(ipS:ipE,jpS:jpE))
-    allocate(P(ipS:ipE,jpS:jpE))
+    allocate(u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub))    
+    allocate(v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub))
+    allocate(us(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub))    
+    allocate(vs(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub))
+    allocate(R(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub))
+    allocate(P(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub))
     NN = 5
-    allocate(A(imin:imax,jmin:jmax,NN))
+    allocate(A(1:Nx,1:Ny,NN))
 
     ! Initialize
     u   = 0.0d0
@@ -134,16 +94,16 @@ program ibmc
         t = t+dt 
 
         ! Apply boundary conditions
-        u(:,juS) = 2*ubottom - u(:,jucS);
-        u(:,juE) = 2*utop    - u(:,jucE);
-        v(ivS,:) = 2*vleft   - v(ivcS,:);
-        v(ivE,:) = 2*vright  - v(ivcE,:);
+        u(:,M%yu%lb) = 2*ubottom - u(:,M%yu%lb+1);
+        u(:,M%yu%ub) = 2*utop    - u(:,M%yu%ub-1);
+        v(M%xv%lb,:) = 2*vleft   - v(M%xv%lb+1,:);
+        v(M%yv%ub,:) = 2*vright  - v(M%yv%ub-1,:);
     
 
-        u(iuS,:)    = uleft;
-        u(iuE,:)    = uright;
-        v(:,jvE)    = vtop;
-        v(:,jvS)    = vbottom;
+        u(M%xu%lb,:)    = uleft;
+        u(M%xu%ub,:)    = uright;
+        v(:,M%yv%ub)    = vtop;
+        v(:,M%yv%lb)    = vbottom;
 
         ! Perform predictor step
         ! us 
@@ -201,13 +161,13 @@ program ibmc
     print '("Time = ",f6.3," seconds.")',finish-start 
 
     open(unit=55, file='u.txt', ACTION="write", STATUS="replace")
-    do i=imin,imax+1
-        write(55, '(*(F14.7))')( real(u(i,j)) ,j=jmin-1,jmax+1)
+    do i=M%xu%lb,M%xu%ub
+        write(55, '(*(F14.7))')( real(u(i,j)) ,j=M%yu%lb,M%yu%ub)
     end do
 
     open(unit=65, file='v.txt', ACTION="write", STATUS="replace")
-    do i=imin-1,imax+1
-        write(65, '(*(F14.7))')( real(v(i,j)) ,j=jmin,jmax+1)
+    do i=M%xv%lb,M%xv%ub
+        write(65, '(*(F14.7))')( real(v(i,j)) ,j=M%yv%lb,M%yv%ub)
     end do
 
     ! open(unit=75, file='p.txt', ACTION="write", STATUS="replace")
