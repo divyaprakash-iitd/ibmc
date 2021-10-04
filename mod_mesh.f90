@@ -7,7 +7,7 @@ module mod_mesh
     Private
 
     type :: mesh
-        character(len=*) :: mesh
+        character(len=:), allocatable :: name
         real(real32) :: Lx, Ly, dx, dy
         integer(int32) :: Nx, Ny
         type(dims) :: xu, yu, xv, yv, xp, yp
@@ -21,7 +21,7 @@ module mod_mesh
 
 contains
 
-    pure type(mesh) function mesh_constructor(name,Lx,Ly,Nx,Ny)
+    pure type(mesh) function mesh_constructor(name,Lx,Ly,Nx,Ny) result(self)
             character(len=*), intent(in) :: name
             real(real32), intent(in) :: Lx, Ly
             integer(int32), intent(in) :: Nx, Ny
