@@ -8,7 +8,7 @@ yG = Ghia.U(:,2);
 %% Reynolds Number (100, 400 & 1000)
 % To run a case uncomment one of the following three lines
 
-nx = 20; ny = 20; Re = 100; UG = Ghia.U(:,3); 
+nx = 30; ny = 30; Re = 100; UG = Ghia.U(:,3); 
 %nx = 150; ny = 150; Re = 400; UG = Ghia.U(:,4);
 %nx = 200; ny = 200; Re = 1000; UG = Ghia.U(:,5);
 
