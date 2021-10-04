@@ -2,6 +2,7 @@ program ibmc
     use iso_fortran_env, only: int32, real32, real64
     use mod_pressure, only: generate_laplacian_sparse, calculate_pressure_sparse
     use mod_amgx, only: calculate_pressure_amgx
+    use mod_mesh
     implicit none
 
     ! Execution time
@@ -18,7 +19,7 @@ program ibmc
     real(real32) :: dy, dyi
 
     ! Simulation Paramaters
-    real(real32) :: tsim    = 10
+    real(real32) :: tsim    = 2
     real(real32) :: dt      = 0.001
     real(real32) :: t
 
@@ -45,6 +46,9 @@ program ibmc
     real(real64) :: ucenter, vcenter
     integer(int32) :: NN
     logical :: init_status
+
+    ! Mesh
+    type(mesh) :: M
 
     call cpu_time(start)
 
