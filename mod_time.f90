@@ -91,7 +91,7 @@ contains
         end do
     end subroutine calculate_rhs
 
-    subroutine fu(M,u,v,us,nu)
+    pure subroutine cdu(M,u,v,us,nu)
         ! Calculates convection and diffusion terms for u
         class(mesh), intent(in) :: M
         real(real64), intent(in) :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub) 
@@ -113,9 +113,9 @@ contains
                         - vcenter*(u(i,j+1)-u(i,j-1))*0.5*dyi
         end do
 
-    end subroutine fu
+    end subroutine cdu
 
-    subroutine fv(M,u,v,vs,nu)
+    pure subroutine cdv(M,u,v,vs,nu)
         ! Calculates convection and diffusion terms for u
         class(mesh), intent(in) :: M
         real(real64), intent(in) :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub) 
@@ -138,6 +138,6 @@ contains
                         - v(i,j)*(v(i,j+1)-v(i,j-1))*0.5*dyi
         end do
 
-    end subroutine fv
+    end subroutine cdv
 
 end module mod_time
