@@ -22,8 +22,8 @@ program ibmc
     real(real32) :: dy, dyi
 
     ! Simulation Paramaters
-    real(real32) :: tsim    = 10
-    real(real32) :: dt      = 0.03
+    real(real32) :: tsim    = 1
+    real(real32) :: dt      = 0.01
     real(real32) :: t
 
     ! Physical Constants
@@ -99,8 +99,8 @@ program ibmc
         ! Perform predictor step
         ! call predictor(M,u,v,us,vs,nu,dt) 
 
-        ! call euler(M,u,v,us,vs,nu,dt)
-        call RK2(M,u,v,us,vs,nu,dt)
+        call euler(M,u,v,us,vs,nu,dt)
+        ! call RK2(M,u,v,us,vs,nu,dt)
         ! call RK4(M,u,v,us,vs,nu,dt)
         
         ! Form the right hand side of the pressure poisson equation
@@ -108,8 +108,7 @@ program ibmc
 
         ! Solve for presssure
         call calculate_pressure_sparse(A,P,R)
-
-        !call calculate_pressure_amgx(A,P,R,init_status)
+        ! call calculate_pressure_amgx(A,P,R,init_status)
 
         ! Perform the corrector steps
         call corrector(M,u,v,us,vs,p,rho,dt)
