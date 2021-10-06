@@ -99,8 +99,8 @@ program ibmc
         ! Perform predictor step
         ! call predictor(M,u,v,us,vs,nu,dt) 
 
-        ! call euler(M,u,v,us,vs,nu,dt)
-        call RK2(M,u,v,us,vs,nu,dt)
+        call euler(M,u,v,us,vs,nu,dt)
+        ! call RK2(M,u,v,us,vs,nu,dt)
         ! call RK4(M,u,v,us,vs,nu,dt)
         
         ! Form the right hand side of the pressure poisson equation
