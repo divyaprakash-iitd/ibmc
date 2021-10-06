@@ -70,7 +70,8 @@ program ibmc
     allocate(vs(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub))
     allocate(R(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub))
     allocate(P(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub))
-    allocate(F(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub))
+    allocate(Fx(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub))
+    allocate(Fy(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub))
     NN = 5
     allocate(A(1:Nx,1:Ny,NN))
 
@@ -81,7 +82,9 @@ program ibmc
     vs  = 0.0d0
     R   = 0.0d0
     A   = 0.0d0
-    F   = 0.0d0
+    Fx  = 0.0d0
+    Fy  = 0.0d0
+
     ! Mesh values
     dxi = 1.0/M%dx
     dyi = 1.0/M%dy
