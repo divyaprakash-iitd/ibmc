@@ -38,7 +38,7 @@ program ibmc
                     uleft, vleft, uright, vright
 
     ! Matrices to store fields
-    real(real64), allocatable :: u(:,:), v(:,:), us(:,:), vs(:,:), R(:,:), P(:,:), A(:,:,:)
+    real(real64), allocatable :: u(:,:), v(:,:), us(:,:), vs(:,:), R(:,:), P(:,:), A(:,:,:), Fx(:,:), Fy(:,:)
 
     ! Temporary/Miscellaneous variable
     real(real64) :: ucenter, vcenter
@@ -102,8 +102,8 @@ program ibmc
 
         ! Perform predictor step
         ! call predictor(M,u,v,us,vs,nu,dt) 
-
-        call euler(M,u,v,us,vs,nu,dt)
+        call euler(M,u,v,us,vs,nu,dt,Fx,Fy)
+        ! call euler(M,u,v,us,vs,nu,dt)
         ! call RK2(M,u,v,us,vs,nu,dt)
         ! call RK4(M,u,v,us,vs,nu,dt)
         
