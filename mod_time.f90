@@ -134,7 +134,7 @@ contains
         ! vs 
         ! (v-velocity cell)
         do concurrent (j = M%yv%lb+1:M%yv%ub-1, i = M%xv%lb+1:M%xv%ub-1)
-            Fyavg = 0.5d0*(Fx(i,j-1) + Fx(i,j+1))
+            Fyavg = 0.5d0*(Fy(i,j-1) + Fy(i,j+1))
             ucenter = 0.25*(u(i,j-1)+u(i,j)+u(i+1,j-1)+u(i+1,j))
             vs(i,j) =   nu*(v(i-1,j) - 2*v(i,j) + v(i+1,j))*dxi**2 &
                         + nu*(v(i,j-1) - 2*v(i,j) + v(i,j+1))*dyi**2 &
