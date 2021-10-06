@@ -22,7 +22,7 @@ program ibmc
     real(real32) :: dy, dyi
 
     ! Simulation Paramaters
-    real(real32) :: tsim    = 1
+    real(real32) :: tsim    = 10
     real(real32) :: dt      = 0.01
     real(real32) :: t
 
@@ -84,6 +84,10 @@ program ibmc
     A   = 0.0d0
     Fx  = 0.0d0
     Fy  = 0.0d0
+
+    ! Initialize force at the middle of the domain
+    Fx(12:14,12:14) = 1.0d0
+    Fy(12:14,12:14) = 1.0d0
 
     ! Mesh values
     dxi = 1.0/M%dx
