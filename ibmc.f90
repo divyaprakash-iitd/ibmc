@@ -99,16 +99,16 @@ program ibmc
         ! Perform predictor step
         ! call predictor(M,u,v,us,vs,nu,dt) 
 
-        call euler(M,u,v,us,vs,nu,dt)
-        ! call RK2(M,u,v,us,vs,nu,dt)
+        ! call euler(M,u,v,us,vs,nu,dt)
+        call RK2(M,u,v,us,vs,nu,dt)
         ! call RK4(M,u,v,us,vs,nu,dt)
         
         ! Form the right hand side of the pressure poisson equation
         call calculate_rhs(M,us,vs,R,rho,dt)
 
         ! Solve for presssure
-        call calculate_pressure_sparse(A,P,R)
-        ! call calculate_pressure_amgx(A,P,R,init_status)
+        ! call calculate_pressure_sparse(A,P,R)
+        call calculate_pressure_amgx(A,P,R,init_status)
 
         ! Perform the corrector steps
         call corrector(M,u,v,us,vs,p,rho,dt)
