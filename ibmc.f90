@@ -6,6 +6,7 @@ program ibmc
     use mod_time
     use mod_boundary
     use mod_time_stepping
+    use mod_io
     implicit none
 
     ! Execution time
@@ -31,7 +32,7 @@ program ibmc
     real(real32) :: rho = 1.0d0
 
     ! Indices
-    integer(int32) :: i,j
+    integer(int32) :: i,j, it
 
     ! Boundary values
     real(real32) :: utop, vtop, ubottom, vbottom, &
@@ -86,8 +87,8 @@ program ibmc
     Fy  = 0.0d0
 
     ! Initialize force at the middle of the domain
-    Fx(12:14,12:14) = 1.0d0
-    Fy(12:14,12:14) = 1.0d0
+    ! Fx(12:14,12:14) = 1.0d0
+    ! Fy(12:14,12:14) = 1.0d0
 
     ! Mesh values
     dxi = 1.0/M%dx
@@ -97,9 +98,11 @@ program ibmc
     call generate_laplacian_sparse(A,dxi,dyi)
     ! Start time loop
     t = 0.0d0
+    it = 0
     init_status = .False.
     do while (t.lt.tsim)
         t = t+dt 
+        it = it + 1
 
         ! Apply boundary conditions
         call apply_boundary(M,u,v,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
@@ -122,24 +125,15 @@ program ibmc
         call corrector(M,u,v,us,vs,p,rho,dt)
 
         print *, 'time = ', t
+
+        ! Write files every 10th timestep
+        if (mod(it,10).eq.0) then 
+            call write_field(u,'u',it) 
+        end if
     end do
 
     call cpu_time(finish)
-    print '("Time = ",f6.3," seconds.")',finish-start 
-
-    open(unit=55, file='u.txt', ACTION="write", STATUS="replace")
-    do i=M%xu%lb,M%xu%ub
-        write(55, '(*(F14.7))')( real(u(i,j)) ,j=M%yu%lb,M%yu%ub)
-    end do
-
-    open(unit=65, file='v.txt', ACTION="write", STATUS="replace")
-    do i=M%xv%lb,M%xv%ub
-        write(65, '(*(F14.7))')( real(v(i,j)) ,j=M%yv%lb,M%yv%ub)
-    end do
-
-    ! open(unit=75, file='p.txt', ACTION="write", STATUS="replace")
-    ! do i=imin-1,imax+1
-    !     write(75, '(*(F14.7))')( real(p(i,j)) ,j=jmin-1,jmax+1)
-    ! end do
+    print '("Time = ",f6.3," seconds.")',finish-start
+    
 
 end program ibmc
