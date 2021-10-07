@@ -3,7 +3,7 @@ clear; clc; close all;
 % Description: Visualizes velocity fields
 % Description: Visualizes velocity fields
 
-uFile = dir(strcat('u','*'));
+uFile = dir(strcat('u_0','*'));
 
 nFiles = length(uFile);
 
