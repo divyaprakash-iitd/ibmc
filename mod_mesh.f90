@@ -28,6 +28,7 @@ contains
             integer(int32), intent(in) :: Nx, Ny
 
             integer(int32) :: imin, imax, jmin, jmax
+            integer(int32) :: i, j
 
             imin = 1
             imax = imin + Nx - 1
@@ -55,38 +56,82 @@ contains
             allocate(self%v_mesh(self%xv%lb:self%xv%ub,self%yv%lb:self%yv%ub))
             allocate(self%p_mesh(self%xp%lb:self%xp%ub,self%yp%lb:self%yp%ub))
 
+            ! Initialize
+            self%u_mesh(:,:)%x = 0.0d0
+            self%u_mesh(:,:)%y = 0.0d0
+            self%v_mesh(:,:)%x = 0.0d0
+            self%v_mesh(:,:)%y = 0.0d0
+            self%p_mesh(:,:)%x = 0.0d0
+            self%p_mesh(:,:)%y = 0.0d0
+
+            ! Assign coordinates to mesh points 
+            ! u_mesh
+            ! x-cordinates
+            do i = self%xu%lb+1,self%xu%ub ! Since the first one is zero
+                self%u_mesh(i,:)%x = self%u_mesh(i-1,:)%x + self%dx 
+            end do
+            ! y-coordinates
+            ! The u cells start from below the boundary in the y-direction
+            self%u_mesh(:,self%yu%lb)%y = -self%dy/2.0d0
+            do j = self%yu%lb+1,self%yu%ub
+                self%u_mesh(:,j)%y = self%u_mesh(:,j-1)%y + self%dy
+            end do
+            
+            ! v_mesh
+            ! x-coordinates
+            self%v_mesh(self%xv%lb,:)%x = -self%dx/2.0d0
+            do i = self%xv%lb+1,self%xv%ub
+                self%v_mesh(i,:)%x = self%v_mesh(i-1,:)%x + self%dx
+            end do
+            ! y-coordinates
+            ! The v cells start from the left side of the boundary in the x-direction
+            do j = self%yv%lb+1,self%yv%ub
+                self%v_mesh(:,j)%y = self%v_mesh(:,j-1)%y + self%dy
+            end do
+
+            ! p_mesh
+            ! x-coordinates
+            self%p_mesh(self%xp%lb,:)%x = self%dx/2.0d0
+            do i = self%xp%lb+1,self%xp%ub
+                self%p_mesh(i,:)%x = self%p_mesh(i-1,:)%x + self%dx
+            end do
+            ! y-coordinates
+            self%p_mesh(:,self%yp%lb)%y = self%dy/2.0d0
+            do j = self%yp%lb+1,self%yp%ub
+                self%p_mesh(:,j)%y = self%p_mesh(:,j-1)%y + self%dy
+            end do
         end function mesh_constructor
     
-    subroutine generate_mesh(self)
-        class(mesh), intent(in out) :: self
+    ! subroutine generate_mesh(self)
+    !     class(mesh), intent(in out) :: self
 
-        integer(int32) :: i, j
+    !     integer(int32) :: i, j
 
-        ! Assign coordinates to mesh points 
-        ! u_mesh
-        ! x-ccordinates
-        do i = 2,size(self%u_mesh,1)
-            self%u_mesh(i,:)%x = self%u_mesh(i,:)%x + self%dx 
-        end do
-        ! y-coordinates
-        ! The u cells start from below the boundary in the y-direction
-        self%u_mesh(:,1)%y = -self%dy/2.0d0
-        do j = 2,size(self%u_mesh,2)
-            self%u_mesh(:,j)%y = self%u_mesh(:,j)%y + self%dy
-        end do
+    !     ! Assign coordinates to mesh points 
+    !     ! u_mesh
+    !     ! x-ccordinates
+    !     do i = 2,size(self%u_mesh,1)
+    !         self%u_mesh(i,:)%x = self%u_mesh(i,:)%x + self%dx 
+    !     end do
+    !     ! y-coordinates
+    !     ! The u cells start from below the boundary in the y-direction
+    !     self%u_mesh(:,1)%y = -self%dy/2.0d0
+    !     do j = 2,size(self%u_mesh,2)
+    !         self%u_mesh(:,j)%y = self%u_mesh(:,j)%y + self%dy
+    !     end do
 
-        ! v_mesh
-        ! x-coordinates
-        self%v_mesh(1,:)%x = -self%dx/2.0d0
-        do i = 2,size(self%v_mesh,1)
-            self%v_mesh(i,:)%x = self%v_mesh(i,:)%x + self%dx
-        end do
-        ! y-coordinates
-        ! The v cells start from the left side of the boundary in the x-direction
-        do j = 2,size(self%v_mesh),2
-            self%v_mesh(:,j)%y = self%v_mesh(:,j)%y + self%dy
-        end do
-    end subroutine generate_mesh
+    !     ! v_mesh
+    !     ! x-coordinates
+    !     self%v_mesh(1,:)%x = -self%dx/2.0d0
+    !     do i = 2,size(self%v_mesh,1)
+    !         self%v_mesh(i,:)%x = self%v_mesh(i,:)%x + self%dx
+    !     end do
+    !     ! y-coordinates
+    !     ! The v cells start from the left side of the boundary in the x-direction
+    !     do j = 2,size(self%v_mesh),2
+    !         self%v_mesh(:,j)%y = self%v_mesh(:,j)%y + self%dy
+    !     end do
+    ! end subroutine generate_mesh
 
 
 end module mod_mesh
