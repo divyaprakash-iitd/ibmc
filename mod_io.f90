@@ -1,5 +1,6 @@
 module mod_io
     use iso_fortran_env, only: int32, real32, real64
+    use mod_vec
     implicit none
     
     private
@@ -25,5 +26,22 @@ contains
         end do
         close(fileunit)
     end subroutine write_field
+
+    subroutine write_mesh(phi_mesh,c)
+        class(vec), intent(in) :: phi_mesh(:,:)
+        character(len=1), intent(in) :: c
+
+        integer(int32) :: fileunit = 8
+        character(len=:), allocatable :: filename
+        integer(int32) :: i, j
+
+        filename = c // '_' // 'x' // 'mesh' //'.txt'
+        open(unit=fileunit, file=filename, ACTION="write", STATUS="replace")
+        do j = 1,size(phi_mesh,2)
+            write(fileunit, '(*(F14.7))')( real(phi_mesh(i,j)%x) , i = 1,size(phi_mesh,1))
+        end do
+        close(fileunit)
+
+    end subroutine
 
 end module mod_io
