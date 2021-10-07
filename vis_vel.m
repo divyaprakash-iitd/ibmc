@@ -1,20 +1,21 @@
 clear; clc; close all;
 
 % Description: Visualizes velocity fields
+% Description: Visualizes velocity fields
 
-u = load('u.txt');
-v = load('v.txt');
+uFile = dir(strcat('u','*'));
 
-%vel = sqrt(u.^2+v.^2);
+nFiles = length(uFile);
 
-%contour(u','showtext','on')
-%contourf(u')
-
-%u = u(:,1:end-1);
-
-contourf(u',50,'edgecolor','none')
 colormap(jet)
 colorbar
-%contourf(vel','edgecolor','none')
-%colorbar
-%colormap(jet)
+
+for iFile = 1:nFiles
+    u = load(uFile(iFile).name);
+    contourf(u,50,'edgecolor','none')
+    title(uFile(iFile).name)
+    drawnow
+end
+
+
+

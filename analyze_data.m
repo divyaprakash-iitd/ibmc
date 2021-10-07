@@ -54,26 +54,27 @@ vy = y;
 
 
 % Load velocity data
-u = load('u.txt');
-v = load('v.txt');
+uFile = dir(strcat('u','*'));
+nFiles = length(uFile);
 
-u = u';
-v = v';
-
-xmid = 0.5;
-yq = linspace(yG(1),yG(end),50);
-xq = xmid*ones(size(yq));
-
-Uq = interp2(Ux,Uy,u,xq,yq);
-
-% Comparison Plot
-figure(1)
+f = figure(1);
 xlabel('u')
 ylabel('y')
-hold on
-plot(UG,yG,'.','MarkerSize',20,'DisplayName','Ghia et al. (1982)')
-plot(Uq,yq)
-legend('Location','SouthEast')
+%legend('Location','SouthEast')
 title(sprintf('Re = %d, Grid: (%d X %d)',Re,nx,ny))
 grid on
 
+for iFile = 1:nFiles
+    u = load(uFile(iFile).name);
+    xmid = 0.5;
+    yq = linspace(yG(1),yG(end),50);
+    xq = xmid*ones(size(yq));
+
+    Uq = interp2(Ux,Uy,u,xq,yq);
+
+    % Comparison Plot
+    plot(Uq,yq,'Parent',f.CurrentAxes)
+    drawnow
+end
+hold on
+plot(UG,yG,'.','MarkerSize',20,'DisplayName','Ghia et al. (1982)','Parent',f.CurrentAxes)
