@@ -54,7 +54,7 @@ vy = y;
 
 
 % Load velocity data
-uFile = dir(strcat('u','*'));
+uFile = dir(strcat('u_0','*'));
 nFiles = length(uFile);
 
 f = figure(1);
