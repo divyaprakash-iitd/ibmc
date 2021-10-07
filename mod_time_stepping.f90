@@ -9,8 +9,8 @@ contains
         class(mesh), intent(in) :: M
         real(real64), intent(in) :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
         real(real64), intent(in out) :: us(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), vs(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
-        real(real64), intent(in) :: Fx(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub)
-        real(real64), intent(in) :: Fy(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub)
+        real(real64), intent(in) :: Fx(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub)
+        real(real64), intent(in) :: Fy(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
         real(real32), intent(in) :: nu, dt
     
         

@@ -70,8 +70,8 @@ program ibmc
     allocate(vs(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub))
     allocate(R(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub))
     allocate(P(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub))
-    allocate(Fx(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub))
-    allocate(Fy(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub))
+    allocate(Fx(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub))    
+    allocate(Fy(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub))
     NN = 5
     allocate(A(1:Nx,1:Ny,NN))
 
