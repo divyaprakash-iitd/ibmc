@@ -102,36 +102,4 @@ contains
             end do
         end function mesh_constructor
     
-    ! subroutine generate_mesh(self)
-    !     class(mesh), intent(in out) :: self
-
-    !     integer(int32) :: i, j
-
-    !     ! Assign coordinates to mesh points 
-    !     ! u_mesh
-    !     ! x-ccordinates
-    !     do i = 2,size(self%u_mesh,1)
-    !         self%u_mesh(i,:)%x = self%u_mesh(i,:)%x + self%dx 
-    !     end do
-    !     ! y-coordinates
-    !     ! The u cells start from below the boundary in the y-direction
-    !     self%u_mesh(:,1)%y = -self%dy/2.0d0
-    !     do j = 2,size(self%u_mesh,2)
-    !         self%u_mesh(:,j)%y = self%u_mesh(:,j)%y + self%dy
-    !     end do
-
-    !     ! v_mesh
-    !     ! x-coordinates
-    !     self%v_mesh(1,:)%x = -self%dx/2.0d0
-    !     do i = 2,size(self%v_mesh,1)
-    !         self%v_mesh(i,:)%x = self%v_mesh(i,:)%x + self%dx
-    !     end do
-    !     ! y-coordinates
-    !     ! The v cells start from the left side of the boundary in the x-direction
-    !     do j = 2,size(self%v_mesh),2
-    !         self%v_mesh(:,j)%y = self%v_mesh(:,j)%y + self%dy
-    !     end do
-    ! end subroutine generate_mesh
-
-
 end module mod_mesh
