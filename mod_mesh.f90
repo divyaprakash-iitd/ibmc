@@ -12,8 +12,7 @@ module mod_mesh
         real(real32) :: Lx, Ly, dx, dy
         integer(int32) :: Nx, Ny
         type(dims) :: xu, yu, xv, yv, xp, yp
-        ! To-do
-        ! real(real64), allocatable :: u_mesh(:,:), v_mesh, p_mesh
+        real(real64), allocatable :: u_mesh(:,:), v_mesh(:,:), p_mesh(:,:)
     end type mesh
 
     interface mesh
@@ -50,6 +49,31 @@ contains
             self%xp = dims('xp',imin,imax)
             self%yp = dims('yp',jmin,jmax)
 
+            ! Allocate mesh storage arrays
+            allocate(self%u_mesh(self%xu%lb:self%xu%ub,self%yu%lb:self%yu%ub))
+            allocate(self%v_mesh(self%xv%lb:self%xv%ub,self%yv%lb:self%yv%ub))
+            allocate(self%p_mesh(self%xp%lb:self%xp%ub,self%yp%lb:self%yp%ub))
+           
+            ! Initialize the arrays
+            self%u_mesh = 0.0d0
+            self%v_mesh = 0.0d0
+            self%p_mesh = 0.0d0
+
         end function mesh_constructor
     
+    ! subroutine generate_mesh(self)
+    !     class(mesh), intent(in out) :: self
+
+    !     integer(int32) :: i, j
+
+    !     ! Assign coordinates to mesh points 
+    !     ! u_mesh
+    !     do concurrent (j = 1:self%Nx, i = 1:self%Ny)
+    !         u_mesh(i,j) = u_mesh(i,j)
+    !     end do
+        
+        
+    ! end subroutine generate_mesh
+
+
 end module mod_mesh
