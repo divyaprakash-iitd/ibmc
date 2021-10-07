@@ -23,7 +23,7 @@ program ibmc
     real(real32) :: dy, dyi
 
     ! Simulation Paramaters
-    real(real32) :: tsim    = 10
+    real(real32) :: tsim    = 4
     real(real32) :: dt      = 0.01
     real(real32) :: t
 
@@ -53,7 +53,6 @@ program ibmc
 
     ! Construct Mesh
     M = mesh('M',Lx,Ly,Nx,Ny)
-
     ! Define boundary conditions
     utop    = 1.0
     vtop    = 0.0
@@ -134,6 +133,8 @@ program ibmc
 
     call cpu_time(finish)
     print '("Time = ",f6.3," seconds.")',finish-start
-    
 
+    call write_mesh(M,'u')
+    call write_mesh(M,'v')
+    call write_mesh(M,'p')
 end program ibmc
