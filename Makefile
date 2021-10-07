@@ -57,7 +57,7 @@ mod_vec.o: mod_vec.f90 Makefile
 mod_ibm.o: mod_ibm.f90 mod_mesh.o mod_ib.o Makefile
 	$(FORT) -c $<
 
-ibmc.o: ibmc.f90 mod_pressure.o mod_amgx.o mod_mesh.o mod_dims.o mod_time.o mod_boundary.o mod_time_stepping.o mod_io.o mod_particle.o mod_ib.o mod_vec.o Makefile
+ibmc.o: ibmc.f90 mod_pressure.o mod_amgx.o mod_mesh.o mod_dims.o mod_time.o mod_boundary.o mod_time_stepping.o mod_io.o mod_particle.o mod_ib.o mod_vec.o mod_ibm.o Makefile
 	$(FORT) -c $(OPTS) $<
 
 clean:

@@ -7,6 +7,8 @@ program ibmc
     use mod_boundary
     use mod_time_stepping
     use mod_io
+    use mod_ib
+    use mod_ibm
     implicit none
 
     ! Execution time
@@ -24,7 +26,7 @@ program ibmc
 
     ! Simulation Paramaters
     real(real32) :: tsim    = 4
-    real(real32) :: dt      = 0.01
+    real(real32) :: dt      = 0.001
     real(real32) :: t
 
     ! Physical Constants
@@ -49,6 +51,17 @@ program ibmc
     ! Mesh
     type(mesh) :: M
 
+    ! Define an immersed boundary with a single particle
+    type(ib) :: ptcle
+    ptcle = ib('single_particle',1)
+    ! Location
+    ptcle%boundary(1)%x = 0.5d0*Lx
+    ptcle%boundary(1)%y = 0.5d0*Ly
+    ! Forces
+    ptcle%boundary(1)%Fx = 0.1d0
+    ptcle%boundary(1)%Fy = 0.1d0
+
+    ! Initialize the position of the particle in the boundary and the forces
     call cpu_time(start)
 
     ! Construct Mesh
@@ -106,6 +119,10 @@ program ibmc
         ! Apply boundary conditions
         call apply_boundary(M,u,v,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
 
+        ! Spread force from the particle
+        call spread_force(M,ptcle,Fx,Fy)
+
+        ! print *, Fx
         ! Perform predictor step
         ! call predictor(M,u,v,us,vs,nu,dt) 
         call euler(M,u,v,us,vs,nu,dt,Fx,Fy)
