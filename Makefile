@@ -5,7 +5,7 @@ FORT= /opt/nvidia/hpc_sdk/Linux_x86_64/2021/compilers/bin/nvfortran
 #OPTS = -O3 -g -fcheck=bounds
 OPTS = -O3 -g -stdpar -Minfo=accel
 
-OBJECTS= ibmc.o mod_pressure.o mod_amgx.o ftn_c.o mod_dims.o mod_mesh.o mod_time.o mod_boundary.o mod_time_stepping.o mod_io.o
+OBJECTS= ibmc.o mod_pressure.o mod_amgx.o ftn_c.o mod_dims.o mod_mesh.o mod_time.o mod_boundary.o mod_time_stepping.o mod_io.o mod_particle.o
 
 LIB_DIR= -L/home/divyaprakash/wrappers/amgx_code/axb_amgx
 
@@ -45,7 +45,10 @@ mod_time_stepping.o: mod_time_stepping.f90 Makefile
 mod_io.o: mod_io.f90 Makefile
 	$(FORT) -c $<
 
-ibmc.o: ibmc.f90 mod_pressure.o mod_amgx.o mod_mesh.o mod_dims.o mod_time.o mod_boundary.o mod_time_stepping.o mod_io.o Makefile
+mod_particle.o: mod_particle.f90 Makefile
+	$(FORT) -c $<
+
+ibmc.o: ibmc.f90 mod_pressure.o mod_amgx.o mod_mesh.o mod_dims.o mod_time.o mod_boundary.o mod_time_stepping.o mod_io.o mod_particle.o Makefile
 	$(FORT) -c $(OPTS) $<
 
 clean:
