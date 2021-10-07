@@ -7,7 +7,7 @@ module mod_particle
 
     ! Immersed boundary
     type :: particle
-        integer(int32)                  :: n
+        integer(int32)                  :: tag
         real(real64), allocatable       :: x, y
         real(real64), allocatable       :: Fx, Fy
     end type particle
@@ -21,7 +21,7 @@ contains
     pure type(particle) function ib_constructor(n) result(self)
             integer(int32), intent(in)      :: n
 
-            self%n  = n ! Particle tag
+            self%tag  = n ! Particle tag
             self%x  = 0.0d0
             self%y  = 0.0d0
             self%Fx = 0.0d0
