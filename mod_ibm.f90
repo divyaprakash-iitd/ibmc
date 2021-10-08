@@ -20,8 +20,8 @@ contains
         do concurrent (inp = 1:np)
             ! To-do: Implement some function defining a structure
             ! Location
-            B%boundary(inp)%x = 0.5d0 + (inp-1)/5.0d0
-            B%boundary(inp)%y = 0.5d0 + (inp-1)/5.0d0
+            B%boundary(inp)%x = 0.25d0 + (inp-1)/5.0d0
+            B%boundary(inp)%y = 0.25d0 + (inp-1)/5.0d0
             ! Forces
             B%boundary(inp)%Fx = 0.01d0
             B%boundary(inp)%Fy = 0.0d0
@@ -262,8 +262,12 @@ contains
         end do
 
         ! Calculate the forces on each node
-        do master = 1,np-1
-            slave = master+1
+        do master = 1,np
+            if (master == np) then 
+                slave = 1
+            else 
+                slave = master+1
+            end if
             ! Master node location
             xm = B%boundary(master)%x
             ym = B%boundary(master)%y
