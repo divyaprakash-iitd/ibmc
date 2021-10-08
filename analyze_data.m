@@ -74,6 +74,7 @@ for iFile = 1:nFiles
 
     % Comparison Plot
     plot(Uq,yq,'Parent',f.CurrentAxes)
+    title(uFile(iFile).name)
     drawnow
 end
 hold on
