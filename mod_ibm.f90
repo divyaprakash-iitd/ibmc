@@ -240,4 +240,59 @@ contains
         ! close(fileunit)
     end subroutine write_location
 
+    subroutine calculate_spring_force(B,ks,Rl)
+        class(ib), intent(in out) :: B    ! Immersed boundary
+        real(real64), intent(in)  :: ks   ! Spring stiffness
+        real(real64),intent(in)   :: Rl   ! Resting length
+
+        integer(int32)  :: np   ! Number of nodes/particle
+        integer(int32)  :: master, slave, right  ! Indices
+        real(real64)    :: d    ! Distance between two nodes
+
+        real(real64) :: Fmx, Fslx, Fmy, Fsly ! Forces (Master(m) and Slave(sl) node)
+        real(real64) :: xm, xsl, ym, ysl ! Location of master and slave nodes
+
+        ! Count the number of nodes/particles in the immersed boundary
+        np = size(B%boundary)
+
+        ! Initialize the forces to zero on all the nodes at every time step
+        do concurrent (inp = 1:np)
+            B%boundary(inp)%Fx = 0.0d0
+            B%boundary(inp)%Fy = 0.0d0
+        end do
+
+        ! Calculate the forces on each node
+        do master = 2:np
+            do slave = master-1:master+1,2
+                ! Master node location
+                xm = B%boundary(master)%x
+                ym = B%boundary(master)%y
+
+                ! Slave node location
+                xsl = B%boundary(slave)%x
+                ysl = B%boundary(slave)%y
+
+                ! Calculate distance between master and slave nodes
+                d = norm2([(xsl-xm)-(ysl-ym)])
+               
+                ! Calculate forces (Master node)
+                Fmx = ks*(1.0d0-Rl/d)*(xsl-xm)
+                Fmy = ks*(1.0d0-Rl/d)*(ysl-ym)
+
+                ! Calculate forces (Slave node)
+                Fsl = -Fmx
+                Fsly = -Fmy
+
+                ! Assign fores to master node
+                B%boundary(master)%Fx = B%boundary(master)%Fx + Fmx
+                B%boundary(master)%Fy = B%boundary(master)%Fy + Fmy
+
+                ! Assign forces to slave node
+                B%boundary(slave)%Fx = B%boundary(slave)%Fx + Fslx
+                B%boundary(slave)%Fy = B%boundary(slave)%Fy + Fsly
+                end do
+        end do
+
+    end subroutine calculate_spring_force
+
 end module mod_ibm
