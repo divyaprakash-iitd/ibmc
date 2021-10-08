@@ -7,20 +7,44 @@ module mod_ibm
     real(real64), parameter :: PI = 3.141592653589793
 
     private
-    public :: update_ib, spread_force, interpolate_velocity
+    public :: initialize_ib, update_ib, spread_force, interpolate_velocity
 contains
    
-    subroutine update_ib(B)
+    subroutine initialize_ib(B)
+        ! Creates and Initializes an immersed boundary structure
         class(ib), intent(in out) :: B
 
-        ! Creates and Initializes an immersed boundary structure
-        ! Location
-        B%boundary(1)%x = 0.5d0
-        B%boundary(1)%y = 0.5d0
-        ! Forces
-        B%boundary(1)%Fx = -0.1d0
-        B%boundary(1)%Fy = 0.0d0
+        integer(int32) :: np, inp
+
+        do concurrent (inp = 1:np)
+            ! To-do: Implement some function
+            ! Location
+            B%boundary(inp)%x = 0.5d0
+            B%boundary(inp)%y = 0.5d0
+            ! Forces
+            B%boundary(inp)%Fx = -0.1d0
+            B%boundary(inp)%Fy = 0.0d0
+            ! Velocity
+            B%boundary(inp)%Ux = 0.0d0
+            B%boundary(inp)%Uy = 0.0d0
+        end do 
     end subroutine
+
+    subroutine update_ib(B,dt)
+        class(ib), intent(in out) :: B
+        real(real32), intent(in) :: dt
+
+        integer(int32) :: np, inp
+
+        np = size(B%boundary)
+        
+        ! Calculate the new position
+        do concurrent (inp = 1:np)
+            B%boundary(inp)%x = B%boundary(inp)%x + B%boundary(inp)%Ux * dt
+            B%boundary(inp)%y = B%boundary(inp)%y + B%boundary(inp)%Uy * dt
+        end do
+
+    end subroutine update_ib
 
     subroutine spread_force(M,B,Fx,Fy)
         class(mesh), intent(in) :: M
@@ -92,7 +116,7 @@ contains
                 if (abs(r).le.2) then
                     phi = 0.25d0 * (1 + cos(PI*r/2))
                 else 
-                    phi = 0
+                    phi = 0.0d0
                 end if
             
                 dirac = dirac*phi
@@ -126,17 +150,31 @@ contains
             do i = M%xu%lb,M%xu%ub
                 Ex = M%u_mesh(i,j)%x ! u-cell x location
                 Ey = M%u_mesh(i,j)%y ! u-cell y location
+                UE = u(i,j)
                 do inp = 1,np
                     Lx = B%boundary(inp)%x
                     Ly = B%boundary(inp)%y
-                    Flx = B%boundary(inp)%Fx
                 
-                    Fx(i,j) = Fx(i,j) + Flx * dirac( [(Ex-Lx), (Ey-Ly)], M%dx)
+                    B%boundary(inp)%Ux = B%boundary(inp)%Ux + UE * dirac( [(Ex-Lx), (Ey-Ly)], M%dx) * M%dx**2
                 end do
             end do
         end do
 
-
+        ! Calculate the v velocity of Lagrangian points
+        ! Iterating over all the grid points including the boundary values for v-velocity cells
+        do j = M%yv%lb,M%yv%ub
+            do i = M%xv%lb,M%xv%ub
+                Ex = M%v_mesh(i,j)%x ! v-cell x location
+                Ey = M%v_mesh(i,j)%y ! v-cell y location
+                VE = v(i,j)
+                do inp = 1,np
+                    Lx = B%boundary(inp)%x
+                    Ly = B%boundary(inp)%y
+                
+                    B%boundary(inp)%Ux = B%boundary(inp)%Ux + VE * dirac( [(Ex-Lx), (Ey-Ly)], M%dy) * M%dy**2
+                end do
+            end do
+        end do
         contains 
 
         function dirac(x,h)
@@ -154,7 +192,7 @@ contains
                 if (abs(r).le.2) then
                     phi = 0.25d0 * (1 + cos(PI*r/2))
                 else 
-                    phi = 0
+                    phi = 0.0d0
                 end if
             
                 dirac = dirac*phi
@@ -166,6 +204,8 @@ contains
 
     end subroutine interpolate_velocity
 
-
+    ! subroutine write_location(fileunit)
+        
+    ! end subroutine write_location
 
 end module mod_ibm
