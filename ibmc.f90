@@ -21,13 +21,13 @@ program ibmc
     integer(int32)  :: Ny       = 30
     ! Simulation time Paramaters
     real(real32)    :: tsim     = 10
-    real(real32)    :: dt       = 0.01
+    real(real32)    :: dt       = 0.001
     real(real32)    :: t
     ! Physical Constants
     real(real32)    :: nu       = 1.0/100.0
     real(real32)    :: rho      = 1.0d0
     real(real64)    :: ks       = 1.0d0
-    real(real64)    :: Rl       = 0.01d0
+    real(real64)    :: Rl       = 0.2d0
     ! Boundary values
     real(real32)    :: utop, vtop, ubottom, vbottom, &
                        uleft, vleft, uright, vright
@@ -78,7 +78,7 @@ program ibmc
     vright  = 0.0
 
     ! Create the IB structure
-    ptcle = ib('single_particle',3)
+    ptcle = ib('spring_array',3)
     call initialize_ib(ptcle)
 
     ! Generate Laplacian matrix
