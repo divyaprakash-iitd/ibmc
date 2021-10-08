@@ -26,6 +26,8 @@ program ibmc
     ! Physical Constants
     real(real32)    :: nu       = 1.0/100.0
     real(real32)    :: rho      = 1.0d0
+    real(real64)    :: ks       = 1.0d0
+    real(real64)    :: Rl       = 0.01d0
     ! Boundary values
     real(real32)    :: utop, vtop, ubottom, vbottom, &
                        uleft, vleft, uright, vright
@@ -92,6 +94,9 @@ program ibmc
 
         ! Apply velocity boundary conditions
         call apply_boundary(M,u,v,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
+
+        ! Calculate forces in the immersed boundary structure
+        call calculate_spring_force(ptcle,Ks,Rl)
 
         ! Spread force from the immersed boundary
         call spread_force(M,ptcle,Fx,Fy)
