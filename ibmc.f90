@@ -53,13 +53,6 @@ program ibmc
 
     ! Define an immersed boundary with a single particle
     type(ib) :: ptcle
-    ptcle = ib('single_particle',1)
-    ! Location
-    ptcle%boundary(1)%x = 0.5d0*Lx
-    ptcle%boundary(1)%y = 0.5d0*Ly
-    ! Forces
-    ptcle%boundary(1)%Fx = 0.1d0
-    ptcle%boundary(1)%Fy = 0.1d0
 
     ! Initialize the position of the particle in the boundary and the forces
     call cpu_time(start)
@@ -105,6 +98,10 @@ program ibmc
     ! Mesh values
     dxi = 1.0/M%dx
     dyi = 1.0/M%dy
+
+    ! Create the IB structure
+    ptcle = ib('single_particle',1)
+    call create_ib(ptcle)
 
     ! Generate Laplacian matrix
     call generate_laplacian_sparse(A,dxi,dyi)

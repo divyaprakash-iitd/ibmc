@@ -7,9 +7,21 @@ module mod_ibm
     real(real64), parameter :: PI = 3.141592653589793
 
     private
-    public :: spread_force
+    public :: create_ib, spread_force
 contains
-    
+   
+    subroutine create_ib(B)
+        class(ib), intent(in out) :: B
+
+        ! Creates and Initializes an immersed boundary structure
+        ! Location
+        B%boundary(1)%x = 0.5d0
+        B%boundary(1)%y = 0.5d0
+        ! Forces
+        B%boundary(1)%Fx = -0.1d0
+        B%boundary(1)%Fy = 0.0d0
+    end subroutine
+
     subroutine spread_force(M,B,Fx,Fy)
         class(mesh), intent(in) :: M
         class(ib), intent(in) :: B
