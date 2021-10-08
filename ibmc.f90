@@ -11,25 +11,22 @@ program ibmc
     use mod_ibm
     implicit none
 
-    ! Execution time
+    ! Code execution time
     real(real64)    :: start, finish
     ! Computational Domain
-    real(real32)    :: Lx = 1.0
-    real(real32)    :: Ly = 1.0
-    integer(int32)  :: Nx = 30
-    integer(int32)  :: Ny = 30
+    real(real32)    :: Lx       = 1.0
+    real(real32)    :: Ly       = 1.0
     ! Mesh Paramaters
-    real(real32)    :: dx, dxi
-    real(real32)    :: dy, dyi
-    ! Simulation Paramaters
-    real(real32)    :: tsim    = 4
-    real(real32)    :: dt      = 0.001
+    integer(int32)  :: Nx       = 50
+    integer(int32)  :: Ny       = 50
+    real(real32)    :: dx, dy
+    ! Simulation time Paramaters
+    real(real32)    :: tsim     = 10
+    real(real32)    :: dt       = 0.001
     real(real32)    :: t
     ! Physical Constants
-    real(real32)    :: nu = 1.0/100.0
-    real(real32)    :: rho = 1.0d0
-    ! Indices
-    integer(int32)  :: i,j, it
+    real(real32)    :: nu       = 1.0/100.0
+    real(real32)    :: rho      = 1.0d0
     ! Boundary values
     real(real32)    :: utop, vtop, ubottom, vbottom, &
                        uleft, vleft, uright, vright
@@ -37,30 +34,18 @@ program ibmc
     real(real64), allocatable :: u(:,:), v(:,:), us(:,:), vs(:,:), R(:,:), &
                                  P(:,:), A(:,:,:), Fx(:,:), Fy(:,:)
     ! Temporary/Miscellaneous variable
-    real(real64)    :: ucenter, vcenter
-    integer(int32)  :: NN
+    integer(int32)  :: i, j, it, NN
     logical         :: init_status
     ! Mesh
     type(mesh)      :: M
-    ! Define an immersed boundary with a single particle
+    ! Immersed boundary
     type(ib)        :: ptcle
 
-
     !---------------------- Begin Calculations ------------------------------------!
-    ! Initialize the position of the particle in the boundary and the forces
     call cpu_time(start)
 
     ! Construct Mesh
     M = mesh('M',Lx,Ly,Nx,Ny)
-    ! Define boundary conditions
-    utop    = 1.0
-    vtop    = 0.0
-    ubottom = 0.0
-    vbottom = 0.0
-    uleft   = 0.0
-    vleft   = 0.0
-    uright  = 0.0
-    vright  = 0.0
     ! Allocate matrices ofr u,v,us,vs,rhs
     allocate(u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub))    
     allocate(v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub))
@@ -81,31 +66,38 @@ program ibmc
     A   = 0.0d0
     Fx  = 0.0d0
     Fy  = 0.0d0
-    ! Mesh values
-    dxi = 1.0/M%dx
-    dyi = 1.0/M%dy
-    
+    ! Define boundary conditions for velocity
+    utop    = 1.0
+    vtop    = 0.0
+    ubottom = 0.0
+    vbottom = 0.0
+    uleft   = 0.0
+    vleft   = 0.0
+    uright  = 0.0
+    vright  = 0.0
+
     ! Create the IB structure
     ptcle = ib('single_particle',1)
     call update_ib(ptcle)
 
     ! Generate Laplacian matrix
     call generate_laplacian_sparse(A,M%dx,M%dy)
+
     ! Start time loop
     t = 0.0d0
     it = 0
-    init_status = .False.
+    init_status = .False. ! AmgX initialization status
     do while (t.lt.tsim)
         t = t+dt 
         it = it + 1
 
-        ! Apply boundary conditions
+        ! Apply velocity boundary conditions
         call apply_boundary(M,u,v,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
 
-        ! Spread force from the particle
-        call spread_force(M,ptcle,Fx,Fy)
+        ! Spread force from the immersed boundary
+        ! call spread_force(M,ptcle,Fx,Fy)
 
-        ! Perform predictor step
+        ! Calculate intermediate/predicted velocity
         ! call predictor(M,u,v,us,vs,nu,dt) 
         call euler(M,u,v,us,vs,nu,dt,Fx,Fy)
         ! call euler(M,u,v,us,vs,nu,dt)
@@ -119,7 +111,7 @@ program ibmc
         ! call calculate_pressure_sparse(A,P,R)
         call calculate_pressure_amgx(A,P,R,init_status)
 
-        ! Perform the corrector steps
+        ! Perform the corrector steps to obtain the velocity
         call corrector(M,u,v,us,vs,p,rho,dt)
 
         print *, 'time = ', t
