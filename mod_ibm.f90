@@ -7,7 +7,7 @@ module mod_ibm
     real(real64), parameter :: PI = 3.141592653589793
 
     private
-    public :: update_ib, spread_force
+    public :: update_ib, spread_force, interpolate_velocity
 contains
    
     subroutine update_ib(B)
@@ -101,7 +101,71 @@ contains
             dirac = 1/h**2 * dirac
 
         end function dirac
+
     end subroutine spread_force
+
+    subroutine interpolate_velocity(M,B,u,v)
+        class(mesh), intent(in) :: M
+        class(ib), intent(in out) :: B
+        real(real64), intent(in) :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
+
+        ! Define variables to store locations
+        real(real64) :: Lx, Ly      ! Lagrangian locations
+        real(real64) :: Ex, Ey      ! Eulerian locations
+        real(real64) :: UL, VL      ! Velocity at Lagrangian locations
+        real(real64) :: UE, VE      ! Velocity at Eulerian locations
+        integer(int32) :: np        ! Number of Lagrangian particles
+        
+        ! Indices
+        integer(int32) :: i, j, inp
+        np = size(B%boundary)
+
+        ! Calculate the u velocity of Lagrangian points
+        ! Iterating over all the grid points including the boundary values for u-velocity cells
+        do j = M%yu%lb,M%yu%ub
+            do i = M%xu%lb,M%xu%ub
+                Ex = M%u_mesh(i,j)%x ! u-cell x location
+                Ey = M%u_mesh(i,j)%y ! u-cell y location
+                do inp = 1,np
+                    Lx = B%boundary(inp)%x
+                    Ly = B%boundary(inp)%y
+                    Flx = B%boundary(inp)%Fx
+                
+                    Fx(i,j) = Fx(i,j) + Flx * dirac( [(Ex-Lx), (Ey-Ly)], M%dx)
+                end do
+            end do
+        end do
+
+
+        contains 
+
+        function dirac(x,h)
+            ! Defined for a uniform grid
+            real(real64), intent(in) :: x(2)
+            real(real32), intent(in) :: h
+            real(real64) :: dirac
+
+            integer(int32) :: ii
+            real(real64) :: phi, r
+
+            dirac = 1.0d0
+            do ii = 1,2
+                r = x(ii)/h 
+                if (abs(r).le.2) then
+                    phi = 0.25d0 * (1 + cos(PI*r/2))
+                else 
+                    phi = 0
+                end if
+            
+                dirac = dirac*phi
+            end do        
+
+            dirac = 1/h**2 * dirac
+
+        end function dirac
+
+    end subroutine interpolate_velocity
+
 
 
 end module mod_ibm
