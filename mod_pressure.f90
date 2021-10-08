@@ -94,9 +94,9 @@ subroutine calculate_pressure_sparse(A,PIN,R)
     print *, 'Iteration = ', ITER
 end subroutine calculate_pressure_sparse
 
-subroutine generate_laplacian_sparse(A,idx,idy)
+subroutine generate_laplacian_sparse(A,dx,dy)
 
-    real(real32),   intent(in)      :: idx, idy
+    real(real32),   intent(in)      :: dx, dy
     real(real64),   intent(in out)  :: A(:,:,:)
     
     
@@ -117,8 +117,8 @@ subroutine generate_laplacian_sparse(A,idx,idy)
     jmin = lbound(A,2)
     jmax = ubound(A,2)
 
-    idx2 = idx**2
-    idy2 = idy**2
+    idx2 = (1.0d0/dx)**2
+    idy2 = (1.0d0/dy)**2
 
     ! Initialize
     A = 0.0d0
