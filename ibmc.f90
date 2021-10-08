@@ -17,12 +17,11 @@ program ibmc
     real(real32)    :: Lx       = 1.0
     real(real32)    :: Ly       = 1.0
     ! Mesh Paramaters
-    integer(int32)  :: Nx       = 50
-    integer(int32)  :: Ny       = 50
-    real(real32)    :: dx, dy
+    integer(int32)  :: Nx       = 30
+    integer(int32)  :: Ny       = 30
     ! Simulation time Paramaters
     real(real32)    :: tsim     = 10
-    real(real32)    :: dt       = 0.001
+    real(real32)    :: dt       = 0.01
     real(real32)    :: t
     ! Physical Constants
     real(real32)    :: nu       = 1.0/100.0
@@ -34,7 +33,7 @@ program ibmc
     real(real64), allocatable :: u(:,:), v(:,:), us(:,:), vs(:,:), R(:,:), &
                                  P(:,:), A(:,:,:), Fx(:,:), Fy(:,:)
     ! Temporary/Miscellaneous variable
-    integer(int32)  :: i, j, it, NN
+    integer(int32)  :: it, NN
     logical         :: init_status
     ! Mesh
     type(mesh)      :: M
@@ -77,8 +76,8 @@ program ibmc
     vright  = 0.0
 
     ! Create the IB structure
-    ptcle = ib('single_particle',1)
-    call update_ib(ptcle)
+    ptcle = ib('single_particle',2)
+    call initialize_ib(ptcle)
 
     ! Generate Laplacian matrix
     call generate_laplacian_sparse(A,M%dx,M%dy)
@@ -95,7 +94,7 @@ program ibmc
         call apply_boundary(M,u,v,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
 
         ! Spread force from the immersed boundary
-        ! call spread_force(M,ptcle,Fx,Fy)
+        call spread_force(M,ptcle,Fx,Fy)
 
         ! Calculate intermediate/predicted velocity
         ! call predictor(M,u,v,us,vs,nu,dt) 
@@ -114,11 +113,18 @@ program ibmc
         ! Perform the corrector steps to obtain the velocity
         call corrector(M,u,v,us,vs,p,rho,dt)
 
+        ! Interpolate the Eulerian grid velocity to the Lagrangian structure
+        call interpolate_velocity(M,ptcle,u,v)
+
+        ! Update the Immersed Boundary
+        call update_ib(ptcle,dt) 
+
         print *, 'time = ', t
 
         ! Write files every 10th timestep
         if (mod(it,10).eq.0) then 
             call write_field(u,'u',it) 
+            call write_location(ptcle,it)
         end if
     end do
 
@@ -128,4 +134,7 @@ program ibmc
     call write_mesh(M,'u')
     call write_mesh(M,'v')
     call write_mesh(M,'p')
+
+    print *, ptcle%boundary(1)%x
+    print *, ptcle%boundary(1)%y
 end program ibmc
