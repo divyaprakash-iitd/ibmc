@@ -7,7 +7,7 @@ module mod_ibm
     real(real64), parameter :: PI = 3.141592653589793
 
     private
-    public :: initialize_ib, update_ib, spread_force, interpolate_velocity, write_location
+    public :: initialize_ib, update_ib, spread_force, interpolate_velocity, write_location, calculate_spring_force
 contains
    
     subroutine initialize_ib(B)
@@ -246,7 +246,7 @@ contains
         real(real64),intent(in)   :: Rl   ! Resting length
 
         integer(int32)  :: np   ! Number of nodes/particle
-        integer(int32)  :: master, slave, right  ! Indices
+        integer(int32)  :: inp, master, slave  ! Indices
         real(real64)    :: d    ! Distance between two nodes
 
         real(real64) :: Fmx, Fslx, Fmy, Fsly ! Forces (Master(m) and Slave(sl) node)
@@ -262,37 +262,37 @@ contains
         end do
 
         ! Calculate the forces on each node
-        do master = 2:np
-            do slave = master-1:master+1,2
-                ! Master node location
-                xm = B%boundary(master)%x
-                ym = B%boundary(master)%y
+        do master = 1,np-1
+            slave = master+1
+            ! Master node location
+            xm = B%boundary(master)%x
+            ym = B%boundary(master)%y
 
-                ! Slave node location
-                xsl = B%boundary(slave)%x
-                ysl = B%boundary(slave)%y
+            ! Slave node location
+            xsl = B%boundary(slave)%x
+            ysl = B%boundary(slave)%y
 
-                ! Calculate distance between master and slave nodes
-                d = norm2([(xsl-xm)-(ysl-ym)])
-               
-                ! Calculate forces (Master node)
-                Fmx = ks*(1.0d0-Rl/d)*(xsl-xm)
-                Fmy = ks*(1.0d0-Rl/d)*(ysl-ym)
+            ! Calculate distance between master and slave nodes
+            d = norm2([(xsl-xm),(ysl-ym)])
+            
+            ! Calculate forces (Master node)
+            Fmx = ks*(1.0d0-Rl/d)*(xsl-xm)
+            Fmy = ks*(1.0d0-Rl/d)*(ysl-ym)
 
-                ! Calculate forces (Slave node)
-                Fsl = -Fmx
-                Fsly = -Fmy
+            ! Calculate forces (Slave node)
+            Fslx = -Fmx
+            Fsly = -Fmy
 
-                ! Assign fores to master node
-                B%boundary(master)%Fx = B%boundary(master)%Fx + Fmx
-                B%boundary(master)%Fy = B%boundary(master)%Fy + Fmy
+            ! Assign fores to master node
+            B%boundary(master)%Fx = B%boundary(master)%Fx + Fmx
+            B%boundary(master)%Fy = B%boundary(master)%Fy + Fmy
 
-                ! Assign forces to slave node
-                B%boundary(slave)%Fx = B%boundary(slave)%Fx + Fslx
-                B%boundary(slave)%Fy = B%boundary(slave)%Fy + Fsly
-                end do
+            ! Assign forces to slave node
+            B%boundary(slave)%Fx = B%boundary(slave)%Fx + Fslx
+            B%boundary(slave)%Fy = B%boundary(slave)%Fy + Fsly
         end do
 
+        print *, B%boundary(1)%Fx
     end subroutine calculate_spring_force
 
 end module mod_ibm
