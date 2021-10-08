@@ -76,7 +76,7 @@ program ibmc
     vright  = 0.0
 
     ! Create the IB structure
-    ptcle = ib('single_particle',2)
+    ptcle = ib('single_particle',3)
     call initialize_ib(ptcle)
 
     ! Generate Laplacian matrix
