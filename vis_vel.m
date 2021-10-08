@@ -12,7 +12,8 @@ pFile = dir(strcat('ib_','*'));
 nFiles = length(uFile);
 
 colormap(jet)
-
+v = VideoWriter('ibm.avi');
+open(v);
 for iFile = 1:nFiles
     u = load(uFile(iFile).name);
     p = load(pFile(iFile).name);
@@ -20,9 +21,12 @@ for iFile = 1:nFiles
     hold on
     plot(p(:,1),p(:,2),'w*','Markersize',10)
     title(uFile(iFile).name)
-    pause(0.1)
+    pause(0.05)
     if iFile ~= nFiles
         hold off
     end
+    writeVideo(v,getframe(gca));
+    clf(gcf)
 end
+close(v)
 
