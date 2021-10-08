@@ -7,7 +7,7 @@ module mod_ibm
     real(real64), parameter :: PI = 3.141592653589793
 
     private
-    public :: initialize_ib, update_ib, spread_force, interpolate_velocity
+    public :: initialize_ib, update_ib, spread_force, interpolate_velocity, write_location
 contains
    
     subroutine initialize_ib(B)
@@ -16,19 +16,20 @@ contains
 
         integer(int32) :: np, inp
 
+        np = size(B%boundary)
         do concurrent (inp = 1:np)
-            ! To-do: Implement some function
+            ! To-do: Implement some function defining a structure
             ! Location
-            B%boundary(inp)%x = 0.5d0
-            B%boundary(inp)%y = 0.5d0
+            B%boundary(inp)%x = 0.5d0 + (inp-1)/5.0d0
+            B%boundary(inp)%y = 0.5d0 + (inp-1)/5.0d0
             ! Forces
-            B%boundary(inp)%Fx = -0.1d0
+            B%boundary(inp)%Fx = 0.01d0
             B%boundary(inp)%Fy = 0.0d0
             ! Velocity
             B%boundary(inp)%Ux = 0.0d0
             B%boundary(inp)%Uy = 0.0d0
         end do 
-    end subroutine
+    end subroutine initialize_ib
 
     subroutine update_ib(B,dt)
         class(ib), intent(in out) :: B
@@ -144,6 +145,12 @@ contains
         integer(int32) :: i, j, inp
         np = size(B%boundary)
 
+        ! Initialize the velocity at every time-step
+        do concurrent (inp = 1:np)
+            B%boundary(inp)%Ux = 0.0d0
+            B%boundary(inp)%Uy = 0.0d0
+        end do
+
         ! Calculate the u velocity of Lagrangian points
         ! Iterating over all the grid points including the boundary values for u-velocity cells
         do j = M%yu%lb,M%yu%ub
@@ -171,10 +178,11 @@ contains
                     Lx = B%boundary(inp)%x
                     Ly = B%boundary(inp)%y
                 
-                    B%boundary(inp)%Ux = B%boundary(inp)%Ux + VE * dirac( [(Ex-Lx), (Ey-Ly)], M%dy) * M%dy**2
+                    B%boundary(inp)%Uy = B%boundary(inp)%Uy + VE * dirac( [(Ex-Lx), (Ey-Ly)], M%dy) * M%dy**2
                 end do
             end do
         end do
+
         contains 
 
         function dirac(x,h)
@@ -204,8 +212,32 @@ contains
 
     end subroutine interpolate_velocity
 
-    ! subroutine write_location(fileunit)
-        
-    ! end subroutine write_location
+    subroutine write_location(B,timestep)
+        class(ib), intent(in) :: B
+        integer(int32), intent(in) :: timestep        
+
+        integer(int32) :: fileunit = 8
+        character(len=:), allocatable :: filename
+        integer(int32) :: inp, np
+        character(len=8) :: itnumber
+
+        write(itnumber,"(I8.8)") timestep
+
+        np = size(B%boundary)
+
+        filename = 'ib_loc' // itnumber // '.txt'
+        open(unit=fileunit, file=filename, ACTION="write", STATUS="replace")
+        do inp = 1,np
+            write(fileunit, '((F14.7), (F14.7))') B%boundary(inp)%x, B%boundary(inp)%y
+        end do
+        close(fileunit)
+
+        ! filename = 'ib_y.txt'
+        ! open(unit=fileunit, file=filename, ACTION="write", STATUS="replace")
+        ! do j = M%yu%lb,M%yu%ub
+        !     write(fileunit, '(*(F14.7))')(M%u_mesh(i,j)%y , i = M%xu%lb,M%xu%ub)
+        ! end do
+        ! close(fileunit)
+    end subroutine write_location
 
 end module mod_ibm
