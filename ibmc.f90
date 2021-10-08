@@ -101,7 +101,7 @@ program ibmc
 
     ! Create the IB structure
     ptcle = ib('single_particle',1)
-    call create_ib(ptcle)
+    call update_ib(ptcle)
 
     ! Generate Laplacian matrix
     call generate_laplacian_sparse(A,dxi,dyi)

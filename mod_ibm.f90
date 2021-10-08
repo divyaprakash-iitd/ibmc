@@ -7,10 +7,10 @@ module mod_ibm
     real(real64), parameter :: PI = 3.141592653589793
 
     private
-    public :: create_ib, spread_force
+    public :: update_ib, spread_force
 contains
    
-    subroutine create_ib(B)
+    subroutine update_ib(B)
         class(ib), intent(in out) :: B
 
         ! Creates and Initializes an immersed boundary structure
