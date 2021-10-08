@@ -22,7 +22,7 @@ for iFile = 1:nFiles
     title(uFile(iFile).name)
     pause(0.1)
     if iFile ~= nFiles
-        cla
+        hold off
     end
 end
 
