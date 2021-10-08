@@ -10,6 +10,7 @@ module mod_particle
         integer(int32)                  :: tag
         real(real64), allocatable       :: x, y
         real(real64), allocatable       :: Fx, Fy
+        real(real64), allocatable       :: Ux, Uy 
     end type particle
 
     interface particle
@@ -26,6 +27,8 @@ contains
             self%y  = 0.0d0
             self%Fx = 0.0d0
             self%Fy = 0.0d0
+            self%Ux = 0.0d0
+            self%Uy = 0.0d0
     end function ib_constructor
     
 end module mod_particle
