@@ -73,9 +73,13 @@ for iFile = 1:nFiles
     Uq = interp2(Ux,Uy,u,xq,yq);
 
     % Comparison Plot
+    plot(UG,yG,'.','MarkerSize',20,'DisplayName','Ghia et al. (1982)')
+    hold on
     plot(Uq,yq,'Parent',f.CurrentAxes)
     title(uFile(iFile).name)
-    drawnow
+    if iFile ~= nFiles
+        hold off
+    end
+    pause(0.1)
 end
 hold on
-plot(UG,yG,'.','MarkerSize',20,'DisplayName','Ghia et al. (1982)','Parent',f.CurrentAxes)
