@@ -7,7 +7,8 @@ module mod_ibm
     real(real64), parameter :: PI = 3.141592653589793
 
     private
-    public :: initialize_ib, update_ib, spread_force, interpolate_velocity, write_location, calculate_spring_force
+    public :: initialize_ib, update_ib, spread_force, interpolate_velocity, & 
+              write_location, calculate_spring_force, calculate_torsional_spring_force
 contains
    
     subroutine initialize_ib(B)
@@ -299,4 +300,75 @@ contains
         print *, B%boundary(1)%Fx
     end subroutine calculate_spring_force
 
+    subroutine calculate_torsional_spring_force(B,kb,theta)
+        class(ib), intent(in out) :: B ! Immersed boundary
+        real(real64), intent(in) :: kb ! Torsional spring stiffness 
+        real(real64), intent(in) :: theta ! Desired angle
+
+
+        integer(int32)  :: np          ! Number of nodes/particle
+        real(real64)    :: dLM, dMR    ! Distance between master and the left and right nodes
+        real(real64)    :: C           ! Curvature
+        integer(int32)  :: inp, master, left, right  ! Indices
+
+        real(real64) :: Fmx, Fmy ! Forces on master nodes only due to bending
+        real(real64) :: xm, ym, xl, yl, xr, yr ! Location of master and left and right nodes
+
+        ! Count the number of nodes/particles in the immersed boundary
+        np = size(B%boundary)
+
+        !!!!!! IMPORTANT !!!!!!
+        ! ! Initialize the forces to zero on all the nodes at every time step
+        ! do concurrent (inp = 1:np)
+        !     B%boundary(inp)%Fx = 0.0d0
+        !     B%boundary(inp)%Fy = 0.0d0
+        ! end do
+        ! Since this subroutine is called after calculation of spring forces,
+        ! there is no need to initialize the forces to zero again
+        do master = 1,np
+            if (master == 1) then 
+                left    = np
+                right   = master + 1
+            elseif (master == np) then
+                left    = master - 1
+                right   = 1
+            else
+                left    = master - 1
+                right   = master + 1
+            end if 
+
+            ! Master node location
+            xm = B%boundary(master)%x
+            ym = B%boundary(master)%y
+
+            ! Left node location
+            xl = B%boundary(left)%x
+            yl = B%boundary(left)%y
+
+            ! Right node location
+            xr = B%boundary(right)%x
+            yr = B%boundary(right)%y
+
+            ! Calculate the distance 
+            ! Master node and the left node
+            dLM = norm2([(xl-xm),(yl-ym)])
+            ! Master node and the left node
+            dMR = norm2([(xr-xm),(yr-ym)])
+
+            ! Calculate curvature 
+            C = dLM*dMR*sin(theta)
+
+            ! Calculate force on the master node
+            Fmx = kb*((xr-xm)*(ym-yl) - (yr-ym)*(xm-xl) - C) * &
+                  ((ym-yl) + (yr-ym))
+            Fmy = kb*((xr-xm)*(ym-yl) - (yr-ym)*(xm-xl) - C) * &
+                  (-(xr-xm) - (xm-xl))
+
+            ! Assign force to master node
+            B%boundary(master)%Fx = B%boundary(master)%Fx + Fmx
+            B%boundary(master)%Fy = B%boundary(master)%Fy + Fmy
+
+        end do
+
+    end subroutine calculate_torsional_spring_force
 end module mod_ibm
