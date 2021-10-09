@@ -12,22 +12,24 @@ pFile = dir(strcat('ib_','*'));
 nFiles = length(uFile);
 
 colormap(jet)
-%v = VideoWriter('ibm.avi');
-%open(v);
+v = VideoWriter('ibm_o.avi');
+open(v);
 for iFile = 1:nFiles
     u = load(uFile(iFile).name);
     p = load(pFile(iFile).name);
     contourf(xu,yu,u,50,'edgecolor','none')
     hold on
-    p = [p ; p(1,:)];
+%   p = [p ; p(1,:)];
     plot(p(:,1),p(:,2),'w-o','Markersize',5)
     title(uFile(iFile).name)
     pause(0.001)
     if iFile ~= nFiles
         hold off
+%         clf(gcf)
     end
-    %writeVideo(v,getframe(gca));
-    %clf(gcf)
+    writeVideo(v,getframe(gca));
+    clf(gcf)
 end
-%close(v)
+close(gca)
+close(v)
 
