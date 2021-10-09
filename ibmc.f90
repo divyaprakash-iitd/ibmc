@@ -20,7 +20,7 @@ program ibmc
     integer(int32)  :: Nx       = 30
     integer(int32)  :: Ny       = 30
     ! Simulation time Paramaters
-    real(real32)    :: tsim     = 2
+    real(real32)    :: tsim     = 10
     real(real32)    :: dt       = 0.001
     real(real32)    :: t
     ! Physical Constants
@@ -28,6 +28,8 @@ program ibmc
     real(real32)    :: rho      = 1.0d0
     real(real64)    :: ks       = 1.0d0
     real(real64)    :: Rl       = 0.2d0
+    real(real64)    :: kb       = 1.0d0
+    real(real64)    :: theta    = 1.0472D0
     ! Boundary values
     real(real32)    :: utop, vtop, ubottom, vbottom, &
                        uleft, vleft, uright, vright
@@ -97,23 +99,24 @@ program ibmc
 
         ! Calculate forces in the immersed boundary structure
         call calculate_spring_force(ptcle,Ks,Rl)
+        call calculate_torsional_spring_force(ptcle,kb,theta)
 
         ! Spread force from the immersed boundary
         call spread_force(M,ptcle,Fx,Fy)
 
         ! Calculate intermediate/predicted velocity
         ! call predictor(M,u,v,us,vs,nu,dt) 
-        ! call euler(M,u,v,us,vs,nu,dt,Fx,Fy)
+        call euler(M,u,v,us,vs,nu,dt,Fx,Fy)
         ! call euler(M,u,v,us,vs,nu,dt)
         ! call RK2(M,u,v,us,vs,nu,dt,Fx,Fy)
-        call RK4(M,u,v,us,vs,nu,dt,Fx,Fy)
+        ! call RK4(M,u,v,us,vs,nu,dt,Fx,Fy)
         
         ! Form the right hand side of the pressure poisson equation
         call calculate_rhs(M,us,vs,R,rho,dt)
 
         ! Solve for presssure
-        call calculate_pressure_sparse(A,P,R)
-        ! call calculate_pressure_amgx(A,P,R,init_status)
+        ! call calculate_pressure_sparse(A,P,R)
+        call calculate_pressure_amgx(A,P,R,init_status)
 
         ! Perform the corrector steps to obtain the velocity
         call corrector(M,u,v,us,vs,p,rho,dt)
