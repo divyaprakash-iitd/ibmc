@@ -9,6 +9,7 @@ program ibmc
     use mod_io
     use mod_ib
     use mod_ibm
+    use mod_vec
     implicit none
 
     ! Code execution time
@@ -27,9 +28,9 @@ program ibmc
     real(real32)    :: nu       = 1.0/100.0
     real(real32)    :: rho      = 1.0d0
     real(real64)    :: ks       = 1.0d0
-    real(real64)    :: Rl       = 0.2d0
     real(real64)    :: kb       = 1.5d0
     real(real64)    :: theta    = 3.1416
+    real(real64)    :: Rl
     ! Boundary values
     real(real32)    :: utop, vtop, ubottom, vbottom, &
                        uleft, vleft, uright, vright
@@ -43,8 +44,10 @@ program ibmc
     type(mesh)      :: M
     ! Immersed boundary
     type(ib)        :: ptcle
-    ! Boundary type (Open or Closed)
-    character(1)    :: btype = 'o'
+    character(1)    :: btype        ! Boundary type (Open or Closed)
+    type(vec)       :: origin       ! Origin of the immersed boundary
+    real(real64)    :: ibL          ! Length of the immersed boundary
+    integer(int32)  :: np           ! Number of particles in the immersed boundary
     !---------------------- Begin Calculations ------------------------------------!
     call cpu_time(start)
 
@@ -81,9 +84,14 @@ program ibmc
     vright  = 0.0
 
     ! Create the IB structure
-    ptcle = ib('spring_array',3)
+    np = 10
+    ptcle = ib('spring_array',np)
+    ibL = 0.25
+    btype = 'o'
+    Rl = ibL/(np-1) * 0.5 ! Resting length is related to the total lenght of the IB
+    origin = vec(0.25,0.25)
     call initialize_ib(ptcle)
-
+    call create_structure(ptcle,origin,ibL,btype) 
     ! Generate Laplacian matrix
     call generate_laplacian_sparse(A,M%dx,M%dy)
 
