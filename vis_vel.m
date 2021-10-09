@@ -22,12 +22,12 @@ for iFile = 1:nFiles
     p = [p ; p(1,:)];
     plot(p(:,1),p(:,2),'w-o','Markersize',5)
     title(uFile(iFile).name)
-    pause(0.005)
+    pause(0.001)
     if iFile ~= nFiles
         hold off
     end
     %writeVideo(v,getframe(gca));
     %clf(gcf)
 end
-close(v)
+%close(v)
 
