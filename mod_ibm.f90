@@ -241,12 +241,14 @@ contains
         ! close(fileunit)
     end subroutine write_location
 
-    subroutine calculate_spring_force(B,ks,Rl)
+    subroutine calculate_spring_force(B,ks,Rl,t)
         class(ib), intent(in out) :: B    ! Immersed boundary
         real(real64), intent(in)  :: ks   ! Spring stiffness
         real(real64),intent(in)   :: Rl   ! Resting length
+        character(1), intent(in)  :: t    ! Boundary type (Open or Closed) 
 
         integer(int32)  :: np   ! Number of nodes/particle
+        integer(int32)  :: lastp ! Last particle while calculating forces
         integer(int32)  :: inp, master, slave  ! Indices
         real(real64)    :: d    ! Distance between two nodes
 
@@ -263,8 +265,16 @@ contains
         end do
 
         ! Calculate the forces on each node
-        do master = 1,np
-            if (master == np) then 
+        if (t.eq.'o') then
+            lastp = np-1
+        elseif (t.eq.'c') then 
+            lastp = np
+        else 
+            print *, "Wrong type of Immersed Boundary: Enter 'o' or 'c' "
+        end if
+
+        do master = 1,lastp
+            if (master == np) then ! This condition will never be satisfied for open case 
                 slave = 1
             else 
                 slave = master+1
@@ -300,15 +310,16 @@ contains
         print *, B%boundary(1)%Fx
     end subroutine calculate_spring_force
 
-    subroutine calculate_torsional_spring_force(B,kb,theta)
+    subroutine calculate_torsional_spring_force(B,kb,theta,t)
         class(ib), intent(in out) :: B ! Immersed boundary
         real(real64), intent(in) :: kb ! Torsional spring stiffness 
         real(real64), intent(in) :: theta ! Desired angle
+        character(1), intent(in)  :: t    ! Boundary type (Open or Closed) 
 
-
-        integer(int32)  :: np          ! Number of nodes/particle
-        real(real64)    :: dLM, dMR    ! Distance between master and the left and right nodes
-        real(real64)    :: C           ! Curvature
+        integer(int32)  :: np               ! Number of nodes/particle
+        integer(int32)  :: firstp, lastp    ! First and last particle while calculating forces
+        real(real64)    :: dLM, dMR         ! Distance between master and the left and right nodes
+        real(real64)    :: C                ! Curvature
         integer(int32)  :: inp, master, left, right  ! Indices
 
         real(real64) :: Fmx, Fmy ! Forces on master nodes only due to bending
@@ -325,7 +336,16 @@ contains
         ! end do
         ! Since this subroutine is called after calculation of spring forces,
         ! there is no need to initialize the forces to zero again
-        do master = 1,np
+        if (t.eq.'o') then
+            firstp = 2
+            lastp = np-1
+        elseif (t.eq.'c') then 
+            firstp = 1
+            lastp = np
+        else 
+            print *, "Wrong type of Immersed Boundary: Enter 'o' or 'c' "
+        end if
+        do master = firstp,lastp
             if (master == 1) then 
                 left    = np
                 right   = master + 1
@@ -367,8 +387,11 @@ contains
             ! Assign force to master node
             B%boundary(master)%Fx = B%boundary(master)%Fx + Fmx
             B%boundary(master)%Fy = B%boundary(master)%Fy + Fmy
-
         end do
-
     end subroutine calculate_torsional_spring_force
+
+    ! subroutine create_structure(B,t)
+
+    ! end subroutine create_structure
+
 end module mod_ibm
