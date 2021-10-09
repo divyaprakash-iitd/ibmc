@@ -2,13 +2,15 @@ module mod_ibm
     use iso_fortran_env, only: int32, real32, real64
     use mod_mesh
     use mod_ib
+    use mod_vec
     implicit none
    
     real(real64), parameter :: PI = 3.141592653589793
 
     private
     public :: initialize_ib, update_ib, spread_force, interpolate_velocity, & 
-              write_location, calculate_spring_force, calculate_torsional_spring_force
+              write_location, calculate_spring_force, calculate_torsional_spring_force, &
+              create_structure
 contains
    
     subroutine initialize_ib(B)
@@ -21,10 +23,10 @@ contains
         do concurrent (inp = 1:np)
             ! To-do: Implement some function defining a structure
             ! Location
-            B%boundary(inp)%x = 0.25d0 + (inp-1)/5.0d0
-            B%boundary(inp)%y = 0.25d0 + (inp-1)/5.0d0
+            B%boundary(inp)%x = 0.0d0
+            B%boundary(inp)%y = 0.0d0
             ! Forces
-            B%boundary(inp)%Fx = 0.01d0
+            B%boundary(inp)%Fx = 0.0d0
             B%boundary(inp)%Fy = 0.0d0
             ! Velocity
             B%boundary(inp)%Ux = 0.0d0
@@ -390,8 +392,31 @@ contains
         end do
     end subroutine calculate_torsional_spring_force
 
-    ! subroutine create_structure(B,t)
+    subroutine create_structure(B,origin,L,t)
+        class(ib), intent(in out)   :: B
+        class(vec), intent(in)      :: origin
+        real(real64), intent(in)    :: L
+        character(1), intent(in)    :: t
 
-    ! end subroutine create_structure
+        real(real64) :: ds
+        integer(int32) :: np, inp
+        
+        np = size(B%boundary)
+        ds = L/(np-1)
+
+        ! Create a line (at 45 degree)
+        B%boundary(1)%x = origin%x
+        B%boundary(1)%y = origin%y
+        do inp = 2,np
+            B%boundary(inp)%x = B%boundary(inp-1)%x + ds
+            B%boundary(inp)%y = B%boundary(inp-1)%y + ds
+        end do
+
+        do inp = 1,np
+            print *, B%boundary(inp)%x
+            print *, B%boundary(inp)%y
+        end do
+
+    end subroutine create_structure
 
 end module mod_ibm
