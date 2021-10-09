@@ -28,8 +28,8 @@ program ibmc
     real(real32)    :: rho      = 1.0d0
     real(real64)    :: ks       = 1.0d0
     real(real64)    :: Rl       = 0.2d0
-    real(real64)    :: kb       = 1.0d0
-    real(real64)    :: theta    = 1.0472D0
+    real(real64)    :: kb       = 1.5d0
+    real(real64)    :: theta    = 3.1416
     ! Boundary values
     real(real32)    :: utop, vtop, ubottom, vbottom, &
                        uleft, vleft, uright, vright
@@ -43,7 +43,8 @@ program ibmc
     type(mesh)      :: M
     ! Immersed boundary
     type(ib)        :: ptcle
-
+    ! Boundary type (Open or Closed)
+    character(1)    :: btype = 'o'
     !---------------------- Begin Calculations ------------------------------------!
     call cpu_time(start)
 
@@ -98,8 +99,8 @@ program ibmc
         call apply_boundary(M,u,v,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
 
         ! Calculate forces in the immersed boundary structure
-        call calculate_spring_force(ptcle,Ks,Rl)
-        call calculate_torsional_spring_force(ptcle,kb,theta)
+        call calculate_spring_force(ptcle,Ks,Rl,btype)
+        call calculate_torsional_spring_force(ptcle,kb,theta,btype)
 
         ! Spread force from the immersed boundary
         call spread_force(M,ptcle,Fx,Fy)
