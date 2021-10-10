@@ -15,13 +15,13 @@ program ibmc
     ! Code execution time
     real(real64)    :: start, finish
     ! Computational Domain
-    real(real32)    :: Lx       = 1.0
-    real(real32)    :: Ly       = 1.0
+    real(real32)    :: Lx       = 10.0
+    real(real32)    :: Ly       = 10.0
     ! Mesh Paramaters
-    integer(int32)  :: Nx       = 30
-    integer(int32)  :: Ny       = 30
+    integer(int32)  :: Nx       = 100
+    integer(int32)  :: Ny       = 100
     ! Simulation time Paramaters
-    real(real32)    :: tsim     = 10
+    real(real32)    :: tsim     = 5
     real(real32)    :: dt       = 0.001
     real(real32)    :: t
     ! Physical Constants
@@ -74,7 +74,7 @@ program ibmc
     Fx  = 0.0d0
     Fy  = 0.0d0
     ! Define boundary conditions for velocity
-    utop    = 1.0
+    utop    = 0.0
     vtop    = 0.0
     ubottom = 0.0
     vbottom = 0.0
@@ -84,14 +84,14 @@ program ibmc
     vright  = 0.0
 
     ! Create the IB structure
-    np = 5
+    np = 1
     ptcle = ib('spring_array',np)
-    ibL = 0.25
-    btype = 'o'
-    Rl = ibL/(np-1) * 0.5 ! Resting length is related to the total lenght of the IB
-    origin = vec(0.25,0.25)
     call initialize_ib(ptcle)
-    call create_structure(ptcle,origin,ibL,btype) 
+    ! ibL = 0.25
+    ! btype = 'o'
+    ! Rl = ibL/(np-1) * 0.5 ! Resting length is related to the total lenght of the IB
+    ! origin = vec(0.25,0.25)
+    ! call create_structure(ptcle,origin,ibL,btype) 
     ! Generate Laplacian matrix
     call generate_laplacian_sparse(A,M%dx,M%dy)
 
@@ -99,6 +99,9 @@ program ibmc
     t = 0.0d0
     it = 0
     init_status = .False. ! AmgX initialization status
+    call write_mesh(M,'u')
+    call write_mesh(M,'v')
+    call write_mesh(M,'p')
     do while (t.lt.tsim)
         t = t+dt 
         it = it + 1
@@ -107,8 +110,8 @@ program ibmc
         call apply_boundary(M,u,v,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
 
         ! Calculate forces in the immersed boundary structure
-        call calculate_spring_force(ptcle,Ks,Rl,btype)
-        call calculate_torsional_spring_force(ptcle,kb,theta,btype)
+        ! call calculate_spring_force(ptcle,Ks,Rl,btype)
+        ! call calculate_torsional_spring_force(ptcle,kb,theta,btype)
 
         ! Spread force from the immersed boundary
         call spread_force(M,ptcle,Fx,Fy)
@@ -116,7 +119,6 @@ program ibmc
         ! Calculate intermediate/predicted velocity
         ! call predictor(M,u,v,us,vs,nu,dt) 
         call euler(M,u,v,us,vs,nu,dt,Fx,Fy)
-        ! call euler(M,u,v,us,vs,nu,dt)
         ! call RK2(M,u,v,us,vs,nu,dt,Fx,Fy)
         ! call RK4(M,u,v,us,vs,nu,dt,Fx,Fy)
         
@@ -124,23 +126,24 @@ program ibmc
         call calculate_rhs(M,us,vs,R,rho,dt)
 
         ! Solve for presssure
-        ! call calculate_pressure_sparse(A,P,R)
-        call calculate_pressure_amgx(A,P,R,init_status)
+        call calculate_pressure_sparse(A,P,R)
+        ! call calculate_pressure_amgx(A,P,R,init_status)
 
         ! Perform the corrector steps to obtain the velocity
         call corrector(M,u,v,us,vs,p,rho,dt)
 
         ! Interpolate the Eulerian grid velocity to the Lagrangian structure
-        call interpolate_velocity(M,ptcle,u,v)
+        ! call interpolate_velocity(M,ptcle,u,v)
 
         ! Update the Immersed Boundary
-        call update_ib(ptcle,dt) 
+        ! call update_ib(ptcle,dt) 
 
         print *, 'time = ', t
 
         ! Write files every 10th timestep
         if (mod(it,10).eq.0) then 
             call write_field(u,'u',it) 
+            call write_field(v,'v',it) 
             call write_location(ptcle,it)
         end if
     end do
@@ -148,10 +151,4 @@ program ibmc
     call cpu_time(finish)
     print '("Time = ",f6.3," seconds.")',finish-start
 
-    call write_mesh(M,'u')
-    call write_mesh(M,'v')
-    call write_mesh(M,'p')
-
-    print *, ptcle%boundary(1)%x
-    print *, ptcle%boundary(1)%y
 end program ibmc
