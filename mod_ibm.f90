@@ -126,7 +126,7 @@ contains
                 dirac = dirac*phi
             end do        
 
-            dirac = 1/h**2 * dirac
+            dirac = (1/h**2) * dirac
 
         end function dirac
 
@@ -209,7 +209,7 @@ contains
                 dirac = dirac*phi
             end do        
 
-            dirac = 1/h**2 * dirac
+            dirac = (1/h**2) * dirac
 
         end function dirac
 
@@ -309,7 +309,6 @@ contains
             B%boundary(slave)%Fy = B%boundary(slave)%Fy + Fsly
         end do
 
-        print *, B%boundary(1)%Fx
     end subroutine calculate_spring_force
 
     subroutine calculate_torsional_spring_force(B,kb,theta,t)
