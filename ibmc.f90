@@ -84,7 +84,7 @@ program ibmc
     vright  = 0.0
 
     ! Create the IB structure
-    np = 10
+    np = 5
     ptcle = ib('spring_array',np)
     ibL = 0.25
     btype = 'o'
