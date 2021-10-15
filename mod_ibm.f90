@@ -23,8 +23,8 @@ contains
         do concurrent (inp = 1:np)
             ! To-do: Implement some function defining a structure
             ! Location
-            B%boundary(inp)%x = 5.0d0
-            B%boundary(inp)%y = 5.0d0
+            B%boundary(inp)%x = 0.5d0
+            B%boundary(inp)%y = 0.5d0
             ! Forces
             B%boundary(inp)%Fx = 0.1d0
             B%boundary(inp)%Fy = 0.0d0
