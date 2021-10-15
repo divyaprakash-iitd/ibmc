@@ -15,8 +15,8 @@ program ibmc
     ! Code execution time
     real(real64)    :: start, finish
     ! Computational Domain
-    real(real32)    :: Lx       = 10.0
-    real(real32)    :: Ly       = 10.0
+    real(real32)    :: Lx       = 1.0
+    real(real32)    :: Ly       = 1.0
     ! Mesh Paramaters
     integer(int32)  :: Nx       = 100
     integer(int32)  :: Ny       = 100
@@ -126,8 +126,8 @@ program ibmc
         call calculate_rhs(M,us,vs,R,rho,dt)
 
         ! Solve for presssure
-        call calculate_pressure_sparse(A,P,R)
-        ! call calculate_pressure_amgx(A,P,R,init_status)
+        ! call calculate_pressure_sparse(A,P,R)
+        call calculate_pressure_amgx(A,P,R,init_status)
 
         ! Perform the corrector steps to obtain the velocity
         call corrector(M,u,v,us,vs,p,rho,dt)
