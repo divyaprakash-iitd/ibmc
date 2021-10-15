@@ -56,24 +56,48 @@ u = load(uFile(nFiles).name);
 v = load(vFile(nFiles).name);
 
 
-% Obtain values of u and v at the their cell centers
-u = u'; xu = xu'; yu = yu'; xv = xv'; yv = yv';
+% Store the values at cell centers
 N = 100;
-u = u(1:N,2:N+1);
-xu = xu(1:N,2:N+1);
-yu = yu(1:N,2:N+1);
-min(xu,[],'all')
-max(xu,[],'all')
-min(yu,[],'all')
-max(yu,[],'all')
+uc = zeros(N,N);
+vc = zeros(N,N);
+
+for j = 2:N+1
+    for i = 1:N
+        uc(i,j-1) = u(i,j); 
+    end
+end
+
+for j = 1:N
+    for i = 2:N+1
+        vc(i-1,j) = v(i,j); 
+    end
+end
+
+umag = sqrt(uc.^2+vc.^2);
+
+figure(2)
+contourf(xp,yp,umag,50,'edgecolor','none')
+colormap(jet)
 
 
-v = v(2:N+1,1:N);
-xv = xv(2:N+1,1:N);
-yv = yv(2:N+1,1:N);
-
-min(xv,[],'all')
-max(yv,[],'all')
+% % Obtain values of u and v at the their cell centers
+% u = u'; xu = xu'; yu = yu'; xv = xv'; yv = yv';
+% N = 100;
+% u = u(1:N,2:N+1);
+% xu = xu(1:N,2:N+1);
+% yu = yu(1:N,2:N+1);
+% min(xu,[],'all')
+% max(xu,[],'all')
+% min(yu,[],'all')
+% max(yu,[],'all')
+% 
+% 
+% v = v(2:N+1,1:N);
+% xv = xv(2:N+1,1:N);
+% yv = yv(2:N+1,1:N);
+% 
+% min(xv,[],'all')
+% max(yv,[],'all')
 
 
 
