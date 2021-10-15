@@ -1,16 +1,16 @@
-% clear; clc; close all;
+clear; clc; close all;
 
 % Description: Plots the velocity profiles for the fundamental solution of
 % stoke's flow
 
-nu = 1;
+nu = 100;
 
 U = @(x) 1/4/pi/nu * [log(1/norm(x)) + x(1)*x(1)/norm(x)^2, x(1)*x(2)/norm(x);
                        x(2)*x(1)/norm(x), log(1/norm(x)) + x(2)*x(2)/norm(x)^2];
                    
                    
         
-N = 20;
+N = 200;
 X = linspace(-2,2,N);
 Y = linspace(-2,2,N);
 
@@ -30,10 +30,6 @@ end
 
 u = sqrt(ux.^2+uy.^2);
 
-% figure(2)
-% contourf(x,y,ux,50,'edgecolor','none')
-% colormap(jet)
-
 figure(1)
 contourf(x,y,u,50,'edgecolor','none')
 colormap(jet)
@@ -47,11 +43,16 @@ yv = load('v_y_mesh.txt');
 xp = load('p_x_mesh.txt');
 yp = load('p_y_mesh.txt');
 
+% Domain size
+Lx = max(xu,[],'all');
+Ly = max(yv,[],'all');
+
 uFile = dir(strcat('u_0','*'));
 vFile = dir(strcat('v_0','*'));
 pFile = dir(strcat('ib_','*'));
 
-nFiles = length(uFile);
+% nFiles = length(uFile);
+nFiles = 20;
 u = load(uFile(nFiles).name);
 v = load(vFile(nFiles).name);
 
@@ -63,13 +64,13 @@ vc = zeros(N,N);
 
 for j = 2:N+1
     for i = 1:N
-        uc(i,j-1) = u(i,j); 
+        vc(i,j-1) = v(i,j); 
     end
 end
 
 for j = 1:N
     for i = 2:N+1
-        vc(i-1,j) = v(i,j); 
+        uc(i-1,j) = u(i,j); 
     end
 end
 
@@ -79,47 +80,44 @@ figure(2)
 contourf(xp,yp,umag,50,'edgecolor','none')
 colormap(jet)
 
+% Compare the two results (Analytical and numerical)
+nu = 100;
 
-% % Obtain values of u and v at the their cell centers
-% u = u'; xu = xu'; yu = yu'; xv = xv'; yv = yv';
-% N = 100;
-% u = u(1:N,2:N+1);
-% xu = xu(1:N,2:N+1);
-% yu = yu(1:N,2:N+1);
-% min(xu,[],'all')
-% max(xu,[],'all')
-% min(yu,[],'all')
-% max(yu,[],'all')
-% 
-% 
-% v = v(2:N+1,1:N);
-% xv = xv(2:N+1,1:N);
-% yv = yv(2:N+1,1:N);
-% 
-% min(xv,[],'all')
-% max(yv,[],'all')
+U = @(x) 1/4/pi/nu * [log(1/norm(x)) + x(1)*x(1)/norm(x)^2, x(1)*x(2)/norm(x);
+                       x(2)*x(1)/norm(x), log(1/norm(x)) + x(2)*x(2)/norm(x)^2];
+
+% Location of X-planes
+np =  5;
+X = linspace(-1/4,1/4,np);
+ymin = 0; ymax = 10; N = 100;
+Y = linspace(ymin,ymax,N);
+
+figure(3)
+for ip = 1:np
+    subplot(1,np,ip)
+    hold on
+    for j = 1:N
+        temp = U([X(ip),Y(j)]);
+        ux = temp(1,1);
+        uy = temp(2,1);
+        u = sqrt(ux^2+uy^2);
+        plot(Y(j),uy,'rx')
+        title(sprintf('x = %.2f',X(ip)))
+    end
+end
 
 
+% Plot the velocity due to force calculated numerically
+% Middle of the domain
+np = 5;
+X = linspace(Lx/4,3*Lx/4,np);
 
-% % Extract u and v for p cells
-% % N = 100;
-% % u = u(1:N,2:N+1);
-% % v = v(2:N+1,1:N);
-% % xu = xu(1:N,2:N+1);
-% % xv = xv(2:N+1,1:N);
-% 
-% % Generate the points where you want the values of u and v velocity
-% uq = interp2(xu,yu,u,xp,yp);
-% vq = interp2(xv,yv,v,xp,yp);
-% 
-% umag = sqrt(uq.^2+vq.^2);
-% 
-% p = load(pFile(nFiles).name);
-% 
-% 
-% figure(2)
-% hold on
-% contourf(xp,yp,umag,50,'edgecolor','none')
-% plot(p(:,1),p(:,2),'w-o','Markersize',5)
-% title(uFile(nFiles).name)
+ymin = 0.5; ymax = 0.6; N = 100;
+Y = linspace(ymin,ymax,N);
 
+figure(4)
+for ip = 1:np
+    subplot(1,np,ip)
+    plot(Y,interp2(xp,yp,vc,X(ip),Y))
+    title(sprintf('x = %.2f',X(ip)))
+end
