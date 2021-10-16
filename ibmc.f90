@@ -39,7 +39,7 @@ program ibmc
     real(real64), allocatable :: u(:,:), v(:,:), us(:,:), vs(:,:), R(:,:), &
                                  P(:,:), A(:,:,:), Fx(:,:), Fy(:,:)
     ! Temporary/Miscellaneous variable
-    integer(int32)  :: it, NN
+    integer(int32)  :: it, NN, il
     logical         :: init_status
     ! Mesh
     type(mesh)      :: M
@@ -131,7 +131,12 @@ program ibmc
         call calculate_cilia_force(cil,ks,Rl)
 
         ! Spread force from the immersed boundary
-        call spread_force(M,ptcle,Fx,Fy)
+        ! Initialize the forces at every time-step
+        Fx = 0.0d0
+        Fy = 0.0d0
+        do il = 1,nl
+            call spread_force(M,cil%layers(il),Fx,Fy)
+        end do
 
         ! Calculate intermediate/predicted velocity
         ! call predictor(M,u,v,us,vs,nu,dt) 
