@@ -11,7 +11,8 @@ module mod_ibm
     private
     public :: initialize_ib, update_ib, spread_force, interpolate_velocity, & 
               write_location, calculate_spring_force, calculate_torsional_spring_force, &
-              create_structure, create_cilia
+              create_structure, create_cilia, calculate_horizontal_link_force, &
+              calculate_diagonal_link_force
 contains
    
     subroutine initialize_ib(B)
@@ -458,4 +459,128 @@ contains
             end do
         end do
     end subroutine create_cilia
+
+    subroutine calculate_cilia_force(C,ks,Rl)
+        class(cilia), intent(in out) :: C       ! Cilia structure
+        real(real64), intent(in)  :: ks         ! Spring stiffness
+        real(real64), intent(in)   :: Rl        ! Resting length
+
+        character(1)  :: t = 'o'  ! Boundary type (Open for cilia)
+        integer(int32) :: il
+
+        ! Calculate forces on the layers
+        do il = 1,C%nl
+            call calculate_spring_force(C%layers(il),ks,Rl,t)
+        end do
+
+        ! Calculate forces on the horizontal links
+        call calculate_horizontal_link_force(C%layers(1),C%layers(2),ks,Rl)
+
+        ! Calculate forces on the diagonal links (negative slope)
+        call calculate_diagonal_link_force(C%layers(2),C%layers(1),ks,Rl)
+
+        ! Calculate forces on the diagonal links (Positive slope)
+        call calculate_diagonal_link_force(C%layers(1),C%layers(2),ks,Rl)
+
+    end subroutine calculate_cilia_force
+
+    subroutine calculate_horizontal_link_force(masterB,slaveB,ks,Rl)
+        class(ib), intent(in out) :: masterB, slaveB    ! Immersed boundary
+        real(real64), intent(in)  :: ks   ! Spring stiffness
+        real(real64),intent(in)   :: Rl   ! Resting length
+
+        integer(int32)  :: np   ! Number of nodes/particle
+        integer(int32)  :: ip   ! Indices
+        real(real64)    :: d    ! Distance between two nodes
+
+        real(real64) :: Fmx, Fslx, Fmy, Fsly ! Forces (Master(m) and Slave(sl) node)
+        real(real64) :: xm, xsl, ym, ysl ! Location of master and slave nodes
+
+
+
+        ! Count the number of nodes/particles in the immersed boundary layers
+        ! (Assuming both the layers have the same number of particles)
+        np = size(masterB%boundary)
+
+        do ip = 1,np
+            ! Master node location
+            xm = masterB%boundary(ip)%x
+            ym = masterB%boundary(ip)%y
+
+            ! Slave node location
+            xsl = slaveB%boundary(ip)%x
+            ysl = slaveB%boundary(ip)%y
+
+            ! Calculate distance between master and slave nodes
+            d = norm2([(xsl-xm),(ysl-ym)])
+            
+            ! Calculate forces (Master node)
+            Fmx = ks*(1.0d0-Rl/d)*(xsl-xm)
+            Fmy = ks*(1.0d0-Rl/d)*(ysl-ym)
+
+            ! Calculate forces (Slave node)
+            Fslx = -Fmx
+            Fsly = -Fmy
+
+            ! Assign fores to master node
+            masterB%boundary(ip)%Fx = masterB%boundary(ip)%Fx + Fmx
+            masterB%boundary(ip)%Fy = masterB%boundary(ip)%Fy + Fmy
+
+            ! Assign forces to slave node
+            slaveB%boundary(ip)%Fx = slaveB%boundary(ip)%Fx + Fslx
+            slaveB%boundary(ip)%Fy = slaveB%boundary(ip)%Fy + Fsly
+        end do
+
+    end subroutine calculate_horizontal_link_force
+
+    subroutine calculate_diagonal_link_force(masterB,slaveB,ks,Rl)
+        class(ib), intent(in out) :: masterB, slaveB    ! Immersed boundary
+        real(real64), intent(in)  :: ks   ! Spring stiffness
+        real(real64),intent(in)   :: Rl   ! Resting length
+
+        integer(int32)  :: np   ! Number of nodes/particle
+        integer(int32)  :: ip, master, slave   ! Indices
+        real(real64)    :: d    ! Distance between two nodes
+
+        real(real64) :: Fmx, Fslx, Fmy, Fsly ! Forces (Master(m) and Slave(sl) node)
+        real(real64) :: xm, xsl, ym, ysl ! Location of master and slave nodes
+
+        ! Count the number of nodes/particles in the immersed boundary layers
+        ! (Assuming both the layers have the same number of particles)
+        np = size(masterB%boundary)
+
+        ! Calculates for negative slope diagonal links
+        do ip = 1,np-1
+            master = ip
+            slave = master + 1
+            ! Master node location
+            xm = masterB%boundary(master)%x
+            ym = masterB%boundary(master)%y
+
+            ! Slave node location
+            xsl = slaveB%boundary(slave)%x
+            ysl = slaveB%boundary(slave)%y
+
+            ! Calculate distance between master and slave nodes
+            d = norm2([(xsl-xm),(ysl-ym)])
+            
+            ! Calculate forces (Master node)
+            Fmx = ks*(1.0d0-Rl/d)*(xsl-xm)
+            Fmy = ks*(1.0d0-Rl/d)*(ysl-ym)
+
+            ! Calculate forces (Slave node)
+            Fslx = -Fmx
+            Fsly = -Fmy
+
+            ! Assign fores to master node
+            masterB%boundary(master)%Fx = masterB%boundary(master)%Fx + Fmx
+            masterB%boundary(master)%Fy = masterB%boundary(master)%Fy + Fmy
+
+            ! Assign forces to slave node
+            slaveB%boundary(slave)%Fx = slaveB%boundary(slave)%Fx + Fslx
+            slaveB%boundary(slave)%Fy = slaveB%boundary(slave)%Fy + Fsly
+        end do
+
+    end subroutine calculate_diagonal_link_force
+
 end module mod_ibm
