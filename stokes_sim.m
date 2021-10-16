@@ -3,7 +3,7 @@ clear; clc; close all;
 % Description: Plots the velocity profiles for the fundamental solution of
 % stoke's flow
 
-nu = 100;
+nu = 1/100;
 
 U = @(x) 1/4/pi/nu * [log(1/norm(x)) + x(1)*x(1)/(norm(x))^2, x(1)*x(2)/(norm(x))^2;
                        x(2)*x(1)/(norm(x))^2, log(1/norm(x)) + x(2)*x(2)/(norm(x))^2];
@@ -50,8 +50,7 @@ uFile = dir(strcat('u_0','*'));
 vFile = dir(strcat('v_0','*'));
 pFile = dir(strcat('ib_','*'));
 
-% nFiles = length(uFile);
-nFiles = 20;
+nFiles = length(uFile);
 u = load(uFile(nFiles).name);
 v = load(vFile(nFiles).name);
 
@@ -80,7 +79,7 @@ contourf(xp,yp,umag,50,'edgecolor','none')
 colormap(jet)
 
 % Compare the two results (Analytical and numerical)
-nu = 100;
+nu = 1/100;
 
 U = @(x) 1/4/pi/nu * [log(1/norm(x)) + x(1)*x(1)/(norm(x))^2, x(1)*x(2)/(norm(x))^2;
                        x(2)*x(1)/(norm(x))^2, log(1/norm(x)) + x(2)*x(2)/norm(x)^2];
