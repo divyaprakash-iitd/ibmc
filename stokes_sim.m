@@ -5,14 +5,13 @@ clear; clc; close all;
 
 nu = 100;
 
-U = @(x) 1/4/pi/nu * [log(1/norm(x)) + x(1)*x(1)/norm(x)^2, x(1)*x(2)/norm(x);
-                       x(2)*x(1)/norm(x), log(1/norm(x)) + x(2)*x(2)/norm(x)^2];
-                   
-                   
+U = @(x) 1/4/pi/nu * [log(1/norm(x)) + x(1)*x(1)/(norm(x))^2, x(1)*x(2)/(norm(x))^2;
+                       x(2)*x(1)/(norm(x))^2, log(1/norm(x)) + x(2)*x(2)/(norm(x))^2];
+
         
 N = 200;
-X = linspace(-2,2,N);
-Y = linspace(-2,2,N);
+X = linspace(-3,3,N);
+Y = linspace(-3,3,N);
 
 [x,y] = meshgrid(X,Y);
 ux = zeros(size(x));
@@ -83,12 +82,12 @@ colormap(jet)
 % Compare the two results (Analytical and numerical)
 nu = 100;
 
-U = @(x) 1/4/pi/nu * [log(1/norm(x)) + x(1)*x(1)/norm(x)^2, x(1)*x(2)/norm(x);
-                       x(2)*x(1)/norm(x), log(1/norm(x)) + x(2)*x(2)/norm(x)^2];
+U = @(x) 1/4/pi/nu * [log(1/norm(x)) + x(1)*x(1)/(norm(x))^2, x(1)*x(2)/(norm(x))^2;
+                       x(2)*x(1)/(norm(x))^2, log(1/norm(x)) + x(2)*x(2)/norm(x)^2];
 
 % Location of X-planes
 np =  5;
-X = linspace(-1/4,1/4,np);
+X = linspace(-1,1,np);
 ymin = 0; ymax = 10; N = 100;
 Y = linspace(ymin,ymax,N);
 
@@ -101,7 +100,7 @@ for ip = 1:np
         ux = temp(1,1);
         uy = temp(2,1);
         u = sqrt(ux^2+uy^2);
-        plot(Y(j),uy,'rx')
+        plot(Y(j),ux,'rx')
         title(sprintf('x = %.2f',X(ip)))
     end
 end
@@ -118,6 +117,6 @@ Y = linspace(ymin,ymax,N);
 figure(4)
 for ip = 1:np
     subplot(1,np,ip)
-    plot(Y,interp2(xp,yp,vc,X(ip),Y))
+    plot(Y,interp2(xp,yp,uc,X(ip),Y))
     title(sprintf('x = %.2f',X(ip)))
 end
