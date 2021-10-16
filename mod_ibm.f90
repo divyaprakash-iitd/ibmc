@@ -12,7 +12,7 @@ module mod_ibm
     public :: initialize_ib, update_ib, spread_force, interpolate_velocity, & 
               write_location, calculate_spring_force, calculate_torsional_spring_force, &
               create_structure, create_cilia, calculate_horizontal_link_force, &
-              calculate_diagonal_link_force
+              calculate_diagonal_link_force, calculate_cilia_force
 contains
    
     subroutine initialize_ib(B)
@@ -25,10 +25,10 @@ contains
         do concurrent (inp = 1:np)
             ! To-do: Implement some function defining a structure
             ! Location
-            B%boundary(inp)%x = 0.5d0
-            B%boundary(inp)%y = 0.5d0
+            B%boundary(inp)%x = 0.0d0
+            B%boundary(inp)%y = 0.0d0
             ! Forces
-            B%boundary(inp)%Fx = 0.1d0
+            B%boundary(inp)%Fx = 0.0d0
             B%boundary(inp)%Fy = 0.0d0
             ! Velocity
             B%boundary(inp)%Ux = 0.0d0
@@ -145,11 +145,6 @@ contains
         integer(int32) :: i, j, inp
         np = size(B%boundary)
 
-        ! Initialize the velocity at every time-step
-        do concurrent (inp = 1:np)
-            B%boundary(inp)%Ux = 0.0d0
-            B%boundary(inp)%Uy = 0.0d0
-        end do
 
         ! Calculate the u velocity of Lagrangian points
         ! Iterating over all the grid points including the boundary values for u-velocity cells
