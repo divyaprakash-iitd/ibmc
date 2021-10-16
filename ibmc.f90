@@ -22,7 +22,7 @@ program ibmc
     integer(int32)  :: Nx       = 30
     integer(int32)  :: Ny       = 30
     ! Simulation time Paramaters
-    real(real32)    :: tsim     = 1
+    real(real32)    :: tsim     = 20
     real(real32)    :: dt       = 0.01
     real(real32)    :: t
     ! Physical Constants
@@ -79,7 +79,7 @@ program ibmc
     Fx  = 0.0d0
     Fy  = 0.0d0
     ! Define boundary conditions for velocity
-    utop    = 1.0
+    utop    = 0.1
     vtop    = 0.0
     ubottom = 0.0
     vbottom = 0.0
@@ -110,14 +110,14 @@ program ibmc
 
     ! Create cilia
     nl = 2
-    np = 3
+    np = 10
     ibl = 0.25
-    wbl = 0.1
+    wbl = 0.01
     Rl = ibL/(np-1) * 0.75 
-    origin = vec(0.25,0.25)
+    origin = vec(0.4,0.1)
     cil = cilia(nl,np)
     call create_cilia(cil,nl,np,ibl,wbl,origin)
-
+    ! To-Do: Initialize the immersed boundaries in cilia with a call to initialize_ib
     do while (t.lt.tsim)
         t = t+dt 
         it = it + 1
@@ -165,16 +165,18 @@ program ibmc
         end do
 
         ! Update the Immersed Boundary
-        ! call update_ib(ptcle,dt) 
+        do il = 1,nl
+            call update_ib(cil%layers(il),dt) 
+        end do
 
         print *, 'time = ', t
 
         ! Write files every 10th timestep
-        ! if (mod(it,10).eq.0) then 
+        if (mod(it,10).eq.0) then 
             call write_field(u,'u',it) 
             call write_field(v,'v',it) 
             call write_location(cil,it)
-        ! end if
+        end if
     end do
 
     call cpu_time(finish)
