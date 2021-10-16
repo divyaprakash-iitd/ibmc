@@ -3,6 +3,7 @@ module mod_ibm
     use mod_mesh
     use mod_ib
     use mod_vec
+    use mod_cilia
     implicit none
    
     real(real64), parameter :: PI = 3.141592653589793
@@ -10,7 +11,7 @@ module mod_ibm
     private
     public :: initialize_ib, update_ib, spread_force, interpolate_velocity, & 
               write_location, calculate_spring_force, calculate_torsional_spring_force, &
-              create_structure
+              create_structure, create_cilia
 contains
    
     subroutine initialize_ib(B)
@@ -215,32 +216,35 @@ contains
 
     end subroutine interpolate_velocity
 
-    subroutine write_location(B,timestep)
-        class(ib), intent(in) :: B
+    subroutine write_location(C,timestep)
+        class(cilia), intent(in) :: C
         integer(int32), intent(in) :: timestep        
 
         integer(int32) :: fileunit = 8
         character(len=:), allocatable :: filename
-        integer(int32) :: inp, np
+        integer(int32) :: inp, np, nl, il
         character(len=8) :: itnumber
-
+        character(len=1) :: idl ! Layer id
         write(itnumber,"(I8.8)") timestep
 
-        np = size(B%boundary)
+        nl = C%nl
+        np = C%np
+        do il = 1,nl
+            write(idl,"(I1.1)") il
+            filename = idl // '_ib_loc' // itnumber // '.txt'
+            open(unit=fileunit, file=filename, ACTION="write", STATUS="replace")
+            do inp = 1,np
+                write(fileunit, '((F14.7), (F14.7))') C%layers(il)%boundary(inp)%x, C%layers(il)%boundary(inp)%y
+            end do
+            close(fileunit)
 
-        filename = 'ib_loc' // itnumber // '.txt'
-        open(unit=fileunit, file=filename, ACTION="write", STATUS="replace")
-        do inp = 1,np
-            write(fileunit, '((F14.7), (F14.7))') B%boundary(inp)%x, B%boundary(inp)%y
+            ! filename = 'ib_y.txt'
+            ! open(unit=fileunit, file=filename, ACTION="write", STATUS="replace")
+            ! do j = M%yu%lb,M%yu%ub
+            !     write(fileunit, '(*(F14.7))')(M%u_mesh(i,j)%y , i = M%xu%lb,M%xu%ub)
+            ! end do
+            ! close(fileunit)
         end do
-        close(fileunit)
-
-        ! filename = 'ib_y.txt'
-        ! open(unit=fileunit, file=filename, ACTION="write", STATUS="replace")
-        ! do j = M%yu%lb,M%yu%ub
-        !     write(fileunit, '(*(F14.7))')(M%u_mesh(i,j)%y , i = M%xu%lb,M%xu%ub)
-        ! end do
-        ! close(fileunit)
     end subroutine write_location
 
     subroutine calculate_spring_force(B,ks,Rl,t)
@@ -418,4 +422,40 @@ contains
 
     end subroutine create_structure
 
+    subroutine create_cilia(C,nl,np,L,W,origin)
+        ! Creates a vertical cilia
+        class(cilia), intent(in out) :: C
+        class(vec), intent(in) :: origin
+        real(real64), intent(in) :: L ! Length of cilia
+        real(real64), intent(in) :: W ! Width of cilia
+
+        integer(int32) :: nl
+        integer(int32) :: np
+
+        real(real64) :: dl, dw
+        integer(int32) :: il,ip
+
+        nl = C%nl
+        np = C%np
+
+        dl = L/(C%np-1)
+        dw = W/(C%nl-1)
+
+        ! Assign locations to each of the layers of the cilia
+        do il = 1,C%nl
+            C%layers(il)%boundary(1)%x = origin%x + dw*(il-1)
+            C%layers(il)%boundary(1)%y = origin%y
+            do ip = 2,C%np
+                C%layers(il)%boundary(ip)%x = C%layers(il)%boundary(1)%x
+                C%layers(il)%boundary(ip)%y = C%layers(il)%boundary(ip-1)%y + dl
+            end do
+        end do
+
+        do il = 1,C%nl
+            do ip = 1,np
+                print *, C%layers(il)%boundary(ip)%x
+                print *, C%layers(il)%boundary(ip)%y
+            end do
+        end do
+    end subroutine create_cilia
 end module mod_ibm
