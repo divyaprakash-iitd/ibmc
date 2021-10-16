@@ -22,7 +22,7 @@ program ibmc
     integer(int32)  :: Nx       = 30
     integer(int32)  :: Ny       = 30
     ! Simulation time Paramaters
-    real(real32)    :: tsim     = 0.01
+    real(real32)    :: tsim     = 1
     real(real32)    :: dt       = 0.01
     real(real32)    :: t
     ! Physical Constants
