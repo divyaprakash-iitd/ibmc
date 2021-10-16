@@ -10,19 +10,20 @@ program ibmc
     use mod_ib
     use mod_ibm
     use mod_vec
+    use mod_cilia
     implicit none
 
     ! Code execution time
     real(real64)    :: start, finish
     ! Computational Domain
-    real(real32)    :: Lx       = 5.0
-    real(real32)    :: Ly       = 5.0
+    real(real32)    :: Lx       = 1.0
+    real(real32)    :: Ly       = 1.0
     ! Mesh Paramaters
-    integer(int32)  :: Nx       = 100
-    integer(int32)  :: Ny       = 100
+    integer(int32)  :: Nx       = 30
+    integer(int32)  :: Ny       = 30
     ! Simulation time Paramaters
-    real(real32)    :: tsim     = 10
-    real(real32)    :: dt       = 0.001
+    real(real32)    :: tsim     = 0.01
+    real(real32)    :: dt       = 0.01
     real(real32)    :: t
     ! Physical Constants
     real(real32)    :: nu       = 1.0/100.0
@@ -48,6 +49,10 @@ program ibmc
     type(vec)       :: origin       ! Origin of the immersed boundary
     real(real64)    :: ibL          ! Length of the immersed boundary
     integer(int32)  :: np           ! Number of particles in the immersed boundary
+    integer(int32)  :: nl           ! Number of layers in the cilia
+    real(real64)    :: Wbl          ! Width of cilia
+    ! Cilia
+    type(cilia)     :: Cil
     !---------------------- Begin Calculations ------------------------------------!
     call cpu_time(start)
 
@@ -74,7 +79,7 @@ program ibmc
     Fx  = 0.0d0
     Fy  = 0.0d0
     ! Define boundary conditions for velocity
-    utop    = 0.0
+    utop    = 1.0
     vtop    = 0.0
     ubottom = 0.0
     vbottom = 0.0
@@ -84,9 +89,9 @@ program ibmc
     vright  = 0.0
 
     ! Create the IB structure
-    np = 1
-    ptcle = ib('spring_array',np)
-    call initialize_ib(ptcle)
+    ! np = 1
+    ! ptcle = ib('spring_array',np)
+    ! call initialize_ib(ptcle)
     ! ibL = 0.25
     ! btype = 'o'
     ! Rl = ibL/(np-1) * 0.5 ! Resting length is related to the total lenght of the IB
@@ -102,6 +107,16 @@ program ibmc
     call write_mesh(M,'u')
     call write_mesh(M,'v')
     call write_mesh(M,'p')
+
+    ! Create cilia
+    nl = 2
+    np = 3
+    ibl = 0.25
+    wbl = 0.1
+    origin = vec(0.25,0.25)
+    cil = cilia(nl,np)
+    call create_cilia(cil,nl,np,ibl,wbl,origin)
+
     do while (t.lt.tsim)
         t = t+dt 
         it = it + 1
@@ -114,7 +129,7 @@ program ibmc
         ! call calculate_torsional_spring_force(ptcle,kb,theta,btype)
 
         ! Spread force from the immersed boundary
-        call spread_force(M,ptcle,Fx,Fy)
+        ! call spread_force(M,ptcle,Fx,Fy)
 
         ! Calculate intermediate/predicted velocity
         ! call predictor(M,u,v,us,vs,nu,dt) 
@@ -126,8 +141,8 @@ program ibmc
         call calculate_rhs(M,us,vs,R,rho,dt)
 
         ! Solve for presssure
-        ! call calculate_pressure_sparse(A,P,R)
-        call calculate_pressure_amgx(A,P,R,init_status)
+        call calculate_pressure_sparse(A,P,R)
+        ! call calculate_pressure_amgx(A,P,R,init_status)
 
         ! Perform the corrector steps to obtain the velocity
         call corrector(M,u,v,us,vs,p,rho,dt)
@@ -141,11 +156,11 @@ program ibmc
         print *, 'time = ', t
 
         ! Write files every 10th timestep
-        if (mod(it,10).eq.0) then 
+        ! if (mod(it,10).eq.0) then 
             call write_field(u,'u',it) 
             call write_field(v,'v',it) 
-            call write_location(ptcle,it)
-        end if
+            call write_location(cil,it)
+        ! end if
     end do
 
     call cpu_time(finish)
