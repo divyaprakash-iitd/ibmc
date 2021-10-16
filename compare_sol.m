@@ -88,7 +88,7 @@ colormap(jet)
 % Location of X-planes
 np = 5;
 X = linspace(Lx/4,3*Lx/4,np);
-ymin = 0.5; ymax = 0.6; N = 100;
+ymin = Ly/2; ymax = 4; N = 100;
 Y = linspace(ymin,ymax,N);
 
 figure(3)
