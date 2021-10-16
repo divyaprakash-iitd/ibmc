@@ -69,11 +69,6 @@ contains
         integer(int32) :: i, j, inp
         np = size(B%boundary)
 
-
-        ! Initialize the forces at every time-step
-        Fx = 0.0d0
-        Fy = 0.0d0
-
         ! Calculate the x-direction force on the u-velocity cells
         ! Iterating over all the grid points including the boundary values
         do j = M%yu%lb,M%yu%ub

@@ -94,7 +94,7 @@ program ibmc
     ! call initialize_ib(ptcle)
     ! ibL = 0.25
     ! btype = 'o'
-    ! Rl = ibL/(np-1) * 0.5 ! Resting length is related to the total lenght of the IB
+    ! Rl = ibL/(np-1) * 0.5 ! Resting length is related to the total length of the IB
     ! origin = vec(0.25,0.25)
     ! call create_structure(ptcle,origin,ibL,btype) 
     ! Generate Laplacian matrix
@@ -113,6 +113,7 @@ program ibmc
     np = 3
     ibl = 0.25
     wbl = 0.1
+    Rl = ibL/(np-1) * 0.75 
     origin = vec(0.25,0.25)
     cil = cilia(nl,np)
     call create_cilia(cil,nl,np,ibl,wbl,origin)
@@ -127,9 +128,10 @@ program ibmc
         ! Calculate forces in the immersed boundary structure
         ! call calculate_spring_force(ptcle,Ks,Rl,btype)
         ! call calculate_torsional_spring_force(ptcle,kb,theta,btype)
+        call calculate_cilia_force(cil,ks,Rl)
 
         ! Spread force from the immersed boundary
-        ! call spread_force(M,ptcle,Fx,Fy)
+        call spread_force(M,ptcle,Fx,Fy)
 
         ! Calculate intermediate/predicted velocity
         ! call predictor(M,u,v,us,vs,nu,dt) 
@@ -148,7 +150,7 @@ program ibmc
         call corrector(M,u,v,us,vs,p,rho,dt)
 
         ! Interpolate the Eulerian grid velocity to the Lagrangian structure
-        ! call interpolate_velocity(M,ptcle,u,v)
+        call interpolate_velocity(M,ptcle,u,v)
 
         ! Update the Immersed Boundary
         ! call update_ib(ptcle,dt) 
