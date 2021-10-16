@@ -39,7 +39,7 @@ program ibmc
     real(real64), allocatable :: u(:,:), v(:,:), us(:,:), vs(:,:), R(:,:), &
                                  P(:,:), A(:,:,:), Fx(:,:), Fy(:,:)
     ! Temporary/Miscellaneous variable
-    integer(int32)  :: it, NN, il
+    integer(int32)  :: it, NN, il, ip
     logical         :: init_status
     ! Mesh
     type(mesh)      :: M
@@ -154,8 +154,15 @@ program ibmc
         ! Perform the corrector steps to obtain the velocity
         call corrector(M,u,v,us,vs,p,rho,dt)
 
+        ! Initialize the velocity at every time-step
         ! Interpolate the Eulerian grid velocity to the Lagrangian structure
-        call interpolate_velocity(M,ptcle,u,v)
+        do il = 1,nl
+            do concurrent (ip = 1:np)
+                cil%layers(il)%boundary(ip)%Ux = 0.0d0
+                cil%layers(il)%boundary(ip)%Uy = 0.0d0
+            end do
+            call interpolate_velocity(M,cil%layers(il),u,v)
+        end do
 
         ! Update the Immersed Boundary
         ! call update_ib(ptcle,dt) 
