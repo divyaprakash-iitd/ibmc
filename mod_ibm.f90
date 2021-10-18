@@ -255,12 +255,6 @@ contains
         ! Count the number of nodes/particles in the immersed boundary
         np = size(B%boundary)
 
-        ! Initialize the forces to zero on all the nodes at every time step
-        do concurrent (inp = 1:np)
-            B%boundary(inp)%Fx = 0.0d0
-            B%boundary(inp)%Fy = 0.0d0
-        end do
-
         ! Calculate the forces on each node
         if (t.eq.'o') then
             lastp = np-1
@@ -456,7 +450,13 @@ contains
         real(real64), intent(in)   :: Rl        ! Resting length
 
         character(1)  :: t = 'o'  ! Boundary type (Open for cilia)
-        integer(int32) :: il
+        integer(int32) :: il, ip
+
+        ! Initialize the forces to zero on all the nodes at every time step
+        do concurrent (il = 1:C%nl, ip = 1:C%np)
+            C%layers(il)%boundary(ip)%Fx = 0.0d0
+            C%layers(il)%boundary(ip)%Fy = 0.0d0
+        end do
 
         ! Calculate forces on the layers
         do il = 1,C%nl
