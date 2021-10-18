@@ -112,6 +112,6 @@ end
 figure(4)
 for ip = 1:np
     subplot(1,np,ip)
-    plot(Y,interp2(xp,yp,uc,X(ip),Y))
+    plot(Y,interp2(xp,yp,uc,X(ip),Y),'kx')
     title(sprintf('x = %.2f',X(ip)))
 end
