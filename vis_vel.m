@@ -23,8 +23,8 @@ for iFile = 1:nFiles
     p2 = load(p2File(iFile).name);
     contourf(xu,yu,u,50,'edgecolor','none')
 %   p = [p ; p(1,:)];
-    plot(p1(:,1),p1(:,2),'w-o','Markersize',5)
-    plot(p2(:,1),p2(:,2),'w-o','Markersize',5)
+    plot(p1(:,1),p1(:,2),'k-o','Markersize',5)
+    plot(p2(:,1),p2(:,2),'k-o','Markersize',5)
     title(uFile(iFile).name)
     pause(0.001)
 %     writeVideo(v,getframe(gca));

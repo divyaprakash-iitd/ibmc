@@ -453,9 +453,11 @@ contains
         integer(int32) :: il, ip
 
         ! Initialize the forces to zero on all the nodes at every time step
-        do concurrent (il = 1:C%nl, ip = 1:C%np)
-            C%layers(il)%boundary(ip)%Fx = 0.0d0
-            C%layers(il)%boundary(ip)%Fy = 0.0d0
+        do il = 1,C%nl 
+            do ip = 1,C%np
+                C%layers(il)%boundary(ip)%Fx = 0.0d0
+                C%layers(il)%boundary(ip)%Fy = 0.0d0
+            end do
         end do
 
         ! Calculate forces on the layers
@@ -474,8 +476,8 @@ contains
 
     end subroutine calculate_cilia_force
 
-    subroutine calculate_horizontal_link_force(masterB,slaveB,ks,Rl)
-        class(ib), intent(in out) :: masterB, slaveB    ! Immersed boundary
+    subroutine calculate_horizontal_link_force(masterL,slaveL,ks,Rl)
+        class(ib), intent(in out) :: masterL, slaveL    ! Immersed boundary
         real(real64), intent(in)  :: ks   ! Spring stiffness
         real(real64),intent(in)   :: Rl   ! Resting length
 
@@ -490,16 +492,16 @@ contains
 
         ! Count the number of nodes/particles in the immersed boundary layers
         ! (Assuming both the layers have the same number of particles)
-        np = size(masterB%boundary)
+        np = size(masterL%boundary)
 
         do ip = 1,np
             ! Master node location
-            xm = masterB%boundary(ip)%x
-            ym = masterB%boundary(ip)%y
+            xm = masterL%boundary(ip)%x
+            ym = masterL%boundary(ip)%y
 
             ! Slave node location
-            xsl = slaveB%boundary(ip)%x
-            ysl = slaveB%boundary(ip)%y
+            xsl = slaveL%boundary(ip)%x
+            ysl = slaveL%boundary(ip)%y
 
             ! Calculate distance between master and slave nodes
             d = norm2([(xsl-xm),(ysl-ym)])
@@ -513,18 +515,18 @@ contains
             Fsly = -Fmy
 
             ! Assign fores to master node
-            masterB%boundary(ip)%Fx = masterB%boundary(ip)%Fx + Fmx
-            masterB%boundary(ip)%Fy = masterB%boundary(ip)%Fy + Fmy
+            masterL%boundary(ip)%Fx = masterL%boundary(ip)%Fx + Fmx
+            masterL%boundary(ip)%Fy = masterL%boundary(ip)%Fy + Fmy
 
             ! Assign forces to slave node
-            slaveB%boundary(ip)%Fx = slaveB%boundary(ip)%Fx + Fslx
-            slaveB%boundary(ip)%Fy = slaveB%boundary(ip)%Fy + Fsly
+            slaveL%boundary(ip)%Fx = slaveL%boundary(ip)%Fx + Fslx
+            slaveL%boundary(ip)%Fy = slaveL%boundary(ip)%Fy + Fsly
         end do
 
     end subroutine calculate_horizontal_link_force
 
-    subroutine calculate_diagonal_link_force(masterB,slaveB,ks,Rl)
-        class(ib), intent(in out) :: masterB, slaveB    ! Immersed boundary
+    subroutine calculate_diagonal_link_force(masterL,slaveL,ks,Rl)
+        class(ib), intent(in out) :: masterL, slaveL    ! Immersed boundary
         real(real64), intent(in)  :: ks   ! Spring stiffness
         real(real64),intent(in)   :: Rl   ! Resting length
 
@@ -537,19 +539,19 @@ contains
 
         ! Count the number of nodes/particles in the immersed boundary layers
         ! (Assuming both the layers have the same number of particles)
-        np = size(masterB%boundary)
+        np = size(masterL%boundary)
 
         ! Calculates for negative slope diagonal links
         do ip = 1,np-1
             master = ip
             slave = master + 1
             ! Master node location
-            xm = masterB%boundary(master)%x
-            ym = masterB%boundary(master)%y
+            xm = masterL%boundary(master)%x
+            ym = masterL%boundary(master)%y
 
             ! Slave node location
-            xsl = slaveB%boundary(slave)%x
-            ysl = slaveB%boundary(slave)%y
+            xsl = slaveL%boundary(slave)%x
+            ysl = slaveL%boundary(slave)%y
 
             ! Calculate distance between master and slave nodes
             d = norm2([(xsl-xm),(ysl-ym)])
@@ -563,12 +565,12 @@ contains
             Fsly = -Fmy
 
             ! Assign fores to master node
-            masterB%boundary(master)%Fx = masterB%boundary(master)%Fx + Fmx
-            masterB%boundary(master)%Fy = masterB%boundary(master)%Fy + Fmy
+            masterL%boundary(master)%Fx = masterL%boundary(master)%Fx + Fmx
+            masterL%boundary(master)%Fy = masterL%boundary(master)%Fy + Fmy
 
             ! Assign forces to slave node
-            slaveB%boundary(slave)%Fx = slaveB%boundary(slave)%Fx + Fslx
-            slaveB%boundary(slave)%Fy = slaveB%boundary(slave)%Fy + Fsly
+            slaveL%boundary(slave)%Fx = slaveL%boundary(slave)%Fx + Fslx
+            slaveL%boundary(slave)%Fy = slaveL%boundary(slave)%Fy + Fsly
         end do
 
     end subroutine calculate_diagonal_link_force

@@ -23,12 +23,12 @@ program ibmc
     integer(int32)  :: Ny       = 30
     ! Simulation time Paramaters
     real(real32)    :: tsim     = 20
-    real(real32)    :: dt       = 0.01
+    real(real32)    :: dt       = 0.001
     real(real32)    :: t
     ! Physical Constants
     real(real32)    :: nu       = 1.0/100.0
     real(real32)    :: rho      = 1.0d0
-    real(real64)    :: ks       = 1.0d0
+    real(real64)    :: ks       = 0.1d0
     real(real64)    :: kb       = 1.5d0
     real(real64)    :: theta    = 3.1416
     real(real64)    :: Rl
@@ -79,7 +79,7 @@ program ibmc
     Fx  = 0.0d0
     Fy  = 0.0d0
     ! Define boundary conditions for velocity
-    utop    = 0.01
+    utop    = 0.0
     vtop    = 0.0
     ubottom = 0.0
     vbottom = 0.0
@@ -110,8 +110,8 @@ program ibmc
 
     ! Create cilia
     nl = 2
-    np = 10
-    ibl = 0.25
+    np = 4
+    ibl = 0.2
     wbl = 0.01
     Rl = ibL/(np-1) 
     origin = vec(0.4,0.1)
@@ -129,6 +129,13 @@ program ibmc
         ! call calculate_spring_force(ptcle,Ks,Rl,btype)
         ! call calculate_torsional_spring_force(ptcle,kb,theta,btype)
         call calculate_cilia_force(cil,ks,Rl)
+
+        ! Apply tip force for the first 1 second
+        if (t.lt.0.1) then
+            do il = 1,nl
+                cil%layers(il)%boundary(np)%Fx = 0.01
+            end do
+        end if
 
         ! Spread force from the immersed boundary
         ! Initialize the forces at every time-step
