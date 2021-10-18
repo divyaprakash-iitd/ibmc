@@ -79,7 +79,7 @@ program ibmc
     Fx  = 0.0d0
     Fy  = 0.0d0
     ! Define boundary conditions for velocity
-    utop    = 0.1
+    utop    = 0.01
     vtop    = 0.0
     ubottom = 0.0
     vbottom = 0.0
@@ -113,7 +113,7 @@ program ibmc
     np = 10
     ibl = 0.25
     wbl = 0.01
-    Rl = ibL/(np-1) * 0.75 
+    Rl = ibL/(np-1) 
     origin = vec(0.4,0.1)
     cil = cilia(nl,np)
     call create_cilia(cil,nl,np,ibl,wbl,origin)
