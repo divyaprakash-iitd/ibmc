@@ -19,16 +19,16 @@ program ibmc
     real(real32)    :: Lx       = 1.0
     real(real32)    :: Ly       = 1.0
     ! Mesh Paramaters
-    integer(int32)  :: Nx       = 30
-    integer(int32)  :: Ny       = 30
+    integer(int32)  :: Nx       = 50
+    integer(int32)  :: Ny       = 50
     ! Simulation time Paramaters
     real(real32)    :: tsim     = 20
     real(real32)    :: dt       = 0.001
     real(real32)    :: t
     ! Physical Constants
-    real(real32)    :: nu       = 1.0/100.0
+    real(real32)    :: nu       = 1.0
     real(real32)    :: rho      = 1.0d0
-    real(real64)    :: ks       = 0.1d0
+    real(real64)    :: ks       = 1.0d0
     real(real64)    :: kb       = 1.5d0
     real(real64)    :: theta    = 3.1416
     real(real64)    :: Rl
@@ -110,11 +110,11 @@ program ibmc
 
     ! Create cilia
     nl = 2
-    np = 4
+    np = 6
     ibl = 0.2
     wbl = 0.01
     Rl = ibL/(np-1) 
-    origin = vec(0.4,0.1)
+    origin = vec(0.5,0.05)
     cil = cilia(nl,np)
     call create_cilia(cil,nl,np,ibl,wbl,origin)
     ! To-Do: Initialize the immersed boundaries in cilia with a call to initialize_ib

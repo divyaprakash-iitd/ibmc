@@ -45,7 +45,8 @@ contains
         np = size(B%boundary)
         
         ! Calculate the new position
-        do concurrent (inp = 1:np)
+        ! Start from 2 if fixing the first particle in each layer of cilia
+        do concurrent (inp = 2:np)
             B%boundary(inp)%x = B%boundary(inp)%x + B%boundary(inp)%Ux * dt
             B%boundary(inp)%y = B%boundary(inp)%y + B%boundary(inp)%Uy * dt
         end do
@@ -473,6 +474,12 @@ contains
 
         ! Calculate forces on the diagonal links (Positive slope)
         call calculate_diagonal_link_force(C%layers(1),C%layers(2),ks,Rl)
+
+        ! Fix the last particle in each layer (Specify the forces to be zero)
+        do il = 1,C%nl
+            C%layers(il)%boundary(1)%Fx = 0.0d0 
+            C%layers(il)%boundary(1)%Fy = 0.0d0 
+        end do
 
     end subroutine calculate_cilia_force
 
