@@ -49,8 +49,8 @@ colormap(jet)
 
 % Cobtour plot for analytical solution
 
-mu = 1/100;
-
+mu = 1;
+F1 = 0.1;
 r = @(x,s) norm(x-s);
 
 U11 = @(x,s) 1/4/pi/mu * (-log(r(x,s)) + ((x(1)-s(1))/r(x,s)).^2);
@@ -72,8 +72,8 @@ s = [Lx/2, Ly/2];
 for j = 1:N
     for i = 1:N
         xx = [x(i,j), y(i,j)];
-        ux(i,j) = U11(xx,s);
-        uy(i,j) = U21(xx,s);
+        ux(i,j) = F1*U11(xx,s);
+        uy(i,j) = F1*U21(xx,s);
     end
 end
 
@@ -85,7 +85,7 @@ colormap(jet)
 
 % Compare the two results (Analytical and numerical)
 
-% Location of X-planes
+% Location of X-planes0
 np = 5;
 X = linspace(Lx/4,3*Lx/4,np);
 ymin = 0.5; ymax = 0.6; N = 100;
