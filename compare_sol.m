@@ -86,9 +86,9 @@ colormap(jet)
 % Compare the two results (Analytical and numerical)
 
 % Location of X-planes
-np = 5;
-X = linspace(Lx/4,3*Lx/4,np);
-ymin = Ly/2; ymax = 0.6; N = 100;
+np = 1;
+X = Lx/2; %linspace(4*Lx/10,6*Lx/10,np);
+ymin = Ly/2; ymax = 6*Ly/10; N = 100;
 Y = linspace(ymin,ymax,N);
 
 figure(3)
@@ -100,19 +100,19 @@ for ip = 1:np
         ux = F1*U11(xx,s);
         uy = F1*U21(xx,s);
         u = sqrt(ux^2+uy^2);
-        plot(Y(j),ux,'rx')
-        plot(Y(j),interp2(xp,yp,uc,X(ip),Y(j)),'kx')
+        plot(Y(j),u,'rx')
+        plot(Y(j),interp2(xp,yp,umag,X(ip),Y(j)),'kx')
         title(sprintf('x = %.2f',X(ip)))
     end
 end
 
 
-% Plot the velocity due to force calculated numerically
-% Middle of the domain
-
-figure(4)
-for ip = 1:np
-    subplot(1,np,ip)
-    plot(Y,interp2(xp,yp,uc,X(ip),Y))
-    title(sprintf('x = %.2f',X(ip)))
-end
+% % Plot the velocity due to force calculated numerically
+% % Middle of the domain
+% 
+% figure(4)
+% for ip = 1:np
+%     subplot(1,np,ip)
+%     plot(Y,interp2(xp,yp,uc,X(ip),Y))
+%     title(sprintf('x = %.2f',X(ip)))
+% end
