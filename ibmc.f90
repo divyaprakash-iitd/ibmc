@@ -116,6 +116,8 @@ program ibmc
         ! Spread force from the immersed boundary
         call spread_force(M,ptcle,Fx,Fy)
 
+        print *, sum(Fx)*M%dx*M%dy
+
         ! Calculate intermediate/predicted velocity
         ! call predictor(M,u,v,us,vs,nu,dt) 
         call euler(M,u,v,us,vs,nu,dt,Fx,Fy)
