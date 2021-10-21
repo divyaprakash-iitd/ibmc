@@ -416,8 +416,8 @@ contains
         real(real64), intent(in) :: L ! Length of cilia
         real(real64), intent(in) :: W ! Width of cilia
 
-        integer(int32), intent(in) :: nl
-        integer(int32), intent(in) :: np
+        integer(int32) :: nl
+        integer(int32) :: np
 
         real(real64) :: dl, dw
         integer(int32) :: il,ip
