@@ -4,6 +4,7 @@ module mod_ibm
     use mod_ib
     use mod_vec
     use mod_cilia
+    use mod_cilia_array
     implicit none
    
     real(real64), parameter :: PI = 3.141592653589793
@@ -582,4 +583,27 @@ contains
 
     end subroutine calculate_diagonal_link_force
 
+    subroutine create_cilia_array(CA, nc,nl,np,L,W,dc,origin)
+        class(cilia_array), intent(in out) :: CA
+        integer(int32), intent(in) :: nc
+        integer(int32), intent(in) :: nl
+        integer(int32), intent(in) :: np
+        real(real64),   intent(in) :: L     ! Length of cilia
+        real(real64),   intent(in) :: W     ! Width of cilia
+        real(real64),   intent(in) :: dc    ! Spacing of cilia
+        class(vec),     intent(in) :: origin
+
+        integer(int32) :: ic
+        type(vec) :: corigin
+
+        corigin = origin
+
+        ! CA = cilia_array(nc,nl,np)
+
+        do ic = 1,nc
+            corigin%x = corigin%x + (ic-1)*dc
+            call create_cilia(CA%array(ic),nl,np,L,W,corigin)
+        end do
+
+    end subroutine create_cilia_array
 end module mod_ibm
