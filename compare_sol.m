@@ -99,8 +99,8 @@ for ip = 1:np
         ux = F1*U11(xx,s);
         uy = F1*U21(xx,s);
         u = sqrt(ux^2+uy^2);
-        plot(Y(j),u,'rx')
-        plot(Y(j),interp2(xp,yp,umag,X(ip),Y(j)),'kx')
+        plot(Y(j),ux,'rx')
+        plot(Y(j),interp2(xp,yp,uc,X(ip),Y(j)),'kx')
         title(sprintf('x = %.2f',X(ip)))
     end
 end
