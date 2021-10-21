@@ -113,9 +113,9 @@ program ibmc
 
     ! Create cilia
     nl = 2
-    np = 20
+    np = 5
     ibl = 0.3
-    wbl = 0.01
+    wbl = 0.05
     Rl = ibL/(np-1) 
     origin = vec(0.5,0.05)
     cil = cilia(nl,np)
@@ -135,7 +135,7 @@ program ibmc
 
         ! Apply tip force for the first 1 second
         ! if (t.lt.0.1) then
-            do il = 1,1
+            do il = 1,nl
                 cil%layers(il)%boundary(np)%Fx = 0.1*cos(2*PI/4.0*t)
             end do
         ! end if
