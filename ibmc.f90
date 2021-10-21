@@ -1,5 +1,5 @@
 program ibmc
-    use iso_fortran_env,    only: int32, real32, real64
+    use iso_fortran_env,    only: int32, int64, real32, real64
     use mod_pressure,       only: generate_laplacian_sparse, calculate_pressure_sparse
     use mod_amgx,           only: calculate_pressure_amgx
     use mod_mesh
@@ -13,22 +13,24 @@ program ibmc
     use mod_cilia
     implicit none
 
+    ! Parameters
+    integer(int64), parameter :: PI = 3.141592653589793
     ! Code execution time
     real(real64)    :: start, finish
     ! Computational Domain
     real(real32)    :: Lx       = 1.0
     real(real32)    :: Ly       = 1.0
     ! Mesh Paramaters
-    integer(int32)  :: Nx       = 50
-    integer(int32)  :: Ny       = 50
+    integer(int32)  :: Nx       = 30
+    integer(int32)  :: Ny       = 30
     ! Simulation time Paramaters
     real(real32)    :: tsim     = 20
-    real(real32)    :: dt       = 0.001
+    real(real32)    :: dt       = 0.0001
     real(real32)    :: t
     ! Physical Constants
-    real(real32)    :: nu       = 1.0
+    real(real32)    :: nu       = 1.0/10
     real(real32)    :: rho      = 1.0d0
-    real(real64)    :: ks       = 1.0d0
+    real(real64)    :: ks       = 0.1d0
     real(real64)    :: kb       = 1.5d0
     real(real64)    :: theta    = 3.1416
     real(real64)    :: Rl
@@ -41,6 +43,7 @@ program ibmc
     ! Temporary/Miscellaneous variable
     integer(int32)  :: it, NN, il, ip
     logical         :: init_status
+    real(real64)    :: tp = 2.0d0 ! Time period 
     ! Mesh
     type(mesh)      :: M
     ! Immersed boundary
@@ -110,8 +113,8 @@ program ibmc
 
     ! Create cilia
     nl = 2
-    np = 6
-    ibl = 0.2
+    np = 20
+    ibl = 0.3
     wbl = 0.01
     Rl = ibL/(np-1) 
     origin = vec(0.5,0.05)
@@ -131,11 +134,11 @@ program ibmc
         call calculate_cilia_force(cil,ks,Rl)
 
         ! Apply tip force for the first 1 second
-        if (t.lt.0.1) then
-            do il = 1,nl
-                cil%layers(il)%boundary(np)%Fx = 0.01
+        ! if (t.lt.0.1) then
+            do il = 1,1
+                cil%layers(il)%boundary(np)%Fx = 0.1*cos(2*PI/4.0*t)
             end do
-        end if
+        ! end if
 
         ! Spread force from the immersed boundary
         ! Initialize the forces at every time-step
@@ -179,7 +182,7 @@ program ibmc
         print *, 'time = ', t
 
         ! Write files every 10th timestep
-        if (mod(it,10).eq.0) then 
+        if (mod(it,50).eq.0) then 
             call write_field(u,'u',it) 
             call write_field(v,'v',it) 
             call write_location(cil,it)
