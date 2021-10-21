@@ -21,7 +21,7 @@ program ibmc
     integer(int32)  :: Nx       = 100
     integer(int32)  :: Ny       = 100
     ! Simulation time Paramaters
-    real(real32)    :: tsim     = 10
+    real(real32)    :: tsim     = 5
     real(real32)    :: dt       = 0.00001
     real(real32)    :: t
     ! Physical Constants
@@ -116,7 +116,7 @@ program ibmc
         ! Spread force from the immersed boundary
         call spread_force(M,ptcle,Fx,Fy)
 
-        print *, sum(Fx)*M%dx*M%dy
+        ! print *, sum(Fx)*M%dx*M%dy
 
         ! Calculate intermediate/predicted velocity
         ! call predictor(M,u,v,us,vs,nu,dt) 
@@ -143,7 +143,7 @@ program ibmc
         print *, 'time = ', t
 
         ! Write files every 10th timestep
-        if (mod(it,10).eq.0) then 
+        if (mod(it,100).eq.0) then 
             call write_field(u,'u',it) 
             call write_field(v,'v',it) 
             call write_location(ptcle,it)
