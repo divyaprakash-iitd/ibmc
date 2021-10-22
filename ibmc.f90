@@ -11,6 +11,7 @@ program ibmc
     use mod_ibm
     use mod_vec
     use mod_cilia
+    use mod_cilia_array
     implicit none
 
     ! Parameters
@@ -56,6 +57,8 @@ program ibmc
     real(real64)    :: Wbl          ! Width of cilia
     ! Cilia
     type(cilia)     :: Cil
+    ! Cilia array
+    type(cilia_array) :: CA
     !---------------------- Begin Calculations ------------------------------------!
     call cpu_time(start)
 
