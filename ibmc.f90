@@ -44,7 +44,8 @@ program ibmc
     ! Temporary/Miscellaneous variable
     integer(int32)  :: it, NN, il, ip
     logical         :: init_status
-    real(real64)    :: tp = 2.0d0 ! Time period 
+    real(real64)    :: tp = 2.0d0 ! Time period
+    real(real64)    :: Ftip = 0.1 ! Tip force
     ! Mesh
     type(mesh)      :: M
     ! Immersed boundary
@@ -127,7 +128,6 @@ program ibmc
     nc = 1 ! Number of cilia
     dc = 2*M%dx ! Distance between the cilia structures
 
-
     CA = cilia_array(nc,nl,np)
 
     ! cil = cilia(nl,np)
@@ -148,19 +148,14 @@ program ibmc
 
         ! Apply tip force for the first 1 second
         ! if (t.lt.0.1) then
-            do il = 1,nl
-                cil%layers(il)%boundary(np)%Fx = 0.1*cos(2*PI/4.0*t)
-            end do
+        call apply_tip_force_cilia_array(CA,Ftip,t)
         ! end if
 
         ! Spread force from the immersed boundary
-        ! Initialize the forces at every time-step
-        Fx = 0.0d0
+        Fx = 0.0d0 ! Initialize the forces at every time-step
         Fy = 0.0d0
-        do il = 1,nl
-            call spread_force(M,cil%layers(il),Fx,Fy)
-        end do
-
+        call spread_force_cilia_array(M,CA,Fx,Fy)
+            
         ! Calculate intermediate/predicted velocity
         ! call predictor(M,u,v,us,vs,nu,dt) 
         call euler(M,u,v,us,vs,nu,dt,Fx,Fy)
@@ -178,19 +173,12 @@ program ibmc
         call corrector(M,u,v,us,vs,p,rho,dt)
 
         ! Initialize the velocity at every time-step
+        call initialize_velocity_cilia_array(CA)
         ! Interpolate the Eulerian grid velocity to the Lagrangian structure
-        do il = 1,nl
-            do concurrent (ip = 1:np)
-                cil%layers(il)%boundary(ip)%Ux = 0.0d0
-                cil%layers(il)%boundary(ip)%Uy = 0.0d0
-            end do
-            call interpolate_velocity(M,cil%layers(il),u,v)
-        end do
+        call interpolate_velocity_cilia_array(M,CA,u,v)
 
         ! Update the Immersed Boundary
-        do il = 1,nl
-            call update_ib(cil%layers(il),dt) 
-        end do
+        call update_cilia_array(CA,dt)
 
         print *, 'time = ', t
 
@@ -198,7 +186,7 @@ program ibmc
         if (mod(it,50).eq.0) then 
             call write_field(u,'u',it) 
             call write_field(v,'v',it) 
-            call write_location(cil,it)
+            call write_location(CA%array(1),it)
         end if
     end do
 
