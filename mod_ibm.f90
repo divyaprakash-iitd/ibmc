@@ -707,6 +707,8 @@ contains
             end do
         end do
 
-    end subroutine
+    end subroutine initialize_velocity_cilia_array
+
+
 
 end module mod_ibm
