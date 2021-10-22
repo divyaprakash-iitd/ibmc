@@ -54,7 +54,7 @@ mod_ib.o: mod_ib.f90 mod_particle.o Makefile
 mod_vec.o: mod_vec.f90 Makefile
 	$(FORT) -c $<
 
-mod_ibm.o: mod_ibm.f90 mod_mesh.o mod_ib.o mod_cilia.o Makefile
+mod_ibm.o: mod_ibm.f90 mod_mesh.o mod_ib.o mod_cilia.o mod_cilia_array.o Makefile
 	$(FORT) -c $<
 
 mod_cilia.o: mod_cilia.f90 mod_ib.o Makefile
