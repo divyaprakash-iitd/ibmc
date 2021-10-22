@@ -13,7 +13,7 @@ module mod_ibm
     public :: initialize_ib, update_ib, spread_force, interpolate_velocity, & 
               write_location, calculate_spring_force, calculate_torsional_spring_force, &
               create_structure, create_cilia, calculate_horizontal_link_force, &
-              calculate_diagonal_link_force, calculate_cilia_force
+              calculate_diagonal_link_force, calculate_cilia_force, create_cilia_array
 contains
    
     subroutine initialize_ib(B)
