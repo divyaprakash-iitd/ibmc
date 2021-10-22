@@ -123,14 +123,13 @@ program ibmc
     ibl = 0.3
     wbl = 0.05
     Rl = ibL/(np-1) 
-    origin = vec(0.5,0.05)
+    origin = vec(0.25,0.05)
 
-    nc = 1 ! Number of cilia
-    dc = 2*M%dx ! Distance between the cilia structures
+    nc = 3 ! Number of cilia
+    dc = 5*M%dx ! Distance between the cilia structures
 
     CA = cilia_array(nc,nl,np)
 
-        print *, CA%nc
     ! cil = cilia(nl,np)
     ! call create_cilia(cil,nl,np,ibl,wbl,origin)
     ! To-Do: Initialize the immersed boundaries in cilia with a call to initialize_ib
