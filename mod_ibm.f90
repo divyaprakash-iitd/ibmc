@@ -610,7 +610,7 @@ contains
         ! CA = cilia_array(nc,nl,np)
 
         do ic = 1,nc
-            corigin%x = corigin%x + (ic-1)*dc
+            corigin%x = origin%x + (ic-1)*dc
             call create_cilia(CA%array(ic),nl,np,L,W,corigin)
         end do
 
