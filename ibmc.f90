@@ -187,7 +187,7 @@ program ibmc
         if (mod(it,50).eq.0) then 
             call write_field(u,'u',it) 
             call write_field(v,'v',it) 
-            call write_location(CA%array(1),it)
+            call write_location(CA,it)
         end if
     end do
 
