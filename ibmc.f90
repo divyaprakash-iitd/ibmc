@@ -130,6 +130,7 @@ program ibmc
 
     CA = cilia_array(nc,nl,np)
 
+        print *, CA%nc
     ! cil = cilia(nl,np)
     ! call create_cilia(cil,nl,np,ibl,wbl,origin)
     ! To-Do: Initialize the immersed boundaries in cilia with a call to initialize_ib
@@ -144,7 +145,7 @@ program ibmc
         call apply_boundary(M,u,v,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
 
         ! Calculate forces in the immersed boundary structure
-        call calculate_cilia_force(cil,ks,Rl)
+        call calculate_cilia_array_force(CA,ks,Rl)
 
         ! Apply tip force for the first 1 second
         ! if (t.lt.0.1) then
