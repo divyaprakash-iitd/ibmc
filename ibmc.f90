@@ -19,10 +19,10 @@ program ibmc
     ! Code execution time
     real(real64)    :: start, finish
     ! Computational Domain
-    real(real32)    :: Lx       = 1.0
+    real(real32)    :: Lx       = 2.0
     real(real32)    :: Ly       = 1.0
     ! Mesh Paramaters
-    integer(int32)  :: Nx       = 30
+    integer(int32)  :: Nx       = 60
     integer(int32)  :: Ny       = 30
     ! Simulation time Paramaters
     real(real32)    :: tsim     = 20
@@ -45,7 +45,7 @@ program ibmc
     integer(int32)  :: it, NN, il, ip
     logical         :: init_status
     real(real64)    :: tp = 2.0d0 ! Time period
-    real(real64)    :: Ftip = 0.1 ! Tip force
+    real(real64)    :: Ftip = 0.01 ! Tip force
     ! Mesh
     type(mesh)      :: M
     ! Immersed boundary
@@ -123,10 +123,10 @@ program ibmc
     ibl = 0.3
     wbl = 0.05
     Rl = ibL/(np-1) 
-    origin = vec(0.25,0.05)
+    origin = vec(0.4,0.05)
 
     nc = 3 ! Number of cilia
-    dc = 5*M%dx ! Distance between the cilia structures
+    dc = 16*M%dx ! Distance between the cilia structures
 
     CA = cilia_array(nc,nl,np)
 
