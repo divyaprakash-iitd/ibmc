@@ -620,7 +620,9 @@ contains
 
         ! Calculate forces for all the cilia within the array
         do ic = 1,CA%nc
+            print *, "Start"
             call calculate_cilia_force(CA%array(ic),ks,Rl)
+            print *, "End"
         end do
     end subroutine calculate_cilia_array_force
 
