@@ -134,7 +134,7 @@ program ibmc
     ! call create_cilia(cil,nl,np,ibl,wbl,origin)
     ! To-Do: Initialize the immersed boundaries in cilia with a call to initialize_ib
 
-    call create_cilia_array(CA,nc,nl,np,ibl,wbl,dc,origin)
+    call create_cilia_array(CA,ibl,wbl,dc,origin)
 
     do while (t.lt.tsim)
         t = t+dt 
