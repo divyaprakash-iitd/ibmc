@@ -213,34 +213,39 @@ contains
 
     end subroutine interpolate_velocity
 
-    subroutine write_location(C,timestep)
-        class(cilia), intent(in) :: C
+    subroutine write_location(CA,timestep)
+        class(cilia_array), intent(in) :: CA
         integer(int32), intent(in) :: timestep        
 
         integer(int32) :: fileunit = 8
         character(len=:), allocatable :: filename
-        integer(int32) :: inp, np, nl, il
+        integer(int32) :: inp, np, nl, il, ic
         character(len=8) :: itnumber
         character(len=1) :: idl ! Layer id
+        character(len=1) :: idc ! Cilia id
         write(itnumber,"(I8.8)") timestep
 
-        nl = C%nl
-        np = C%np
-        do il = 1,nl
-            write(idl,"(I1.1)") il
-            filename = idl // '_ib_loc' // itnumber // '.txt'
-            open(unit=fileunit, file=filename, ACTION="write", STATUS="replace")
-            do inp = 1,np
-                write(fileunit, '((F14.7), (F14.7))') C%layers(il)%boundary(inp)%x, C%layers(il)%boundary(inp)%y
-            end do
-            close(fileunit)
+        do ic = 1,CA%nc
+            nl = CA%array(ic)%nl
+            np = CA%array(ic)%np
+            write(idc,"(I1.1)") ic
+            do il = 1,nl
+                write(idl,"(I1.1)") il
+                filename = idc // '_' // idl // '_ib_loc' // itnumber // '.txt'
+                open(unit=fileunit, file=filename, ACTION="write", STATUS="replace")
+                do inp = 1,np
+                    write(fileunit, '((F14.7), (F14.7))') CA%array(ic)%layers(il)%boundary(inp)%x, & 
+                                    CA%array(ic)%layers(il)%boundary(inp)%y
+                end do
+                close(fileunit)
 
-            ! filename = 'ib_y.txt'
-            ! open(unit=fileunit, file=filename, ACTION="write", STATUS="replace")
-            ! do j = M%yu%lb,M%yu%ub
-            !     write(fileunit, '(*(F14.7))')(M%u_mesh(i,j)%y , i = M%xu%lb,M%xu%ub)
-            ! end do
-            ! close(fileunit)
+                ! filename = 'ib_y.txt'
+                ! open(unit=fileunit, file=filename, ACTION="write", STATUS="replace")
+                ! do j = M%yu%lb,M%yu%ub
+                !     write(fileunit, '(*(F14.7))')(M%u_mesh(i,j)%y , i = M%xu%lb,M%xu%ub)
+                ! end do
+                ! close(fileunit)
+            end do
         end do
     end subroutine write_location
 
