@@ -17,7 +17,7 @@ module mod_ibm
               calculate_cilia_array_force, update_cilia, update_cilia_array, spread_force_cilia, &
               spread_force_cilia_array, interpolate_velocity_cilia, &
               interpolate_velocity_cilia_array, initialize_velocity_cilia_array, &
-              apply_tip_force_cilia
+              apply_tip_force_cilia, apply_tip_force_cilia_array
 contains
    
     subroutine initialize_ib(B)
@@ -723,5 +723,18 @@ contains
         end do
 
     end subroutine apply_tip_force_cilia
+
+    subroutine apply_tip_force_cilia_array(CA,Ftip,t)
+        class(cilia_array), intent(inout) :: CA
+        real(real64), intent(in) :: Ftip
+        real(real32), intent(in) :: t
+
+        integer(int32) :: ic
+
+        do ic = 1,CA%nc
+            call apply_tip_force_cilia(CA%array(ic),Ftip,t)
+        end do
+
+    end subroutine apply_tip_force_cilia_array
 
 end module mod_ibm
