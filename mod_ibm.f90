@@ -15,7 +15,8 @@ module mod_ibm
               create_structure, create_cilia, calculate_horizontal_link_force, &
               calculate_diagonal_link_force, calculate_cilia_force, create_cilia_array, &
               calculate_cilia_array_force, update_cilia, update_cilia_array, spread_force_cilia, &
-              spread_force_cilia_array, interpolate_velocity_cilia
+              spread_force_cilia_array, interpolate_velocity_cilia, &
+              interpolate_velocity_cilia_array
 contains
    
     subroutine initialize_ib(B)
@@ -679,5 +680,17 @@ contains
             call interpolate_velocity(M,C%layers(il),u,v)
         end do
     end subroutine interpolate_velocity_cilia
+
+    subroutine interpolate_velocity_cilia_array(M,CA,u,v)
+        class(mesh), intent(in) :: M
+        class(cilia_array), intent(in out) :: CA
+        real(real64), intent(in) :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
+
+        integer(int32) :: ic
+
+        do ic = 1,CA%nc
+            call interpolate_velocity_cilia(M,CA%array(ic),u,v)
+        end do
+    end subroutine interpolate_velocity_cilia_array
 
 end module mod_ibm
