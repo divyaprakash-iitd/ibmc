@@ -55,6 +55,8 @@ program ibmc
     integer(int32)  :: np           ! Number of particles in the immersed boundary
     integer(int32)  :: nl           ! Number of layers in the cilia
     real(real64)    :: Wbl          ! Width of cilia
+    real(real64)    :: dc           ! Distance between cilium in an array
+    integer(int32)  :: nc       ! Total number of cilia
     ! Cilia
     type(cilia)     :: Cil
     ! Cilia array
@@ -121,9 +123,19 @@ program ibmc
     wbl = 0.05
     Rl = ibL/(np-1) 
     origin = vec(0.5,0.05)
-    cil = cilia(nl,np)
-    call create_cilia(cil,nl,np,ibl,wbl,origin)
+
+    nc = 1 ! Number of cilia
+    dc = 2*M%dx ! Distance between the cilia structures
+
+
+    CA = cilia_array(nc,nl,np)
+
+    ! cil = cilia(nl,np)
+    ! call create_cilia(cil,nl,np,ibl,wbl,origin)
     ! To-Do: Initialize the immersed boundaries in cilia with a call to initialize_ib
+
+    call create_cilia_array(CA,nc,nl,np,ibl,wbl,dc,origin)
+
     do while (t.lt.tsim)
         t = t+dt 
         it = it + 1
@@ -132,8 +144,6 @@ program ibmc
         call apply_boundary(M,u,v,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
 
         ! Calculate forces in the immersed boundary structure
-        ! call calculate_spring_force(ptcle,Ks,Rl,btype)
-        ! call calculate_torsional_spring_force(ptcle,kb,theta,btype)
         call calculate_cilia_force(cil,ks,Rl)
 
         ! Apply tip force for the first 1 second
