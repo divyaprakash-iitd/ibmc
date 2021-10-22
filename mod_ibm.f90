@@ -14,7 +14,7 @@ module mod_ibm
               write_location, calculate_spring_force, calculate_torsional_spring_force, &
               create_structure, create_cilia, calculate_horizontal_link_force, &
               calculate_diagonal_link_force, calculate_cilia_force, create_cilia_array, &
-              calculate_cilia_array_force, update_cilia, update_cilia_array
+              calculate_cilia_array_force, update_cilia, update_cilia_array, spread_force_cilia
 contains
    
     subroutine initialize_ib(B)
@@ -642,5 +642,18 @@ contains
             call update_cilia(CA%array(ic),dt)
         end do
     end subroutine update_cilia_array
+
+    subroutine spread_force_cilia(M,C,Fx,Fy)
+        class(mesh), intent(in) :: M
+        class(cilia), intent(in) :: C
+        real(real64), intent(in out) :: Fx(:,:), Fy(:,:)
+
+        integer(int32) :: il
+
+        do il = 1,C%nl
+            call spread_force(M,C%layers(il),Fx,Fy)
+        end do
+    end subroutine
+
 
 end module mod_ibm
