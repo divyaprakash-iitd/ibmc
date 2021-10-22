@@ -16,7 +16,8 @@ module mod_ibm
               calculate_diagonal_link_force, calculate_cilia_force, create_cilia_array, &
               calculate_cilia_array_force, update_cilia, update_cilia_array, spread_force_cilia, &
               spread_force_cilia_array, interpolate_velocity_cilia, &
-              interpolate_velocity_cilia_array, initialize_velocity_cilia_array
+              interpolate_velocity_cilia_array, initialize_velocity_cilia_array, &
+              apply_tip_force_cilia
 contains
    
     subroutine initialize_ib(B)
@@ -709,6 +710,18 @@ contains
 
     end subroutine initialize_velocity_cilia_array
 
+    subroutine apply_tip_force_cilia(C,Ftip,t)
+        class(cilia), intent(inout) :: C
+        real(real64), intent(in) :: Ftip
+        real(real32), intent(in) :: t
 
+        integer(int32) :: il, np
+
+        np = size(C%layers(1)%boundary)
+        do il = 1,C%nl
+            C%layers(il)%boundary(np)%Fx = Ftip*cos(2*PI/4.0*t)
+        end do
+
+    end subroutine apply_tip_force_cilia
 
 end module mod_ibm
