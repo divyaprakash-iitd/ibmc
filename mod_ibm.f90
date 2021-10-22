@@ -621,4 +621,15 @@ contains
         end do
     end subroutine calculate_cilia_array_force
 
+    subroutine update_cilia(C,dt)
+        class(cilia), intent(in out)    :: C
+        real(real32), intent(in)        :: dt
+
+        integer(int32) :: il
+
+        do il = 1,C%nl
+            call update_ib(C%layers(il),dt)
+        end do
+    end subroutine update_cilia
+
 end module mod_ibm
