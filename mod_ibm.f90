@@ -51,7 +51,7 @@ contains
         
         ! Calculate the new position
         ! Start from 2 if fixing the first particle in each layer of cilia
-        do concurrent (inp = 2:np)
+        do inp = 2,np
             B%boundary(inp)%x = B%boundary(inp)%x + B%boundary(inp)%Ux * dt
             B%boundary(inp)%y = B%boundary(inp)%y + B%boundary(inp)%Uy * dt
         end do
