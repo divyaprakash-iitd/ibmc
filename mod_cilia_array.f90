@@ -24,6 +24,7 @@ contains
 
         integer(int32) :: ic
 
+        self%nc = nc
         allocate(self%array(nc))
 
         do ic = 1,nc
