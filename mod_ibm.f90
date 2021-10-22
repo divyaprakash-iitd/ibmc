@@ -13,8 +13,8 @@ module mod_ibm
     public :: initialize_ib, update_ib, spread_force, interpolate_velocity, & 
               write_location, calculate_spring_force, calculate_torsional_spring_force, &
               create_structure, create_cilia, calculate_horizontal_link_force, &
-              calculate_diagonal_link_force, calculate_cilia_force, create_cilia_array &
-              calculate_cilia_array_force
+              calculate_diagonal_link_force, calculate_cilia_force, create_cilia_array, &
+              calculate_cilia_array_force, update_cilia, update_cilia_array
 contains
    
     subroutine initialize_ib(B)
@@ -631,5 +631,16 @@ contains
             call update_ib(C%layers(il),dt)
         end do
     end subroutine update_cilia
+    
+    subroutine update_cilia_array(CA,dt)
+        class(cilia_array), intent(in out)    :: CA
+        real(real32), intent(in)        :: dt
+
+        integer(int32) :: ic
+
+        do ic = 1,CA%nc 
+            call update_cilia(CA%array(ic),dt)
+        end do
+    end subroutine update_cilia_array
 
 end module mod_ibm
