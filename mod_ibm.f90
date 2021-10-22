@@ -418,7 +418,7 @@ contains
 
     end subroutine create_structure
 
-    subroutine create_cilia(C,nl,np,L,W,origin)
+    subroutine create_cilia(C,L,W,origin)
         ! Creates a vertical cilia
         class(cilia), intent(in out) :: C
         class(vec), intent(in) :: origin
@@ -592,11 +592,8 @@ contains
 
     end subroutine calculate_diagonal_link_force
 
-    subroutine create_cilia_array(CA, nc,nl,np,L,W,dc,origin)
+    subroutine create_cilia_array(CA,L,W,dc,origin)
         class(cilia_array), intent(in out) :: CA
-        integer(int32), intent(in) :: nc
-        integer(int32), intent(in) :: nl
-        integer(int32), intent(in) :: np
         real(real64),   intent(in) :: L     ! Length of cilia
         real(real64),   intent(in) :: W     ! Width of cilia
         real(real64),   intent(in) :: dc    ! Spacing of cilia
@@ -609,9 +606,9 @@ contains
 
         ! CA = cilia_array(nc,nl,np)
 
-        do ic = 1,nc
+        do ic = 1,CA%nc
             corigin%x = origin%x + (ic-1)*dc
-            call create_cilia(CA%array(ic),nl,np,L,W,corigin)
+            call create_cilia(CA%array(ic),L,W,corigin)
         end do
 
     end subroutine create_cilia_array
