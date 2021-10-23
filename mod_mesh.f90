@@ -1,5 +1,5 @@
 module mod_mesh
-    use iso_fortran_env, only: int32, real32, int64, real64
+    use iso_fortran_env, only: int32, real64, int32, real64
     use mod_vec
     use mod_dims
     
@@ -10,7 +10,7 @@ module mod_mesh
 
     type :: mesh
         character(len=:), allocatable :: name
-        real(real32) :: Lx, Ly, dx, dy
+        real(real64) :: Lx, Ly, dx, dy
         integer(int32) :: Nx, Ny
         type(dims) :: xu, yu, xv, yv, xp, yp
         type(vec), allocatable :: u_mesh(:,:), v_mesh(:,:), p_mesh(:,:)
@@ -24,7 +24,7 @@ contains
 
     pure type(mesh) function mesh_constructor(name,Lx,Ly,Nx,Ny) result(self)
             character(len=*), intent(in) :: name
-            real(real32), intent(in) :: Lx, Ly
+            real(real64), intent(in) :: Lx, Ly
             integer(int32), intent(in) :: Nx, Ny
 
             integer(int32) :: imin, imax, jmin, jmax

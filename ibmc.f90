@@ -1,11 +1,11 @@
 program ibmc
-    use iso_fortran_env,    only: int32, int64, real32, real64
+    use iso_fortran_env,    only: int32, int32, real64, real64
     use mod_pressure,       only: generate_laplacian_sparse, calculate_pressure_sparse
     use mod_amgx,           only: calculate_pressure_amgx
     use mod_mesh
     use mod_time
-    use mod_boundary
     use mod_time_stepping
+    use mod_boundary
     use mod_io
     use mod_ib
     use mod_ibm
@@ -15,32 +15,32 @@ program ibmc
     implicit none
 
     ! Parameters
-    integer(int64), parameter :: PI = 3.141592653589793
+    integer(int32), parameter :: PI = 3.141592653589793
     ! Code execution time
     real(real64)    :: start, finish
     ! Computational Domain
-    real(real32)    :: Lx       = 1.0
-    real(real32)    :: Ly       = 1.0
+    real(real64)    :: Lx       = 1.0d0
+    real(real64)    :: Ly       = 1.0d0
     ! Mesh Paramaters
     integer(int32)  :: Nx       = 30
     integer(int32)  :: Ny       = 30
     ! Simulation time Paramaters
-    real(real32)    :: tsim     = 20
-    real(real32)    :: dt       = 0.0001
-    real(real32)    :: t
+    real(real64)    :: tsim     = 10.0d0
+    real(real64)    :: dt       = 0.01d0
+    real(real64)    :: t
     ! Physical Constants
-    real(real32)    :: nu       = 1.0/100
-    real(real32)    :: rho      = 1.0d0
+    real(real64)    :: nu       = 1.0d0/100.0d0
+    real(real64)    :: rho      = 1.0d0
     real(real64)    :: ks       = 0.1d0
     real(real64)    :: kb       = 1.5d0
-    real(real64)    :: theta    = 3.1416
+    real(real64)    :: theta    = 3.1416d0
     real(real64)    :: Rl
-    real(real32)    :: FP(2)
+    real(real64)    :: FP(2)
     real(real64)    :: SP(3)
     ! Boundary values
-    real(real32)    :: utop, vtop, ubottom, vbottom, &
+    real(real64)    :: utop, vtop, ubottom, vbottom, &
                        uleft, vleft, uright, vright
-    real(real32)    :: BC(8)
+    real(real64)    :: BC(8)
     ! Matrices to store fields
     real(real64), allocatable :: u(:,:), v(:,:), us(:,:), vs(:,:), R(:,:), &
                                  P(:,:), A(:,:,:), Fx(:,:), Fy(:,:)
@@ -91,14 +91,14 @@ program ibmc
     Fx  = 0.0d0
     Fy  = 0.0d0
     ! Define boundary conditions for velocity
-    utop    = 1.0
-    vtop    = 0.0
-    ubottom = 0.0
-    vbottom = 0.0
-    uleft   = 0.0
-    vleft   = 0.0
-    uright  = 0.0
-    vright  = 0.0
+    utop    = 1.0d0
+    vtop    = 0.0d0
+    ubottom = 0.0d0
+    vbottom = 0.0d0
+    uleft   = 0.0d0
+    vleft   = 0.0d0
+    uright  = 0.0d0
+    vright  = 0.0d0
 
     BC = [utop,vtop,ubottom,vbottom,uleft,vleft,uright,vright]
     FP = [nu,rho]
@@ -115,10 +115,10 @@ program ibmc
     ! Create cilia
     nl = 2
     np = 5
-    ibl = 0.3
-    wbl = 0.05
+    ibl = 0.3d0
+    wbl = 0.05d0
     Rl = ibL/(np-1) 
-    origin = vec(0.4,0.05)
+    origin = vec(0.4d0,0.05d0)
 
     nc = 3 ! Number of cilia
     dc = 16*M%dx ! Distance between the cilia structures

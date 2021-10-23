@@ -1,5 +1,5 @@
 module mod_amgx
-    use iso_fortran_env, only: int32, int64, real32, real64
+    use iso_fortran_env, only: int32, int32, real64, real64
     use iso_c_binding, only: c_int, c_double, c_loc
     implicit none
     save

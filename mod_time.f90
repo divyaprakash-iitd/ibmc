@@ -1,5 +1,5 @@
 module mod_time
-    use iso_fortran_env, only: int32, real32, real64
+    use iso_fortran_env, only: int32, real64, real64
     use mod_mesh
     implicit none
     
@@ -9,7 +9,7 @@ contains
         class(mesh), intent(in) :: M
         real(real64), intent(in) :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
         real(real64), intent(in out) :: us(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), vs(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
-        real(real32), intent(in) :: nu, dt
+        real(real64), intent(in) :: nu, dt
 
         integer(int32) :: i,j
         real(real64) :: ucenter, vcenter, dxi, dyi
@@ -48,7 +48,7 @@ contains
         real(real64), intent(in out) :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
         real(real64), intent(in) :: P(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub)
         real(real64), intent(in) :: us(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), vs(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
-        real(real32), intent(in) :: rho, dt
+        real(real64), intent(in) :: rho, dt
 
         integer(int32) :: i,j
         real(real64) :: dxi, dyi
@@ -74,7 +74,7 @@ contains
         class(mesh), intent(in) :: M
         real(real64), intent(in) :: us(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), vs(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
         real(real64), intent(in out) :: R(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub)
-        real(real32), intent(in) :: rho, dt
+        real(real64), intent(in) :: rho, dt
 
         integer(int32) :: i,j
         real(real64) :: dxi, dyi
@@ -96,7 +96,7 @@ contains
         class(mesh), intent(in) :: M
         real(real64), intent(in) :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
         real(real64), intent(in) :: Fx(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub)
-        real(real32), intent(in) :: nu 
+        real(real64), intent(in) :: nu 
 
         real(real64), intent(in out) :: us(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub)
         integer(int32) :: i,j
@@ -121,7 +121,7 @@ contains
         class(mesh), intent(in) :: M
         real(real64), intent(in) :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub) 
         real(real64), intent(in) :: Fy(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
-        real(real32), intent(in) :: nu 
+        real(real64), intent(in) :: nu 
 
         real(real64), intent(in out) :: vs(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
         integer(int32) :: i,j
@@ -142,4 +142,55 @@ contains
 
     end subroutine cdv
 
+    pure function cdu_f(M,u,v,nu,Fx)
+        ! Calculates convection and diffusion terms for u
+
+        class(mesh), intent(in) :: M
+        real(real64), intent(in) :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
+        real(real64), intent(in) :: Fx(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub)
+        real(real64), intent(in) :: nu 
+
+        real(real64) :: cdu_f(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub)
+        integer(int32) :: i,j
+        real(real64) :: vcenter, dxi, dyi 
+
+        dxi = 1/M%dx
+        dyi = 1/M%dy
+
+        ! (u-velocity cell)
+        do concurrent (j = M%yu%lb+1:M%yu%ub-1, i = M%xu%lb+1:M%xu%ub-1)
+            vcenter = 0.25*(v(i-1,j) + v(i-1,j+1) + v(i,j) + v(i,j+1))
+            cdu_f(i,j) =   nu*(u(i-1,j) - 2*u(i,j) + u(i+1,j))*dxi**2 &
+                        + nu*(u(i,j-1) -2*u(i,j) + u(i,j+1))*dyi**2 &
+                        - u(i,j)*(u(i+1,j) - u(i-1,j))*0.5*dxi &
+                        - vcenter*(u(i,j+1)-u(i,j-1))*0.5*dyi + Fx(i,j)
+        end do
+
+    end function cdu_f
+
+    pure function cdv_f(M,u,v,nu,Fy)
+        ! Calculates convection and diffusion terms for u
+        class(mesh), intent(in) :: M
+        real(real64), intent(in) :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub) 
+        real(real64), intent(in) :: Fy(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
+        real(real64), intent(in) :: nu 
+
+        real(real64)  :: cdv_f(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
+        integer(int32) :: i,j
+        real(real64) :: ucenter, dxi, dyi
+
+        dxi = 1/M%dx
+        dyi = 1/M%dy
+
+        ! vs 
+        ! (v-velocity cell)
+        do concurrent (j = M%yv%lb+1:M%yv%ub-1, i = M%xv%lb+1:M%xv%ub-1)
+            ucenter = 0.25*(u(i,j-1)+u(i,j)+u(i+1,j-1)+u(i+1,j))
+            cdv_f(i,j) =   nu*(v(i-1,j) - 2*v(i,j) + v(i+1,j))*dxi**2 &
+                        + nu*(v(i,j-1) - 2*v(i,j) + v(i,j+1))*dyi**2 &
+                        - ucenter*(v(i+1,j) - v(i-1,j))*0.5*dxi &
+                        - v(i,j)*(v(i,j+1)-v(i,j-1))*0.5*dyi + Fy(i,j)
+        end do
+
+    end function cdv_f
 end module mod_time

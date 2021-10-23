@@ -1,5 +1,5 @@
 module mod_cilia_array
-    use iso_fortran_env, only: int32, int64, real32, real64
+    use iso_fortran_env, only: int32, int32, real64, real64
     use mod_cilia
     implicit none
    

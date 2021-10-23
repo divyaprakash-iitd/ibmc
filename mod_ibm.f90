@@ -1,5 +1,5 @@
 module mod_ibm
-    use iso_fortran_env, only: int32, real32, real64
+    use iso_fortran_env, only: int32, real64, real64
     use mod_mesh
     use mod_ib
     use mod_vec
@@ -43,7 +43,7 @@ contains
 
     subroutine update_ib(B,dt)
         class(ib), intent(in out) :: B
-        real(real32), intent(in) :: dt
+        real(real64), intent(in) :: dt
 
         integer(int32) :: np, inp
 
@@ -111,7 +111,7 @@ contains
         function dirac(x,h)
             ! Defined for a uniform grid
             real(real64), intent(in) :: x(2)
-            real(real32), intent(in) :: h
+            real(real64), intent(in) :: h
             real(real64) :: dirac
 
             integer(int32) :: ii
@@ -189,7 +189,7 @@ contains
         function dirac(x,h)
             ! Defined for a uniform grid
             real(real64), intent(in) :: x(2)
-            real(real32), intent(in) :: h
+            real(real64), intent(in) :: h
             real(real64) :: dirac
 
             integer(int32) :: ii
@@ -628,7 +628,7 @@ contains
 
     subroutine update_cilia(C,dt)
         class(cilia), intent(in out)    :: C
-        real(real32), intent(in)        :: dt
+        real(real64), intent(in)        :: dt
 
         integer(int32) :: il
 
@@ -639,7 +639,7 @@ contains
     
     subroutine update_cilia_array(CA,dt)
         class(cilia_array), intent(in out)    :: CA
-        real(real32), intent(in)        :: dt
+        real(real64), intent(in)        :: dt
 
         integer(int32) :: ic
 
@@ -715,7 +715,7 @@ contains
     subroutine apply_tip_force_cilia(C,Ftip,t)
         class(cilia), intent(inout) :: C
         real(real64), intent(in) :: Ftip
-        real(real32), intent(in) :: t
+        real(real64), intent(in) :: t
 
         integer(int32) :: il, np
 
@@ -729,7 +729,7 @@ contains
     subroutine apply_tip_force_cilia_array(CA,Ftip,t)
         class(cilia_array), intent(inout) :: CA
         real(real64), intent(in) :: Ftip
-        real(real32), intent(in) :: t
+        real(real64), intent(in) :: t
 
         integer(int32) :: ic
 

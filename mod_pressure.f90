@@ -1,5 +1,5 @@
 module mod_pressure
-    use iso_fortran_env, only: int32, int64, real32, real64 
+    use iso_fortran_env, only: int32, int32, real64, real64 
     implicit none
 
     private
@@ -17,12 +17,12 @@ subroutine calculate_pressure_sparse(A,PIN,R)
     integer(int32) :: Nx, Ny
 
     ! Indices 
-    integer(int64) :: i,j,ITER
+    integer(int32) :: i,j,ITER
 
     ! Parameters for SOR
-    real(real32),   parameter :: OMEGA      = 1.99
-    real(real32),   parameter :: TOLERANCE  = 1E-10
-    integer(int64), parameter :: MAXITER    = 1E5
+    real(real64),   parameter :: OMEGA      = 1.99
+    real(real64),   parameter :: TOLERANCE  = 1E-10
+    integer(int32), parameter :: MAXITER    = 1E5
     integer(int32), parameter :: BOTTOM     = 1
     integer(int32), parameter :: LEFT       = 2
     integer(int32), parameter :: CENTER     = 3
@@ -96,7 +96,7 @@ end subroutine calculate_pressure_sparse
 
 subroutine generate_laplacian_sparse(A,dx,dy)
 
-    real(real32),   intent(in)      :: dx, dy
+    real(real64),   intent(in)      :: dx, dy
     real(real64),   intent(in out)  :: A(:,:,:)
     
     

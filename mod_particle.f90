@@ -1,5 +1,5 @@
 module mod_particle
-    use iso_fortran_env, only: int32, real32, real64
+    use iso_fortran_env, only: int32, real64, real64
     implicit none
 
     private

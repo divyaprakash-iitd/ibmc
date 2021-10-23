@@ -39,7 +39,7 @@ mod_time.o: mod_time.f90 mod_mesh.o Makefile
 mod_boundary.o: mod_boundary.f90 mod_mesh.o Makefile
 	$(FORT) -c $<
 
-mod_time_stepping.o: mod_time_stepping.f90 Makefile
+mod_time_stepping.o: mod_time_stepping.f90 mod_pressure.o mod_amgx.o mod_mesh.o mod_dims.o mod_time.o mod_boundary.o mod_io.o mod_particle.o mod_ib.o mod_vec.o mod_ibm.o mod_cilia.o mod_cilia_array.o Makefile
 	$(FORT) -c $<
 
 mod_io.o: mod_io.f90 Makefile

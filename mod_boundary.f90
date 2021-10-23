@@ -1,5 +1,5 @@
 module mod_boundary
-    use iso_fortran_env, only: int32, real32, int64, real64
+    use iso_fortran_env, only: int32, real64, int32, real64
     use mod_mesh
     implicit none
    
@@ -10,7 +10,7 @@ contains
 
     pure subroutine apply_boundary(M,u,v,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
         class(mesh), intent(in) :: M
-        real(real32), intent(in) :: utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright
+        real(real64), intent(in) :: utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright
         real(real64), intent(in out) :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
 
         ! Apply boundary conditions
