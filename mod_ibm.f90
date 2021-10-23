@@ -91,6 +91,7 @@ contains
             end do
         end do
 
+            print *, "HERE"
         ! Calculate the y-direction force on the v-velocity cells
         do j = M%yv%lb,M%yv%ub
             do i = M%xv%lb,M%xv%ub
@@ -447,12 +448,12 @@ contains
             end do
         end do
 
-        do il = 1,C%nl
-            do ip = 1,np
-                print *, C%layers(il)%boundary(ip)%x
-                print *, C%layers(il)%boundary(ip)%y
-            end do
-        end do
+        !do il = 1,C%nl
+        !    do ip = 1,np
+        !        print *, C%layers(il)%boundary(ip)%x
+        !        print *, C%layers(il)%boundary(ip)%y
+        !    end do
+        !end do
     end subroutine create_cilia
 
     subroutine calculate_cilia_force(C,ks,Rl)
