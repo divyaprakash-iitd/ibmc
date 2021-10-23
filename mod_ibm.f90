@@ -91,7 +91,6 @@ contains
             end do
         end do
 
-            print *, "HERE"
         ! Calculate the y-direction force on the v-velocity cells
         do j = M%yv%lb,M%yv%ub
             do i = M%xv%lb,M%xv%ub
