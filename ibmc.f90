@@ -1,5 +1,5 @@
 program ibmc
-    use iso_fortran_env,    only: int32, int32, real64, real64
+    use iso_fortran_env,    only: int32, real64
     use mod_pressure,       only: generate_laplacian_sparse, calculate_pressure_sparse
     use mod_amgx,           only: calculate_pressure_amgx
     use mod_mesh
@@ -48,7 +48,7 @@ program ibmc
     integer(int32)  :: it, NN, il, ip
     logical         :: init_status
     real(real64)    :: tp = 2.0d0 ! Time period
-    real(real64)    :: Ftip = 0.01 ! Tip force
+    real(real64)    :: Ftip = 0.05 ! Tip force
     ! Mesh
     type(mesh)      :: M
     ! Immersed boundary
@@ -69,8 +69,12 @@ program ibmc
     !---------------------- Begin Calculations ------------------------------------!
     call cpu_time(start)
 
-    ! Construct Mesh
+    ! Construct and write Mesh data
     M = mesh('M',Lx,Ly,Nx,Ny)
+    call write_mesh(M,'u')
+    call write_mesh(M,'v')
+    call write_mesh(M,'p')
+
     ! Allocate matrices ofr u,v,us,vs,rhs
     allocate(u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub))    
     allocate(v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub))
@@ -82,6 +86,7 @@ program ibmc
     allocate(Fy(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub))
     NN = 5
     allocate(A(1:Nx,1:Ny,NN))
+
     ! Initialize
     u   = 0.0d0
     v   = 0.0d0
@@ -91,6 +96,7 @@ program ibmc
     A   = 0.0d0
     Fx  = 0.0d0
     Fy  = 0.0d0
+
     ! Define boundary conditions for velocity
     utop    = 0.0d0
     vtop    = 0.0d0
@@ -101,6 +107,7 @@ program ibmc
     uright  = 0.0d0
     vright  = 0.0d0
 
+    ! Arrays to transfer data
     BC = [utop,vtop,ubottom,vbottom,uleft,vleft,uright,vright]
     FP = [nu,rho]
     SP = [ks,Rl,Ftip]
@@ -108,29 +115,22 @@ program ibmc
     ! Generate Laplacian matrix
     call generate_laplacian_sparse(A,M%dx,M%dy)
 
-    init_status = .False. ! AmgX initialization status
-    call write_mesh(M,'u')
-    call write_mesh(M,'v')
-    call write_mesh(M,'p')
+    ! AmgX initialization status
+    init_status = .False.
 
     ! Create cilia
-    nl = 2
-    np = 5
-    ibl = 0.3d0
-    wbl = 0.05d0
-    Rl = ibL/(np-1) 
-    origin = vec(0.4d0,0.05d0)
-
-    nc = 3 ! Number of cilia
-    dc = 16*M%dx ! Distance between the cilia structures
+    nc      = 3                     ! Number of cilia
+    nl      = 2                     ! No. of Layers/Cilia
+    np      = 5                     ! No. of Particles/Layer
+    ibl     = 0.3d0                 ! Length of a Layer
+    wbl     = 0.05d0                ! Width/Distance between two Layers
+    dc      = 16*M%dx               ! Distance between two Cilia
+    Rl      = ibL/(np-1)            ! Resting Length of Spring
+    origin  = vec(0.4d0,0.05d0)     ! Location of the first Cilium (Bottom-Left Particle)
 
     CA = cilia_array(nc,nl,np)
-    ! CAmid = cilia_array(nc,nl,np)
-
     call create_cilia_array(CA,ibl,wbl,dc,origin)
-    ! call create_cilia_array(CAmid,ibl,wbl,dc,origin)
 
-    ! print *, CAmid%array(1)%layers(1)%boundary(1)%Fx
     call time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,A,P,R,tsim,dt)
 
     call cpu_time(finish)
