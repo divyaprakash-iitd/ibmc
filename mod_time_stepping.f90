@@ -234,7 +234,7 @@ contains
 !        end do
 !    end subroutine time_loop
 
-    subroutine time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,A,P,R,tsim,dt)
+    subroutine time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAmid,A,P,R,tsim,dt)
         real(real64), intent(in)          :: FP(:)
         real(real64), intent(in)          :: BC(:)
         class(mesh), intent(inout)        :: M
@@ -244,12 +244,15 @@ contains
         real(real64), intent(inout)       :: Fy(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
         real(real64), intent(in)          :: SP(:)
         class(cilia_array), intent(inout) :: CA
+        class(cilia_array), intent(inout) :: CAmid
         real(real64), intent(in)          :: A(:,:,:)
         real(real64), intent(inout)       :: P(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub)
         real(real64), intent(inout)       :: R(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub)
         real(real64), intent(in)          :: tsim
         real(real64), intent(in)          :: dt
 
+        ! Intermediate cilia
+        ! type(cilia_array) :: CAmid
 
         ! Intermediate velocities
         real(real64)       :: umid(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), vmid(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
@@ -300,14 +303,28 @@ contains
         do while (t.lt.tsim)
             t = t + dt
             it = it + 1
+        
+            ! Calculate forces in the immersed boundary structure
+            call calculate_cilia_array_force(CA,ks,Rl)
 
+            ! Apply tip force for the first 1 second
+            ! if (t.lt.0.1) then
+            call apply_tip_force_cilia_array(CA,Ftip,t)
+            ! end if
+            
+            call copy_cilia(CA,CAmid)
+ 
             ! RK2: Step 1
             ! Apply velocity boundary conditions
             call apply_boundary(M,u,v,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
 
+            ! Spread force from the immersed boundary
+            Fx = 0.0d0 ! Initialize the forces at every time-step
+            Fy = 0.0d0
+            call spread_force_cilia_array(M,CAmid,Fx,Fy)
+
             ! us = u + 0.5d0*dt*cdu_f(M,u,v,nu,Fx)
             ! vs = v + 0.5d0*dt*cdv_f(M,u,v,nu,Fy)
-
             call cdu(M,u,v,us,nu,Fx)
             us = u + us*dt/2
             call cdv(M,u,v,vs,nu,Fy)
@@ -323,9 +340,30 @@ contains
             ! Perform the corrector step to obtain the velocity
             call corrector(M,umid,vmid,us,vs,P,rho,0.5d0*dt)
 
+            ! Initialize the velocity at every time-step
+            call initialize_velocity_cilia_array(CAmid)
+            ! Interpolate the Eulerian grid velocity to the Lagrangian structure
+            call interpolate_velocity_cilia_array(M,CAmid,umid,vmid)
+
+            ! Update the Immersed Boundary
+            call update_cilia_array(CAmid,dt/2)
+
             ! RK2: Step 2
+            
+            ! Calculate forces in the immersed boundary structure
+            call calculate_cilia_array_force(CAmid,ks,Rl)
+
+            ! Apply tip force for the first 1 second
+            ! if (t.lt.0.1) then
+            call apply_tip_force_cilia_array(CAmid,Ftip,t)
+            ! end if
 
             call apply_boundary(M,umid,vmid,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
+
+            ! Spread force from the immersed boundary
+            Fx = 0.0d0 ! Initialize the forces at every time-step
+            Fy = 0.0d0
+            call spread_force_cilia_array(M,CAmid,Fx,Fy)
             
             ! us = u + dt*cdu_f(M,umid,vmid,nu,Fx)
             ! vs = v + dt*cdv_f(M,umid,vmid,nu,Fx)
@@ -345,17 +383,52 @@ contains
             ! Perform the corrector step to obtain the velocity
             call corrector(M,u,v,us,vs,p,rho,dt)
 
+            ! Initialize the velocity at every time-step
+            call initialize_velocity_cilia_array(CA)
+            ! Interpolate the Eulerian grid velocity to the Lagrangian structure
+            call interpolate_velocity_cilia_array(M,CA,u,v)
+
+            ! Update the Immersed Boundary
+            call update_cilia_array(CA,dt)
+
             print *, 'time = ', t
             
             ! Write files every 10th timestep
             if (mod(it,50).eq.0) then 
                 call write_field(u,'u',it) 
                 call write_field(v,'v',it) 
-                ! call write_location(CA,it)
+                call write_location(CA,it)
             end if
 
         end do
     end subroutine time_loop
+
+    subroutine copy_cilia(CA1,CA2)
+        class(cilia_array), intent(in) :: CA1
+        class(cilia_array), intent(inout) :: CA2
+
+        integer(int32) :: nc, nl, np
+        integer(int32) :: ic, il, ip
+
+        nc = CA1%nc
+        nl = CA1%array(1)%nl
+        np = CA1%array(1)%layers(1)%np
+
+        do ic = 1,nc
+            do il = 1,nl
+                do ip = 1,np
+                    CA2%array(ic)%layers(il)%boundary(ip)%x = CA1%array(ic)%layers(il)%boundary(ip)%x
+                    CA2%array(ic)%layers(il)%boundary(ip)%y = CA1%array(ic)%layers(il)%boundary(ip)%y
+                    CA2%array(ic)%layers(il)%boundary(ip)%Ux = CA1%array(ic)%layers(il)%boundary(ip)%Ux
+                    CA2%array(ic)%layers(il)%boundary(ip)%Uy = CA1%array(ic)%layers(il)%boundary(ip)%Uy
+                    CA2%array(ic)%layers(il)%boundary(ip)%Fx = CA1%array(ic)%layers(il)%boundary(ip)%Fx
+                    CA2%array(ic)%layers(il)%boundary(ip)%Fy = CA1%array(ic)%layers(il)%boundary(ip)%Fy
+                    ! CA2%array(ic)%layers(il)%boundary(ip)%tag = CA1%array(ic)%layers(il)%boundary(ip)%tag
+                end do
+            end do
+        end do
+
+    end subroutine copy_cilia
 
 end module mod_time_stepping
 
