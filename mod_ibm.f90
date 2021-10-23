@@ -440,6 +440,7 @@ contains
 
         ! Assign locations to each of the layers of the cilia
         do il = 1,C%nl
+            call initialize_ib(C%layers(il))
             C%layers(il)%boundary(1)%x = origin%x + dw*(il-1)
             C%layers(il)%boundary(1)%y = origin%y
             do ip = 2,C%np
