@@ -19,17 +19,17 @@ program ibmc
     ! Code execution time
     real(real64)    :: start, finish
     ! Computational Domain
-    real(real64)    :: Lx       = 1.0d0
+    real(real64)    :: Lx       = 2.0d0
     real(real64)    :: Ly       = 1.0d0
     ! Mesh Paramaters
-    integer(int32)  :: Nx       = 30
+    integer(int32)  :: Nx       = 60
     integer(int32)  :: Ny       = 30
     ! Simulation time Paramaters
     real(real64)    :: tsim     = 10.0d0
-    real(real64)    :: dt       = 0.01d0
+    real(real64)    :: dt       = 0.0001d0
     real(real64)    :: t
     ! Physical Constants
-    real(real64)    :: nu       = 1.0d0/100.0d0
+    real(real64)    :: nu       = 1.0d0/10.0d0
     real(real64)    :: rho      = 1.0d0
     real(real64)    :: ks       = 0.1d0
     real(real64)    :: kb       = 1.5d0
@@ -65,6 +65,7 @@ program ibmc
     type(cilia)     :: Cil
     ! Cilia array
     type(cilia_array) :: CA
+    type(cilia_array) :: CAmid
     !---------------------- Begin Calculations ------------------------------------!
     call cpu_time(start)
 
@@ -91,7 +92,7 @@ program ibmc
     Fx  = 0.0d0
     Fy  = 0.0d0
     ! Define boundary conditions for velocity
-    utop    = 1.0d0
+    utop    = 0.0d0
     vtop    = 0.0d0
     ubottom = 0.0d0
     vbottom = 0.0d0
@@ -123,11 +124,14 @@ program ibmc
     nc = 3 ! Number of cilia
     dc = 16*M%dx ! Distance between the cilia structures
 
-    ! CA = cilia_array(nc,nl,np)
+    CA = cilia_array(nc,nl,np)
+    CAmid = cilia_array(nc,nl,np)
 
-    ! call create_cilia_array(CA,ibl,wbl,dc,origin)
+    call create_cilia_array(CA,ibl,wbl,dc,origin)
+    call create_cilia_array(CAmid,ibl,wbl,dc,origin)
 
-    call time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,A,P,R,tsim,dt)
+    ! print *, CAmid%array(1)%layers(1)%boundary(1)%Fx
+    call time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAmid,A,P,R,tsim,dt)
 
     call cpu_time(finish)
     print '("Time = ",f6.3," seconds.")',finish-start
