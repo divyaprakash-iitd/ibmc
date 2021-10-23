@@ -1,6 +1,17 @@
 module mod_time_stepping
-    use iso_fortran_env, only: int32, real32, real64
+    use iso_fortran_env, only: int32, int64, real32, real64
+    use mod_pressure,       only: generate_laplacian_sparse, calculate_pressure_sparse
+    use mod_amgx,           only: calculate_pressure_amgx
+    use mod_mesh
     use mod_time
+    use mod_boundary
+    use mod_io
+    use mod_ib
+    use mod_ibm
+    use mod_vec
+    use mod_cilia
+    use mod_cilia_array
+
     implicit none
     
 contains
@@ -100,5 +111,109 @@ contains
         ! us = u + dt*us
         ! vs = v + dt*vs
     end subroutine RK4
+
+    subroutine time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,A,P,R,tsim,dt)
+        real(real32), intent(in)          :: FP(:)
+        real(real32), intent(in)          :: BC(:)
+        class(mesh), intent(inout)        :: M
+        real(real64), intent(inout)       :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
+        real(real64), intent(inout)       :: us(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), vs(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
+        real(real64), intent(inout)       :: Fx(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub)
+        real(real64), intent(inout)       :: Fy(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
+        real(real64), intent(in)          :: SP(:)
+        class(cilia_array), intent(inout) :: CA
+        real(real64), intent(in)          :: A(:,:,:)
+        real(real64), intent(inout)       :: P(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub)
+        real(real64), intent(inout)       :: R(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub)
+        real(real32), intent(in)          :: tsim
+        real(real32), intent(in)          :: dt
+
+
+        ! Iteration 
+        integer(int32) :: it
+
+        ! Time
+        real(real32) :: t
+
+        ! Fluid properties
+        real(real32) :: nu, rho        
+
+        ! Boundary conditions
+        real(real32)    :: utop, vtop, ubottom, vbottom, &
+                               uleft, vleft, uright, vright
+        ! Spring properties
+        real(real64)    :: ks, Rl, Ftip
+        
+        ! Assign boundary values
+        utop    = BC(1)
+        vtop    = BC(2)
+        ubottom = BC(3)
+        vbottom = BC(4)
+        uleft   = BC(5)
+        vleft   = BC(6)
+        uright  = BC(7)
+        vright  = BC(8)
+
+        ! Get spring parameters
+        ks      = SP(1)
+        Rl      = SP(2)
+        Ftip    = SP(3)
+
+        ! Get fluid properties
+        nu  = FP(1)
+        rho = FP(2)
+
+        ! Start time loop
+        t = 0.0d0
+        it = 0
+
+        do while (t.lt.tsim)
+            t = t + dt
+            it = it + 1
+
+            ! Apply velocity boundary conditions
+            call apply_boundary(M,u,v,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
+
+            ! Calculate forces in the cilia
+            ! call calculate_cilia_array_force(CA,ks,Rl)
+
+            ! Apply tip force
+            ! call apply_tip_force_cilia_array(CA,Ftip,t)
+
+            ! Spread force from the cilia to the fluid
+            Fx = 0.0d0
+            Fy = 0.0d0
+            ! call spread_force_cilia_array(M,CA,Fx,Fy)
+
+            ! Calculate intermediate velocity (Implement RK4 here)
+            call euler(M,u,v,us,vs,nu,dt,Fx,Fy)
+
+            ! Form the RHS of the pressure poisson equation
+            call calculate_rhs(M,us,vs,R,rho,dt)
+
+            ! Solve for pressure
+            call calculate_pressure_sparse(A,P,R)
+
+            ! Perform the corrector step to obtain the velocity
+            call corrector(M,u,v,us,vs,p,rho,dt)
+
+            ! Interpolate the fluid velocity to the cilia
+            ! call initialize_velocity_cilia_array(CA)
+            ! call interpolate_velocity_cilia_array(M,CA,u,v)
+
+            ! Update the cilia node locations
+            ! call update_cilia_array(CA,dt)
+
+            print *, 'time = ', t
+            
+            ! Write files every 10th timestep
+            if (mod(it,50).eq.0) then 
+                call write_field(u,'u',it) 
+                call write_field(v,'v',it) 
+                ! call write_location(CA,it)
+            end if
+
+        end do
+    end subroutine time_loop
 
 end module mod_time_stepping
