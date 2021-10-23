@@ -234,7 +234,7 @@ contains
 !        end do
 !    end subroutine time_loop
 
-    subroutine time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAmid,A,P,R,tsim,dt)
+    subroutine time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,A,P,R,tsim,dt)
         real(real64), intent(in)          :: FP(:)
         real(real64), intent(in)          :: BC(:)
         class(mesh), intent(inout)        :: M
@@ -244,7 +244,7 @@ contains
         real(real64), intent(inout)       :: Fy(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
         real(real64), intent(in)          :: SP(:)
         class(cilia_array), intent(inout) :: CA
-        class(cilia_array), intent(inout) :: CAmid
+        ! class(cilia_array), intent(inout) :: CAmid
         real(real64), intent(in)          :: A(:,:,:)
         real(real64), intent(inout)       :: P(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub)
         real(real64), intent(inout)       :: R(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub)
@@ -252,7 +252,7 @@ contains
         real(real64), intent(in)          :: dt
 
         ! Intermediate cilia
-        ! type(cilia_array) :: CAmid
+        type(cilia_array) :: CAmid
 
         ! Intermediate velocities
         real(real64)       :: umid(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), vmid(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
@@ -274,6 +274,10 @@ contains
         
         ! AmgX
         logical         :: init_status
+
+        ! Create tempeorary cilia array
+        CAmid = cilia_array(CA%nc,CA%array(1)%nl,CA%array(1)%np)
+
 
         ! Assign boundary values
         utop    = BC(1)
