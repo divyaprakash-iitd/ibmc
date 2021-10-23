@@ -130,223 +130,232 @@ contains
         ! vs = v + dt*vs
     end subroutine RK4
 
-   subroutine time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,A,P,R,tsim,dt)
-       real(real64), intent(in)          :: FP(:)
-       real(real64), intent(in)          :: BC(:)
-       class(mesh), intent(inout)        :: M
-       real(real64), intent(inout)       :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
-       real(real64), intent(inout)       :: us(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), vs(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
-       real(real64), intent(inout)       :: Fx(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub)
-       real(real64), intent(inout)       :: Fy(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
-       real(real64), intent(in)          :: SP(:)
-       class(cilia_array), intent(inout) :: CA
-       real(real64), intent(in)          :: A(:,:,:)
-       real(real64), intent(inout)       :: P(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub)
-       real(real64), intent(inout)       :: R(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub)
-       real(real64), intent(in)          :: tsim
-       real(real64), intent(in)          :: dt
+!    subroutine time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,A,P,R,tsim,dt)
+!        real(real64), intent(in)          :: FP(:)
+!        real(real64), intent(in)          :: BC(:)
+!        class(mesh), intent(inout)        :: M
+!        real(real64), intent(inout)       :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
+!        real(real64), intent(inout)       :: us(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), vs(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
+!        real(real64), intent(inout)       :: Fx(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub)
+!        real(real64), intent(inout)       :: Fy(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
+!        real(real64), intent(in)          :: SP(:)
+!        class(cilia_array), intent(inout) :: CA
+!        real(real64), intent(in)          :: A(:,:,:)
+!        real(real64), intent(inout)       :: P(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub)
+!        real(real64), intent(inout)       :: R(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub)
+!        real(real64), intent(in)          :: tsim
+!        real(real64), intent(in)          :: dt
 
 
-       ! Iteration 
-       integer(int32) :: it
+!        ! Iteration 
+!        integer(int32) :: it
 
-       ! Time
-       real(real64) :: t
+!        ! Time
+!        real(real64) :: t
 
-       ! Fluid properties
-       real(real64) :: nu, rho        
+!        ! Fluid properties
+!        real(real64) :: nu, rho        
 
-       ! Boundary conditions
-       real(real64)    :: utop, vtop, ubottom, vbottom, &
-                              uleft, vleft, uright, vright
-       ! Spring properties
-       real(real64)    :: ks, Rl, Ftip
+!        ! Boundary conditions
+!        real(real64)    :: utop, vtop, ubottom, vbottom, &
+!                               uleft, vleft, uright, vright
+!        ! Spring properties
+!        real(real64)    :: ks, Rl, Ftip
        
-       ! Assign boundary values
-       utop    = BC(1)
-       vtop    = BC(2)
-       ubottom = BC(3)
-       vbottom = BC(4)
-       uleft   = BC(5)
-       vleft   = BC(6)
-       uright  = BC(7)
-       vright  = BC(8)
+!        ! Assign boundary values
+!        utop    = BC(1)
+!        vtop    = BC(2)
+!        ubottom = BC(3)
+!        vbottom = BC(4)
+!        uleft   = BC(5)
+!        vleft   = BC(6)
+!        uright  = BC(7)
+!        vright  = BC(8)
 
-       ! Get spring parameters
-       ks      = SP(1)
-       Rl      = SP(2)
-       Ftip    = SP(3)
+!        ! Get spring parameters
+!        ks      = SP(1)
+!        Rl      = SP(2)
+!        Ftip    = SP(3)
 
-       ! Get fluid properties
-       nu  = FP(1)
-       rho = FP(2)
+!        ! Get fluid properties
+!        nu  = FP(1)
+!        rho = FP(2)
 
-       ! Start time loop
-       t = 0.0d0
-       it = 0
+!        ! Start time loop
+!        t = 0.0d0
+!        it = 0
 
-       do while (t.lt.tsim)
-           t = t + dt
-           it = it + 1
+!        do while (t.lt.tsim)
+!            t = t + dt
+!            it = it + 1
 
-           ! Apply velocity boundary conditions
-           call apply_boundary(M,u,v,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
+!            ! Apply velocity boundary conditions
+!            call apply_boundary(M,u,v,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
 
-           ! Calculate forces in the cilia
-           ! call calculate_cilia_array_force(CA,ks,Rl)
+!            ! Calculate forces in the cilia
+!            ! call calculate_cilia_array_force(CA,ks,Rl)
 
-           ! Apply tip force
-           ! call apply_tip_force_cilia_array(CA,Ftip,t)
+!            ! Apply tip force
+!            ! call apply_tip_force_cilia_array(CA,Ftip,t)
 
-           ! Spread force from the cilia to the fluid
-           Fx = 0.0d0
-           Fy = 0.0d0
-           ! call spread_force_cilia_array(M,CA,Fx,Fy)
+!            ! Spread force from the cilia to the fluid
+!            Fx = 0.0d0
+!            Fy = 0.0d0
+!            ! call spread_force_cilia_array(M,CA,Fx,Fy)
 
-           ! Calculate intermediate velocity (Implement RK4 here)
-           call euler(M,u,v,us,vs,nu,dt,Fx,Fy)
+!            ! Calculate intermediate velocity (Implement RK4 here)
+!            call euler(M,u,v,us,vs,nu,dt,Fx,Fy)
 
-           ! Form the RHS of the pressure poisson equation
-           call calculate_rhs(M,us,vs,R,rho,dt)
+!            ! Form the RHS of the pressure poisson equation
+!            call calculate_rhs(M,us,vs,R,rho,dt)
 
-           ! Solve for pressure
-           call calculate_pressure_sparse(A,P,R)
+!            ! Solve for pressure
+!            call calculate_pressure_sparse(A,P,R)
 
-           ! Perform the corrector step to obtain the velocity
-           call corrector(M,u,v,us,vs,p,rho,dt)
+!            ! Perform the corrector step to obtain the velocity
+!            call corrector(M,u,v,us,vs,p,rho,dt)
 
-           ! Interpolate the fluid velocity to the cilia
-           ! call initialize_velocity_cilia_array(CA)
-           ! call interpolate_velocity_cilia_array(M,CA,u,v)
+!            ! Interpolate the fluid velocity to the cilia
+!            ! call initialize_velocity_cilia_array(CA)
+!            ! call interpolate_velocity_cilia_array(M,CA,u,v)
 
-           ! Update the cilia node locations
-           ! call update_cilia_array(CA,dt)
+!            ! Update the cilia node locations
+!            ! call update_cilia_array(CA,dt)
 
-           print *, 'time = ', t
+!            print *, 'time = ', t
            
-           ! Write files every 10th timestep
-           if (mod(it,50).eq.0) then 
-               call write_field(u,'u',it) 
-               call write_field(v,'v',it) 
-               ! call write_location(CA,it)
-           end if
+!            ! Write files every 10th timestep
+!            if (mod(it,50).eq.0) then 
+!                call write_field(u,'u',it) 
+!                call write_field(v,'v',it) 
+!                ! call write_location(CA,it)
+!            end if
 
-       end do
-   end subroutine time_loop
+!        end do
+!    end subroutine time_loop
 
-    ! subroutine time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,A,P,R,tsim,dt)
-    !     real(real64), intent(in)          :: FP(:)
-    !     real(real64), intent(in)          :: BC(:)
-    !     class(mesh), intent(inout)        :: M
-    !     real(real64), intent(inout)       :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
-    !     real(real64), intent(inout)       :: us(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), vs(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
-    !     real(real64), intent(inout)       :: Fx(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub)
-    !     real(real64), intent(inout)       :: Fy(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
-    !     real(real64), intent(in)          :: SP(:)
-    !     class(cilia_array), intent(inout) :: CA
-    !     real(real64), intent(in)          :: A(:,:,:)
-    !     real(real64), intent(inout)       :: P(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub)
-    !     real(real64), intent(inout)       :: R(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub)
-    !     real(real64), intent(in)          :: tsim
-    !     real(real64), intent(in)          :: dt
+    subroutine time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,A,P,R,tsim,dt)
+        real(real64), intent(in)          :: FP(:)
+        real(real64), intent(in)          :: BC(:)
+        class(mesh), intent(inout)        :: M
+        real(real64), intent(inout)       :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
+        real(real64), intent(inout)       :: us(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), vs(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
+        real(real64), intent(inout)       :: Fx(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub)
+        real(real64), intent(inout)       :: Fy(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
+        real(real64), intent(in)          :: SP(:)
+        class(cilia_array), intent(inout) :: CA
+        real(real64), intent(in)          :: A(:,:,:)
+        real(real64), intent(inout)       :: P(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub)
+        real(real64), intent(inout)       :: R(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub)
+        real(real64), intent(in)          :: tsim
+        real(real64), intent(in)          :: dt
 
 
-    !     ! Intermediate velocities
-    !     real(real64)       :: umid(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), vmid(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
+        ! Intermediate velocities
+        real(real64)       :: umid(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), vmid(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
 
-    !     ! Iteration 
-    !     integer(int32) :: it
+        ! Iteration 
+        integer(int32) :: it
 
-    !     ! Time
-    !     real(real64) :: t
+        ! Time
+        real(real64) :: t
 
-    !     ! Fluid properties
-    !     real(real64) :: nu, rho        
+        ! Fluid properties
+        real(real64) :: nu, rho        
 
-    !     ! Boundary conditions
-    !     real(real64)    :: utop, vtop, ubottom, vbottom, &
-    !                            uleft, vleft, uright, vright
-    !     ! Spring properties
-    !     real(real64)    :: ks, Rl, Ftip
+        ! Boundary conditions
+        real(real64)    :: utop, vtop, ubottom, vbottom, &
+                               uleft, vleft, uright, vright
+        ! Spring properties
+        real(real64)    :: ks, Rl, Ftip
         
-    !     ! AmgX
-    !     logical         :: init_status
+        ! AmgX
+        logical         :: init_status
 
-    !     ! Assign boundary values
-    !     utop    = BC(1)
-    !     vtop    = BC(2)
-    !     ubottom = BC(3)
-    !     vbottom = BC(4)
-    !     uleft   = BC(5)
-    !     vleft   = BC(6)
-    !     uright  = BC(7)
-    !     vright  = BC(8)
+        ! Assign boundary values
+        utop    = BC(1)
+        vtop    = BC(2)
+        ubottom = BC(3)
+        vbottom = BC(4)
+        uleft   = BC(5)
+        vleft   = BC(6)
+        uright  = BC(7)
+        vright  = BC(8)
 
-    !     ! Get spring parameters
-    !     ks      = SP(1)
-    !     Rl      = SP(2)
-    !     Ftip    = SP(3)
+        ! Get spring parameters
+        ks      = SP(1)
+        Rl      = SP(2)
+        Ftip    = SP(3)
 
-    !     ! Get fluid properties
-    !     nu  = FP(1)
-    !     rho = FP(2)
+        ! Get fluid properties
+        nu  = FP(1)
+        rho = FP(2)
 
-    !     ! Start time loop
-    !     t = 0.0d0
-    !     it = 0
+        ! Start time loop
+        t = 0.0d0
+        it = 0
     
-    !     init_status = .False. ! AmgX initialization status
+        init_status = .False. ! AmgX initialization status
 
-    !     do while (t.lt.tsim)
-    !         t = t + dt
-    !         it = it + 1
+        do while (t.lt.tsim)
+            t = t + dt
+            it = it + 1
 
-    !         ! RK2: Step 1
-    !         ! Apply velocity boundary conditions
-    !         call apply_boundary(M,u,v,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
+            ! RK2: Step 1
+            ! Apply velocity boundary conditions
+            call apply_boundary(M,u,v,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
 
-    !         us = u + 0.5d0*dt*cdu_f(M,u,v,nu,Fx)
-    !         print *, sum(us)
-    !         vs = v + 0.5d0*dt*cdv_f(M,u,v,nu,Fy)
+            ! us = u + 0.5d0*dt*cdu_f(M,u,v,nu,Fx)
+            ! vs = v + 0.5d0*dt*cdv_f(M,u,v,nu,Fy)
 
-    !         ! Form the RHS of the pressure poisson equation
-    !         call calculate_rhs(M,us,vs,R,rho,0.5d0*dt)
+            call cdu(M,u,v,us,nu,Fx)
+            us = u + us*dt/2
+            call cdv(M,u,v,vs,nu,Fy)
+            vs = v + vs*dt/2
 
-    !         ! Solve for pressure
-    !         call calculate_pressure_sparse(A,P,R)
-    !         ! call calculate_pressure_amgx(A,P,R,init_status)
+            ! Form the RHS of the pressure poisson equation
+            call calculate_rhs(M,us,vs,R,rho,0.5d0*dt)
 
-    !         ! Perform the corrector step to obtain the velocity
-    !         call corrector(M,umid,vmid,us,vs,P,rho,0.5d0*dt)
+            ! Solve for pressure
+            call calculate_pressure_sparse(A,P,R)
+            ! call calculate_pressure_amgx(A,P,R,init_status)
 
-    !         ! RK2: Step 2
+            ! Perform the corrector step to obtain the velocity
+            call corrector(M,umid,vmid,us,vs,P,rho,0.5d0*dt)
 
-    !         call apply_boundary(M,umid,vmid,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
+            ! RK2: Step 2
+
+            call apply_boundary(M,umid,vmid,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
             
-    !         us = u + dt*cdu_f(M,umid,vmid,nu,Fx)
-    !         vs = v + dt*cdv_f(M,umid,vmid,nu,Fx)
+            ! us = u + dt*cdu_f(M,umid,vmid,nu,Fx)
+            ! vs = v + dt*cdv_f(M,umid,vmid,nu,Fx)
 
-    !         ! Form the RHS of the pressure poisson equation
-    !         call calculate_rhs(M,us,vs,R,rho,dt)
-
-    !         ! Solve for pressure
-    !         call calculate_pressure_sparse(A,P,R)
-    !         ! call calculate_pressure_amgx(A,P,R,init_status)
-
-    !         ! Perform the corrector step to obtain the velocity
-    !         call corrector(M,u,v,us,vs,p,rho,dt)
-
-    !         print *, 'time = ', t
+            call cdu(M,u,v,us,nu,Fx)
+            us = u + us*dt
+            call cdv(M,u,v,vs,nu,Fy)
+            vs = v + vs*dt
             
-    !         ! Write files every 10th timestep
-    !         if (mod(it,50).eq.0) then 
-    !             call write_field(u,'u',it) 
-    !             call write_field(v,'v',it) 
-    !             ! call write_location(CA,it)
-    !         end if
+            ! Form the RHS of the pressure poisson equation
+            call calculate_rhs(M,us,vs,R,rho,dt)
 
-    !     end do
-    ! end subroutine time_loop
+            ! Solve for pressure
+            call calculate_pressure_sparse(A,P,R)
+            ! call calculate_pressure_amgx(A,P,R,init_status)
+
+            ! Perform the corrector step to obtain the velocity
+            call corrector(M,u,v,us,vs,p,rho,dt)
+
+            print *, 'time = ', t
+            
+            ! Write files every 10th timestep
+            if (mod(it,50).eq.0) then 
+                call write_field(u,'u',it) 
+                call write_field(v,'v',it) 
+                ! call write_location(CA,it)
+            end if
+
+        end do
+    end subroutine time_loop
 
 end module mod_time_stepping
 
