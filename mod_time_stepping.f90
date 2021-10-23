@@ -317,8 +317,8 @@ contains
             call calculate_rhs(M,us,vs,R,rho,0.5d0*dt)
 
             ! Solve for pressure
-            call calculate_pressure_sparse(A,P,R)
-            ! call calculate_pressure_amgx(A,P,R,init_status)
+            ! call calculate_pressure_sparse(A,P,R)
+            call calculate_pressure_amgx(A,P,R,init_status)
 
             ! Perform the corrector step to obtain the velocity
             call corrector(M,umid,vmid,us,vs,P,rho,0.5d0*dt)
@@ -339,8 +339,8 @@ contains
             call calculate_rhs(M,us,vs,R,rho,dt)
 
             ! Solve for pressure
-            call calculate_pressure_sparse(A,P,R)
-            ! call calculate_pressure_amgx(A,P,R,init_status)
+            ! call calculate_pressure_sparse(A,P,R)
+            call calculate_pressure_amgx(A,P,R,init_status)
 
             ! Perform the corrector step to obtain the velocity
             call corrector(M,u,v,us,vs,p,rho,dt)
