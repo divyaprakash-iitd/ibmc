@@ -8,7 +8,7 @@ yG = Ghia.U(:,2);
 %% Reynolds Number (100, 400 & 1000)
 % To run a case uncomment one of the following three lines
 
-nx = 20; ny = 20; Re = 100; UG = Ghia.U(:,3); 
+nx = 30; ny = 30; Re = 100; UG = Ghia.U(:,3); 
 %nx = 150; ny = 150; Re = 400; UG = Ghia.U(:,4);
 %nx = 200; ny = 200; Re = 1000; UG = Ghia.U(:,5);
 
@@ -64,7 +64,7 @@ ylabel('y')
 title(sprintf('Re = %d, Grid: (%d X %d)',Re,nx,ny))
 grid on
 
-for iFile = 1:nFiles
+for iFile = nFiles
     u = load(uFile(iFile).name);
     xmid = 0.5;
     yq = linspace(yG(1),yG(end),50);
