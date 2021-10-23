@@ -125,13 +125,13 @@ program ibmc
     dc = 16*M%dx ! Distance between the cilia structures
 
     CA = cilia_array(nc,nl,np)
-    CAmid = cilia_array(nc,nl,np)
+    ! CAmid = cilia_array(nc,nl,np)
 
     call create_cilia_array(CA,ibl,wbl,dc,origin)
-    call create_cilia_array(CAmid,ibl,wbl,dc,origin)
+    ! call create_cilia_array(CAmid,ibl,wbl,dc,origin)
 
     ! print *, CAmid%array(1)%layers(1)%boundary(1)%Fx
-    call time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAmid,A,P,R,tsim,dt)
+    call time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,A,P,R,tsim,dt)
 
     call cpu_time(finish)
     print '("Time = ",f6.3," seconds.")',finish-start
