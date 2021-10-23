@@ -38,6 +38,7 @@ for iFile = 1:nFiles
     plot(p31(:,1),p31(:,2),'k-o','Markersize',5)
     plot(p32(:,1),p32(:,2),'k-o','Markersize',5)
     mesh(xu,yu,0*xu,'FaceAlpha','0.0','EdgeColor','w','LineStyle','-','EdgeAlpha','0.25')
+    axis equal
     title(uFile(iFile).name)
     pause(0.001)
     writeVideo(v,getframe(gca));
