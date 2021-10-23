@@ -32,6 +32,7 @@ contains
         ! Create immersed boundaries (ib) for each layer
         do il = 1,nl
             allocate(self%layers(il)%boundary(np))
+            self%layers(il)%np = np
         end do 
     end function cilia_constructor
     
