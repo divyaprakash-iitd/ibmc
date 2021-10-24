@@ -84,6 +84,10 @@ ibmc
 # Image files
 *.png
 
+# Video files
+*.avi
+*.mp4
+
 ### Fortran ###
 # Prerequisites
 
