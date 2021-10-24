@@ -58,6 +58,101 @@ contains
 
     end subroutine update_ib
 
+    subroutine spread_force_compact(M,B,Fx,Fy)
+        class(mesh), intent(in) :: M
+        class(ib), intent(in) :: B
+        real(real64), intent(in out) :: Fx(:,:), Fy(:,:)
+
+        ! Define variables to store locations
+        real(real64) :: Lx, Ly      ! Lagrangian locations
+        real(real64) :: Ex, Ey      ! Eulerian locations
+        real(real64) :: Flx, Fly    ! Forces at Lagrangian locations
+        integer(int32) :: np ! Number of Lagrangian particles
+
+        ! real(real64), intent(in) :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
+
+        ! Indices
+        integer(int32) :: i, j, inp, LeftIndex, RightIndex, BottomIndex, TopIndex, StencilSize
+
+        np = size(B%boundary)
+        StencilSize = 3;
+
+        ! Calculate the x-direction force on the u-velocity cells
+        ! Iterating over all the grid points including the boundary values
+        
+        do inp = 1,np
+            Lx = B%boundary(inp)%x
+            Ly = B%boundary(inp)%y
+            Flx = B%boundary(inp)%Fx
+            ! Make sure that the following indices lie inside the domain            
+            LeftIndex   = 0 + M%xu%lb + floor((Lx-StencilSize*M%dx)/M%dx) 
+            BottomIndex = 1 + M%yu%lb + floor((Ly-StencilSize*M%dy)/M%dy)   ! Increment by 1 since the first value is negative and not zero
+
+            RightIndex  = LeftIndex     +   2*StencilSize
+            TopIndex    = BottomIndex   +   2*StencilSize
+
+            do j = BottomIndex,TopIndex
+                do i = LeftIndex,RightIndex
+                    Ex = M%u_mesh(i,j)%x
+                    Ey = M%u_mesh(i,j)%y
+                    
+                    Fx(i,j) = Fx(i,j) + Flx * dirac( [(Ex-Lx), (Ey-Ly)], M%dx)
+                end do
+            end do
+        end do
+
+        ! Calculate the y-direction force on the v-velocity cells
+        do inp = 1,np
+            Lx = B%boundary(inp)%x
+            Ly = B%boundary(inp)%y
+            Fly = B%boundary(inp)%Fy
+
+            LeftIndex   = 1 + M%xv%lb + floor((Lx-StencilSize*M%dx)/M%dx) ! Increment by 1 since the first value is negative and not zero 
+            BottomIndex = 0 + M%yv%lb + floor((Ly-StencilSize*M%dy)/M%dy)
+
+            RightIndex  = LeftIndex     +   2*StencilSize
+            TopIndex    = BottomIndex   +   2*StencilSize
+
+            do j = BottomIndex,TopIndex
+                do i = LeftIndex,RightIndex
+                    Ex = M%v_mesh(i,j)%x
+                    Ey = M%v_mesh(i,j)%y
+                    
+                    Fy(i,j) = Fy(i,j) + Fly * dirac( [(Ex-Lx), (Ey-Ly)], M%dy)
+                end do
+            end do
+        end do
+
+
+        contains
+
+        function dirac(x,h)
+            ! Defined for a uniform grid
+            real(real64), intent(in) :: x(2)
+            real(real64), intent(in) :: h
+            real(real64) :: dirac
+
+            integer(int32) :: ii
+            real(real64) :: phi, r
+
+            dirac = 1.0d0
+            do ii = 1,2
+                r = x(ii)/h 
+                if (abs(r).le.2) then
+                    phi = 0.25d0 * (1 + cos(PI*r/2))
+                else 
+                    phi = 0.0d0
+                end if
+            
+                dirac = dirac*phi
+            end do        
+
+            dirac = (1/h**2) * dirac
+
+        end function dirac
+
+    end subroutine spread_force_compact
+
     subroutine spread_force(M,B,Fx,Fy)
         class(mesh), intent(in) :: M
         class(ib), intent(in) :: B
@@ -657,7 +752,7 @@ contains
         integer(int32) :: il
 
         do il = 1,C%nl
-            call spread_force(M,C%layers(il),Fx,Fy)
+            call spread_force_compact(M,C%layers(il),Fx,Fy)
         end do
     end subroutine
 
