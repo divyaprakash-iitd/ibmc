@@ -123,15 +123,16 @@ program ibmc
     ! Create cilia
     nl      = 2                     ! No. of Layers/Cilia
     Rl      = 1.2*M%dx              ! Resting Length of Spring
-    dp      = 0.9*Rl                 ! Spacing between two particles
+    dp      = 0.9*Rl                ! Spacing between two particles
     Ll      = 0.25*Ly               ! Length of a layer of cilia
     np      = floor(Ll/dp)          ! No. of Particles/Layer
     ibl     = 0.3d0                 ! Length of a Layer
     wbl     = 0.05d0                ! Width/Distance between two Layers
-    dc      = 3*M%dx               ! Distance between two Cilia
-    nc      = floor(Lx/2/dc)                     ! Number of cilia
-    origin  = vec(Lx/4,0.05d0)     ! Location of the first Cilium (Bottom-Left Particle)
+    dc      = 10*M%dx               ! Distance between two Cilia
+    nc      = 6! floor(Lx/2/dc)     ! Number of cilia
+    origin  = vec(Lx/4,0.05d0)      ! Location of the first Cilium (Bottom-Left Particle)
 
+    print *, 'np=', np
     CA = cilia_array(nc,nl,np)
     call create_cilia_array(CA,ibl,wbl,dc,origin)
 
