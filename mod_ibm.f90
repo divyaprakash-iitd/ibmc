@@ -17,7 +17,7 @@ module mod_ibm
               calculate_cilia_array_force, update_cilia, update_cilia_array, spread_force_cilia, &
               spread_force_cilia_array, interpolate_velocity_cilia, &
               interpolate_velocity_cilia_array, initialize_velocity_cilia_array, &
-              apply_tip_force_cilia, apply_tip_force_cilia_array
+              apply_tip_force_cilia, apply_tip_force_cilia_array, write_location_cilia
 contains
    
     subroutine initialize_ib(B)
@@ -400,6 +400,53 @@ contains
         end function dirac
 
     end subroutine interpolate_velocity
+
+    subroutine write_location_cilia(CA,timestep)
+        class(cilia_array), intent(in) :: CA
+        integer(int32), intent(in) :: timestep        
+
+        integer(int32) :: fileunit = 8
+        character(len=:), allocatable :: filename
+        integer(int32) :: inp, np, nl, il, ic
+        character(len=8) :: itnumber
+        character(len=1) :: idl ! Layer id
+        character(len=1) :: idc ! Cilia id
+        character(len=8) :: file_status
+        character(len=3) :: file_advance
+        write(itnumber,"(I8.8)") timestep
+
+        file_status = "replace"
+        file_advance = "no"
+
+        ! Loop through the cilia
+        do ic = 1,CA%nc
+            nl = CA%array(ic)%nl
+            np = CA%array(ic)%np
+            write(idc,"(I1.1)") ic
+
+            filename = idc // '_ib_loc' // itnumber // '.txt'
+            open(unit=fileunit, file=filename, ACTION="write", ADVANCE=trim(file_advance), Position="Append", STATUS=trim(file_status))
+
+            ! Loop through the layers of a cilia
+            do il = 1,nl
+                
+                ! Loop through the particles in a cilia layer to write the x position
+                do inp = 1,np
+                    write(fileunit, '((F14.7)') CA%array(ic)%layers(il)%boundary(inp)%x
+                end do
+
+                file_status = "old"
+
+                ! Loop through the particles in a cilia layer to write the y position
+                open(unit=fileunit, file=filename, ACTION="write", ADVANCE=trim(file_advance), Position="Append", STATUS=trim(file_status))
+                do inp = 1,np
+                    write(fileunit, '((F14.7)') CA%array(ic)%layers(il)%boundary(inp)%y
+                end do
+            end do
+        end do
+        close(fileunit)
+
+    end subroutine write_location_cilia
 
     subroutine write_location(CA,timestep)
         class(cilia_array), intent(in) :: CA
