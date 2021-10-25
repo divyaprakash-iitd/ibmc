@@ -418,29 +418,36 @@ contains
         file_status = "replace"
         file_advance = "no"
 
+        filename = 'ib_loc' // itnumber // '.txt'
+        
+        open(unit=fileunit, file=filename, ACTION="write", Position="Append", & 
+                        STATUS=trim(file_status))
         ! Loop through the cilia
         do ic = 1,CA%nc
             nl = CA%array(ic)%nl
             np = CA%array(ic)%np
-            write(idc,"(I1.1)") ic
-
-            filename = idc // '_ib_loc' // itnumber // '.txt'
-            open(unit=fileunit, file=filename, ACTION="write", ADVANCE=trim(file_advance), Position="Append", STATUS=trim(file_status))
 
             ! Loop through the layers of a cilia
             do il = 1,nl
                 
                 ! Loop through the particles in a cilia layer to write the x position
                 do inp = 1,np
-                    write(fileunit, '((F14.7)') CA%array(ic)%layers(il)%boundary(inp)%x
+                    if (inp.eq.np) then 
+                        file_advance='yes'
+                    else 
+                        file_advance='no'
+                    end if
+                    write(fileunit, '(F14.7)',ADVANCE=file_advance) CA%array(ic)%layers(il)%boundary(inp)%x
                 end do
-
-                file_status = "old"
-
+                
                 ! Loop through the particles in a cilia layer to write the y position
-                open(unit=fileunit, file=filename, ACTION="write", ADVANCE=trim(file_advance), Position="Append", STATUS=trim(file_status))
                 do inp = 1,np
-                    write(fileunit, '((F14.7)') CA%array(ic)%layers(il)%boundary(inp)%y
+                    if (inp.eq.np) then 
+                        file_advance='yes'
+                    else 
+                        file_advance='no'
+                    end if
+                    write(fileunit, '(F14.7)',ADVANCE=file_advance) CA%array(ic)%layers(il)%boundary(inp)%y
                 end do
             end do
         end do
