@@ -312,9 +312,9 @@ contains
             call calculate_cilia_array_force(CA,ks,Rl)
 
             ! Apply tip force for the first 1 second
-            ! if (t.lt.0.1) then
+            if (t.lt.0.1) then
             call apply_tip_force_cilia_array(CA,Ftip,t)
-            ! end if
+            end if
             
             call copy_cilia(CA,CAmid)
  
@@ -358,9 +358,9 @@ contains
             call calculate_cilia_array_force(CAmid,ks,Rl)
 
             ! Apply tip force for the first 1 second
-            ! if (t.lt.0.1) then
+            if (t.lt.0.1) then
             call apply_tip_force_cilia_array(CAmid,Ftip,t)
-            ! end if
+            end if
 
             call apply_boundary(M,umid,vmid,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
 
@@ -398,7 +398,7 @@ contains
             print *, 'time = ', t
             
             ! Write files every Nth timestep
-            if (mod(it,10).eq.0) then 
+            if (mod(it,25).eq.0) then 
                 call write_field(u,'u',it) 
                 call write_field(v,'v',it) 
                 call write_location_cilia(CA,it)
