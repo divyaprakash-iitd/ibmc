@@ -22,10 +22,10 @@ program ibmc
     real(real64)    :: Lx       = 2.0d0
     real(real64)    :: Ly       = 1.0d0
     ! Mesh Paramaters
-    integer(int32)  :: Nx       = 60
-    integer(int32)  :: Ny       = 30
+    integer(int32)  :: Nx       = 120
+    integer(int32)  :: Ny       = 60
     ! Simulation time Paramaters
-    real(real64)    :: tsim     = 10.0d0
+    real(real64)    :: tsim     = 1.0d0
     real(real64)    :: dt       = 0.0001d0
     real(real64)    :: t
     ! Physical Constants
@@ -58,6 +58,8 @@ program ibmc
     real(real64)    :: ibL          ! Length of the immersed boundary
     integer(int32)  :: np           ! Number of particles in the immersed boundary
     integer(int32)  :: nl           ! Number of layers in the cilia
+    real(real64)    :: dp           ! Spacing between two particles in a cilia
+    real(real64)    :: Ll           ! Length of a layer of cilia
     real(real64)    :: Wbl          ! Width of cilia
     real(real64)    :: dc           ! Distance between cilium in an array
     integer(int32)  :: nc       ! Total number of cilia
@@ -119,14 +121,16 @@ program ibmc
     init_status = .False.
 
     ! Create cilia
-    nc      = 3                     ! Number of cilia
     nl      = 2                     ! No. of Layers/Cilia
-    np      = 5                     ! No. of Particles/Layer
+    Rl      = 1.2*M%dx              ! Resting Length of Spring
+    dp      = 0.9*Rl                 ! Spacing between two particles
+    Ll      = 0.25*Ly               ! Length of a layer of cilia
+    np      = floor(Ll/dp)          ! No. of Particles/Layer
     ibl     = 0.3d0                 ! Length of a Layer
     wbl     = 0.05d0                ! Width/Distance between two Layers
-    dc      = 16*M%dx               ! Distance between two Cilia
-    Rl      = ibL/(np-1)            ! Resting Length of Spring
-    origin  = vec(0.4d0,0.05d0)     ! Location of the first Cilium (Bottom-Left Particle)
+    dc      = 3*M%dx               ! Distance between two Cilia
+    nc      = floor(Lx/2/dc)                     ! Number of cilia
+    origin  = vec(Lx/4,0.05d0)     ! Location of the first Cilium (Bottom-Left Particle)
 
     CA = cilia_array(nc,nl,np)
     call create_cilia_array(CA,ibl,wbl,dc,origin)
