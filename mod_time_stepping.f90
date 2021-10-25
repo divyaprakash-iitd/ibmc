@@ -397,11 +397,11 @@ contains
 
             print *, 'time = ', t
             
-            ! Write files every 10th timestep
-            if (mod(it,50).eq.0) then 
+            ! Write files every Nth timestep
+            if (mod(it,10).eq.0) then 
                 call write_field(u,'u',it) 
                 call write_field(v,'v',it) 
-                call write_location(CA,it)
+                call write_location_cilia(CA,it)
             end if
 
         end do
