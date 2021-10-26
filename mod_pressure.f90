@@ -3,7 +3,8 @@ module mod_pressure
     implicit none
 
     private
-    public :: generate_laplacian_sparse, calculate_pressure_sparse
+    public :: generate_laplacian_sparse, calculate_pressure_sparse, &
+              generate_laplacian_sparse_periodic, apply_periodic_pressure
 
 contains
 
@@ -415,5 +416,20 @@ subroutine generate_laplacian_sparse_periodic(A,dx,dy)
     A(imin,jmin,CENTER) = 1.0d0
 
 end subroutine generate_laplacian_sparse_periodic
+
+subroutine apply_periodic_pressure(P)
+    real(real64), intent(in out)  :: P(:,:)
+
+    ! Temporary values
+    real(real64) :: tempL(size(P,1))
+    real(real64) :: tempR(size(P,1))
+
+    tempL = P(lbound(P,2),:)
+    tempR = P(ubound(P,2),:)
+
+    P(lbound(P,2),:) = tempR
+    P(ubound(P,2),:) = tempL
+
+end subroutine apply_periodic_pressure
 
 end module mod_pressure
