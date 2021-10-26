@@ -312,7 +312,7 @@ contains
             call calculate_cilia_array_force(CA,ks,Rl)
 
             ! Apply tip force for the first 1 second
-            if (t.lt.0.1) then
+            if (t.lt.0.5) then
             call apply_tip_force_cilia_array(CA,Ftip,t)
             end if
             
@@ -358,7 +358,7 @@ contains
             call calculate_cilia_array_force(CAmid,ks,Rl)
 
             ! Apply tip force for the first 1 second
-            if (t.lt.0.1) then
+            if (t.lt.0.5) then
             call apply_tip_force_cilia_array(CAmid,Ftip,t)
             end if
 
