@@ -25,11 +25,11 @@ program ibmc
     integer(int32)  :: Nx       = 120
     integer(int32)  :: Ny       = 60
     ! Simulation time Paramaters
-    real(real64)    :: tsim     = 1.0d0
-    real(real64)    :: dt       = 0.0001d0
+    real(real64)    :: tsim     = 20.0d0
+    real(real64)    :: dt       = 0.001d0
     real(real64)    :: t
     ! Physical Constants
-    real(real64)    :: nu       = 1.0d0/10.0d0
+    real(real64)    :: nu       = 1.0d0/50.0d0
     real(real64)    :: rho      = 1.0d0
     real(real64)    :: ks       = 0.1d0
     real(real64)    :: kb       = 1.5d0
@@ -48,7 +48,7 @@ program ibmc
     integer(int32)  :: it, NN, il, ip
     logical         :: init_status
     real(real64)    :: tp = 2.0d0 ! Time period
-    real(real64)    :: Ftip = 0.05 ! Tip force
+    real(real64)    :: Ftip = 0.01 ! Tip force
     ! Mesh
     type(mesh)      :: M
     ! Immersed boundary
@@ -122,12 +122,13 @@ program ibmc
 
     ! Create cilia
     nl      = 2                     ! No. of Layers/Cilia
-    Rl      = 1.2*M%dx              ! Resting Length of Spring
-    dp      = 0.9*Rl                ! Spacing between two particles
+    Rl      = 1.4*M%dx              ! Resting Length of Spring
+    dp      = Rl                ! Spacing between two particles
     Ll      = 0.25*Ly               ! Length of a layer of cilia
     np      = floor(Ll/dp)          ! No. of Particles/Layer
     ibl     = 0.3d0                 ! Length of a Layer
-    wbl     = 0.05d0                ! Width/Distance between two Layers
+    !wbl     = 0.05d0                ! Width/Distance between two Layers
+    wbl     = Rl                    ! Make the resting length for the top link equal to the initial spacing
     dc      = 10*M%dx               ! Distance between two Cilia
     nc      = 6! floor(Lx/2/dc)     ! Number of cilia
     origin  = vec(Lx/4,0.05d0)      ! Location of the first Cilium (Bottom-Left Particle)
