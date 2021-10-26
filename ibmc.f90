@@ -48,7 +48,7 @@ program ibmc
     integer(int32)  :: it, NN, il, ip
     logical         :: init_status
     real(real64)    :: tp = 2.0d0 ! Time period
-    real(real64)    :: Ftip = 0.01 ! Tip force
+    real(real64)    :: Ftip = 0.05 ! Tip force
     ! Mesh
     type(mesh)      :: M
     ! Immersed boundary

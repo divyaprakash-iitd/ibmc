@@ -964,7 +964,7 @@ contains
 
         np = size(C%layers(1)%boundary)
         do il = 1,C%nl
-            C%layers(il)%boundary(np)%Fx = Ftip*cos(2*PI/2.0*t)
+            C%layers(il)%boundary(np)%Fx = Ftip*sin(2*PI/2.0*t)
         end do
 
     end subroutine apply_tip_force_cilia
