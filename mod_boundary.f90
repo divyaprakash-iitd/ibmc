@@ -4,7 +4,7 @@ module mod_boundary
     implicit none
    
     private
-    public :: apply_boundary
+    public :: apply_boundary, apply_boundary_periodic
 
 contains
 
@@ -31,17 +31,10 @@ contains
         real(real64), intent(in)        :: utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright
         real(real64), intent(in out)    :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
 
-        ! Create temporary variables for the left and right boundary velocity
-        real(real64) :: tempL(size(u,1))
-        real(real64) :: tempR(size(u,1))
-
-        ! Store velocity values in temporary variables
-        tempL = u(M%xu%lb,:)
-        tempR = u(M%xu%ub,:)
 
         ! Apply periodic boundary conditions to u and v cells
-        u(M%xu%lb,:) = tempR ! Left boundary
-        u(M%xu%ub,:) = tempL ! Right boundary
+        u(M%xu%lb,:) = u(M%xu%ub-1,:) ! Left boundary
+        u(M%xu%ub,:) = u(M%xu%lb+1,:) ! Right boundary
 
         v(M%xv%lb,:) = v(M%xv%ub-1,:) ! Left boundary
         v(M%xv%ub,:) = v(M%xv%lb+1,:) ! Right boundary
