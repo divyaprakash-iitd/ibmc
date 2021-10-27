@@ -22,17 +22,17 @@ program ibmc
     real(real64)    :: Lx       = 2.0d0
     real(real64)    :: Ly       = 1.0d0
     ! Mesh Paramaters
-    integer(int32)  :: Nx       = 120
-    integer(int32)  :: Ny       = 60
+    integer(int32)  :: Nx       = 60
+    integer(int32)  :: Ny       = 30
     ! Simulation time Paramaters
     real(real64)    :: tsim     = 20.0d0
     real(real64)    :: dt       = 0.0001d0
     real(real64)    :: t
     ! Physical Constants
-    real(real64)    :: nu       = 1.0d0/10.0d0
+    real(real64)    :: nu       = 1.0d0/20.0d0
     real(real64)    :: rho      = 1.0d0
     real(real64)    :: ks       = 2.0d0
-    real(real64)    :: kb       = 1.5d0
+    real(real64)    :: kb       = 10.0d0
     real(real64)    :: theta    = 3.1416d0
     real(real64)    :: Rl
     real(real64)    :: FP(2)
@@ -130,7 +130,7 @@ program ibmc
     !wbl     = 0.05d0                ! Width/Distance between two Layers
     wbl     = Rl                    ! Make the resting length for the top link equal to the initial spacing
     dc      = 10*M%dx               ! Distance between two Cilia
-    nc      = 6! floor(Lx/2/dc)     ! Number of cilia
+    nc      = 1! floor(Lx/2/dc)     ! Number of cilia
     origin  = vec(Lx/4,0.05d0)      ! Location of the first Cilium (Bottom-Left Particle)
 
     print *, 'np=', np
