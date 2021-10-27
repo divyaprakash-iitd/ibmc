@@ -36,8 +36,12 @@ contains
         u(M%xu%lb,:) = u(M%xu%ub-1,:) ! Left boundary
         u(M%xu%ub,:) = u(M%xu%lb+1,:) ! Right boundary
 
-        v(M%xv%lb,:) = v(M%xv%ub-1,:) ! Left boundary
-        v(M%xv%ub,:) = v(M%xv%lb+1,:) ! Right boundary
+        ! v(M%xv%lb,:) = v(M%xv%ub-1,:) ! Left boundary
+        ! v(M%xv%ub,:) = v(M%xv%lb+1,:) ! Right boundary
+
+        ! Velocity components across boundary
+        v(M%xv%lb,:) = v(M%xv%ub-2,:) ! Left boundary
+        v(M%xv%ub,:) = v(M%xv%lb+2,:) ! Right boundary
 
         u(:,M%yu%lb) = 2*ubottom - u(:,M%yu%lb+1); ! Top boundary
         u(:,M%yu%ub) = 2*utop    - u(:,M%yu%ub-1); ! Bottom boundary
