@@ -1,5 +1,6 @@
 module mod_pressure
     use iso_fortran_env, only: int32, int32, real64, real64 
+    use mod_mesh
     implicit none
 
     private
@@ -417,18 +418,12 @@ subroutine generate_laplacian_sparse_periodic(A,dx,dy)
 
 end subroutine generate_laplacian_sparse_periodic
 
-subroutine apply_periodic_pressure(P)
-    real(real64), intent(in out)  :: P(:,:)
+subroutine apply_periodic_pressure(P,M)
+    class(mesh), intent(in)         :: M
+    real(real64), intent(in out)  :: P(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub)
 
-    ! Temporary values
-    real(real64) :: tempL(size(P,1))
-    real(real64) :: tempR(size(P,1))
-
-    tempL = P(lbound(P,2),:)
-    tempR = P(ubound(P,2),:)
-
-    P(lbound(P,2),:) = tempR
-    P(ubound(P,2),:) = tempL
+    P(M%xp%lb,:) = P(M%xp%ub-1,:)
+    P(M%xp%ub,:) = P(M%xp%lb+1,:)
 
 end subroutine apply_periodic_pressure
 
