@@ -18,7 +18,7 @@ LIB_L= -laxbamgx
 ibmc: $(OBJECTS) 
 	$(FORT) $(OPTS) -o $@ $(OBJECTS) $(LIB_DIR) $(LIB_L)
 
-mod_pressure.o: mod_pressure.f90 Makefile
+mod_pressure.o: mod_pressure.f90 mod_mesh.o Makefile
 	$(FORT) -c $(OPTS) $<
 
 mod_amgx.o: mod_amgx.f90 ftn_c.o Makefile
