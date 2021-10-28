@@ -275,9 +275,8 @@ contains
         ! AmgX
         logical         :: init_status
 
-        ! Create tempeorary cilia array
+        ! Create temporary cilia array
         CAmid = cilia_array(CA%nc,CA%array(1)%nl,CA%array(1)%np)
-
 
         ! Assign boundary values
         utop    = BC(1)
@@ -308,7 +307,6 @@ contains
             t = t + dt
             it = it + 1
             
-
             ! print *, 'Rl = ', Rl
             ! print *, 'S = ', CA%array(1)%layers(1)%boundary(CA%array(1)%np)%y - CA%array(1)%layers(1)%boundary(CA%array(1)%np-1)%y
 
