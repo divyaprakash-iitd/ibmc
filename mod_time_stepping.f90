@@ -309,6 +309,12 @@ contains
             it = it + 1
             
 
+            ! print *, 'Rl = ', Rl
+            ! print *, 'S = ', CA%array(1)%layers(1)%boundary(CA%array(1)%np)%y - CA%array(1)%layers(1)%boundary(CA%array(1)%np-1)%y
+
+            ! print *, 'Fx = ', CA%array(1)%layers(1)%boundary(CA%array(1)%np)%Fx
+            ! print *, 'Fy = ', CA%array(1)%layers(1)%boundary(CA%array(1)%np)%Fy
+            
             ! Calculate forces in the immersed boundary structure
             call calculate_cilia_array_force(CA,ks,Rl)
 
@@ -316,6 +322,7 @@ contains
             ! if (t.lt.0.5) then
             call apply_tip_force_cilia_array(CA,Ftip,t)
             ! end if
+            
             
             call copy_cilia(CA,CAmid)
  
@@ -399,10 +406,11 @@ contains
             print *, 'time = ', t
             
             ! Write files every Nth timestep
-            if (mod(it,25).eq.0) then 
+            if (mod(it,50).eq.0) then 
                 call write_field(u,'u',it) 
                 call write_field(v,'v',it) 
                 call write_location_cilia(CA,it)
+                call write_location_cilia_force(CA,it)
             end if
 
         end do
