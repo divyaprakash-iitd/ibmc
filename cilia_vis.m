@@ -33,20 +33,27 @@ vc = zeros(Ny,Nx);
 umag = sqrt(uc.^2+vc.^2);
 
 
-pFile = dir(strcat('ib_','*'));
+pFile = dir(strcat('ib_loc','*'));
 p = load(pFile(1).name);
+
+pfFile = dir(strcat('force_ib_loc','*'));
+
 nc = size(p,1)/4;
 nl = 2*nc;
 
 nFiles = length(uFile);
 
-colormap(jet)
-vid = VideoWriter('ibm.avi','Uncompressed AVI');
-open(vid);
-figure(1)
-hold on
 
-for iFile = 1:nFiles
+% Visualize cilia motion over velocity field
+colormap(jet)
+% vid = VideoWriter('ibm.avi','Uncompressed AVI');
+% open(vid);
+figure(1)
+fig = gcf;
+fig.Position = [1 1 1920 961];
+for iFile = 1:20:nFiles
+    subplot(1,2,1)
+    hold on
     u = load(uFile(iFile).name);
     v = load(uFile(iFile).name);
     [uc,vc] = cellcenter(uc,vc,u,v,Nx,Ny);
@@ -59,16 +66,66 @@ for iFile = 1:nFiles
         plot(px,py,'k-o','Markersize',5)
     end
     mesh(xp,yp,0*xp,'FaceAlpha','0.0','EdgeColor','w','LineStyle','-','EdgeAlpha','0.25')
+%     view(90,0)
     colorbar
     axis equal
     title(uFile(iFile).name)
+    
+    subplot(1,2,2)
+    hold on
+    pf = load(pfFile(iFile).name);
+    for i = 1:2:2*nl    
+        % Read locations
+        px = p(i,:);
+        py = p(i+1,:);
+        % Read forces
+        pfx = pf(i,:);
+        pfy = pf(i+1,:);
+        
+        quiver(px,py,pfx,pfy,'k')
+    end
+    %axis equal
+    title(uFile(iFile).name)
+    
     pause(0.001)
-    writeVideo(vid,getframe(gca));
+%     writeVideo(vid,getframe(gca));
     if iFile ~= nFiles
         cla
     end
 end
-close(vid)
+% close(vid)
+
+% % Visulaize cilia forces
+% colormap(jet)
+% % vid = VideoWriter('ibm.avi','Uncompressed AVI');
+% % open(vid);
+% figure(2)
+% hold on
+% 
+% for iFile = 1:nFiles
+%    
+%     p = load(pFile(iFile).name);
+%     pf = load(pfFile(iFile).name);
+%     for i = 1:2:2*nl
+%         % Read locations
+%         px = p(i,:);
+%         py = p(i+1,:);
+%         
+%         % Read forces
+%         pfx = pf(i,:);
+%         pfy = pf(i+1,:);
+%         
+%         quiver(px,py,pfx,pfy)
+%     end
+%     axis equal
+%     title(uFile(iFile).name)
+%     pause(0.001)
+% %     writeVideo(vid,getframe(gca));
+%     if iFile ~= nFiles
+%         cla
+%     end
+% end
+% % close(vid)
 
 function [uc,vc] = cellcenter(uc,vc,u,v,Nx,Ny)
     for j = 2:Nx+1
