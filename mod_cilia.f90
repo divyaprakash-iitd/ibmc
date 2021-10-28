@@ -23,16 +23,15 @@ contains
         integer(int32), intent(in) :: nl
         integer(int32), intent(in) :: np
         
-        integer(int32) :: il, ip 
+        integer(int32) :: il 
 
         self%nl = nl
         self%np = np
 
         allocate(self%layers(nl))
-        ! Create immersed boundaries (ib) for each layer
+        ! Initializes an Immersed boundary for each layer
         do il = 1,nl
-            allocate(self%layers(il)%boundary(np))
-            self%layers(il)%np = np
+            self%layers(il) = ib(np)
         end do 
     end function cilia_constructor
     

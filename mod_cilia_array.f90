@@ -27,6 +27,7 @@ contains
         self%nc = nc
         allocate(self%array(nc))
 
+        ! Initializes each cilia in the array
         do ic = 1,nc
             self%array(ic) = cilia(nl,np)
         end do
