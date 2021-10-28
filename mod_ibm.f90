@@ -721,35 +721,26 @@ contains
 
     end subroutine create_structure
 
-    subroutine create_cilia(C,L,W,dp,origin)
+    subroutine create_cilia(C,W,dp,origin)
         ! Creates a vertical cilia
         class(cilia), intent(in out) :: C
         class(vec), intent(in) :: origin
-        real(real64), intent(in) :: L ! Length of cilia
         real(real64), intent(in) :: W ! Width of cilia
         real(real64), intent(in) :: dp ! Spacing of particles in a cilia layer
 
         integer(int32) :: nl
         integer(int32) :: np
 
-        real(real64) :: dw
         integer(int32) :: il,ip
 
         nl = C%nl
         np = C%np
 
-        ! Incase of a single layer/cilia
-        if (C%nl.gt.1) then
-            dw = W/(C%nl-1)
-        else
-            dw = 0.0d0
-        end if 
-
         ! Assign locations to each of the layers of the cilia
         do il = 1,C%nl
             call initialize_ib(C%layers(il))
             
-            C%layers(il)%boundary(1)%x = origin%x + dw*(il-1)
+            C%layers(il)%boundary(1)%x = origin%x + W*(il-1)
             C%layers(il)%boundary(1)%y = origin%y
             do ip = 2,C%np
                 C%layers(il)%boundary(ip)%x = C%layers(il)%boundary(1)%x
@@ -793,6 +784,7 @@ contains
 
         ! Calculate forces on the diagonal links (negative slope)
         ! call calculate_diagonal_link_force(C%layers(2),C%layers(1),ks,Rl)
+        ! call calculate_diagonal_link_force(C%layers(1),C%layers(2),ks,Rl)
 
         ! Calculate forces on the diagonal links (Positive slope)
         ! call calculate_diagonal_link_force(C%layers(1),C%layers(2),ks,Rl)
@@ -904,9 +896,8 @@ contains
 
     end subroutine calculate_diagonal_link_force
 
-    subroutine create_cilia_array(CA,L,W,dc,dp,origin)
+    subroutine create_cilia_array(CA,W,dc,dp,origin)
         class(cilia_array), intent(in out) :: CA
-        real(real64),   intent(in) :: L     ! Length of cilia
         real(real64),   intent(in) :: W     ! Width of cilia
         real(real64),   intent(in) :: dc    ! Spacing of cilia
         real(real64),   intent(in) :: dp    ! Spacing of particles in a layer
@@ -920,8 +911,8 @@ contains
         ! CA = cilia_array(nc,nl,np)
 
         do ic = 1,CA%nc
-            corigin%x = origin%x + (ic-1)*dc
-            call create_cilia(CA%array(ic),L,W,dp,corigin)
+            corigin%x = origin%x + (ic-1)*(dc+W)
+            call create_cilia(CA%array(ic),W,dp,corigin)
         end do
 
     end subroutine create_cilia_array
