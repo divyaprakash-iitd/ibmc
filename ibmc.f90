@@ -19,13 +19,13 @@ program ibmc
     ! Code execution time
     real(real64)    :: start, finish
     ! Computational Domain
-    real(real64)    :: Lx       = 2.0d0
+    real(real64)    :: Lx       = 1.0d0
     real(real64)    :: Ly       = 1.0d0
     ! Mesh Paramaters
-    integer(int32)  :: Nx       = 60
+    integer(int32)  :: Nx       = 30
     integer(int32)  :: Ny       = 30
     ! Simulation time Paramaters
-    real(real64)    :: tsim     = 20.0d0
+    real(real64)    :: tsim     = 1.0000d0
     real(real64)    :: dt       = 0.0001d0
     real(real64)    :: t
     ! Physical Constants
@@ -112,7 +112,6 @@ program ibmc
     ! Arrays to transfer data
     BC = [utop,vtop,ubottom,vbottom,uleft,vleft,uright,vright]
     FP = [nu,rho]
-    SP = [ks,Rl,Ftip]
     
     ! Generate Laplacian matrix
     call generate_laplacian_sparse(A,M%dx,M%dy)
@@ -122,24 +121,23 @@ program ibmc
 
     ! Create cilia
     nl      = 2                     ! No. of Layers/Cilia
-    Rl      = 1.4*M%dx              ! Resting Length of Spring
+    Rl      = 4*M%dx              ! Resting Length of Spring
     dp      = Rl                ! Spacing between two particles
-    Ll      = 0.25*Ly               ! Length of a layer of cilia
-    np      = floor(Ll/dp)          ! No. of Particles/Layer
-    ibl     = 0.3d0                 ! Length of a Layer
+    np      = 3!floor(Ll/dp)          ! No. of Particles/Layer
     !wbl     = 0.05d0                ! Width/Distance between two Layers
     wbl     = Rl                    ! Make the resting length for the top link equal to the initial spacing
     dc      = 10*M%dx               ! Distance between two Cilia
     nc      = 1! floor(Lx/2/dc)     ! Number of cilia
-    origin  = vec(Lx/4,0.05d0)      ! Location of the first Cilium (Bottom-Left Particle)
+    origin  = vec(Lx/2,0.05d0)      ! Location of the first Cilium (Bottom-Left Particle)
 
-    print *, 'np=', np
-    CA = cilia_array(nc,nl,np)
-    call create_cilia_array(CA,ibl,wbl,dc,origin)
+    SP = [ks,Rl,Ftip]
+    ! print *, 'np=', np
+   CA = cilia_array(nc,nl,np)
+   call create_cilia_array(CA,wbl,dc,dp,origin)
 
-    call time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,A,P,R,tsim,dt)
+   call time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,A,P,R,tsim,dt)
 
-    call cpu_time(finish)
-    print '("Time = ",f6.3," seconds.")',finish-start
+   call cpu_time(finish)
+   print '("Time = ",f6.3," seconds.")',finish-start
 
 end program ibmc
