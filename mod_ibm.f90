@@ -88,6 +88,7 @@ contains
             LeftIndex   = 0 + M%xu%lb + floor((Lx-StencilSize*M%dx)/M%dx) 
             BottomIndex = 1 + M%yu%lb + floor((Ly-StencilSize*M%dy)/M%dy)   ! Increment by 1 since the first value is negative and not zero
 
+                    ! print *, floor((Ly-StencilSize*M%dy)/M%dy)
             RightIndex  = LeftIndex     +   2*StencilSize
             TopIndex    = BottomIndex   +   2*StencilSize
 
@@ -401,6 +402,60 @@ contains
 
     end subroutine interpolate_velocity
 
+    subroutine write_location_cilia_force(CA,timestep)
+        class(cilia_array), intent(in) :: CA
+        integer(int32), intent(in) :: timestep        
+
+        integer(int32) :: fileunit = 8
+        character(len=:), allocatable :: filename
+        integer(int32) :: inp, np, nl, il, ic
+        character(len=8) :: itnumber
+        character(len=1) :: idl ! Layer id
+        character(len=1) :: idc ! Cilia id
+        character(len=8) :: file_status
+        character(len=3) :: file_advance
+        write(itnumber,"(I8.8)") timestep
+
+        file_status = "replace"
+        file_advance = "no"
+
+        filename = 'ib_loc_force' // itnumber // '.txt'
+        
+        open(unit=fileunit, file=filename, ACTION="write", Position="Append", & 
+                        STATUS=trim(file_status))
+        ! Loop through the cilia
+        do ic = 1,CA%nc
+            nl = CA%array(ic)%nl
+            np = CA%array(ic)%np
+
+            ! Loop through the layers of a cilia
+            do il = 1,nl
+                
+                ! Loop through the particles in a cilia layer to write the x position
+                do inp = 1,np
+                    if (inp.eq.np) then 
+                        file_advance='yes'
+                    else 
+                        file_advance='no'
+                    end if
+                    write(fileunit, '(F14.7)',ADVANCE=file_advance) CA%array(ic)%layers(il)%boundary(inp)%Fx
+                end do
+                
+                ! Loop through the particles in a cilia layer to write the y position
+                do inp = 1,np
+                    if (inp.eq.np) then 
+                        file_advance='yes'
+                    else 
+                        file_advance='no'
+                    end if
+                    write(fileunit, '(F14.7)',ADVANCE=file_advance) CA%array(ic)%layers(il)%boundary(inp)%Fy
+                end do
+            end do
+        end do
+        close(fileunit)
+
+    end subroutine write_location_cilia_force
+
     subroutine write_location_cilia(CA,timestep)
         class(cilia_array), intent(in) :: CA
         integer(int32), intent(in) :: timestep        
@@ -677,11 +732,18 @@ contains
         np = C%np
 
         dl = L/(C%np-1)
-        dw = W/(C%nl-1)
+
+        ! Incase of a single layer/cilia
+        if (C%nl.gt.1) then
+            dw = W/(C%nl-1)
+        else
+            dw = 0.0d0
+        end if 
 
         ! Assign locations to each of the layers of the cilia
         do il = 1,C%nl
             call initialize_ib(C%layers(il))
+            
             C%layers(il)%boundary(1)%x = origin%x + dw*(il-1)
             C%layers(il)%boundary(1)%y = origin%y
             do ip = 2,C%np
@@ -690,12 +752,12 @@ contains
             end do
         end do
 
-        !do il = 1,C%nl
+        ! do il = 1,C%nl
         !    do ip = 1,np
         !        print *, C%layers(il)%boundary(ip)%x
         !        print *, C%layers(il)%boundary(ip)%y
         !    end do
-        !end do
+        ! end do
     end subroutine create_cilia
 
     subroutine calculate_cilia_force(C,ks,Rl)
@@ -720,13 +782,13 @@ contains
         end do
 
         ! Calculate forces on the horizontal links
-        call calculate_horizontal_link_force(C%layers(1),C%layers(2),ks,Rl)
+        ! call calculate_horizontal_link_force(C%layers(1),C%layers(2),ks,Rl)
 
         ! Calculate forces on the diagonal links (negative slope)
-        call calculate_diagonal_link_force(C%layers(2),C%layers(1),ks,Rl)
+        ! call calculate_diagonal_link_force(C%layers(2),C%layers(1),ks,Rl)
 
         ! Calculate forces on the diagonal links (Positive slope)
-        call calculate_diagonal_link_force(C%layers(1),C%layers(2),ks,Rl)
+        ! call calculate_diagonal_link_force(C%layers(1),C%layers(2),ks,Rl)
 
         ! Fix the last particle in each layer (Specify the forces to be zero)
         do il = 1,C%nl
@@ -964,7 +1026,7 @@ contains
 
         np = size(C%layers(1)%boundary)
         do il = 1,C%nl
-            C%layers(il)%boundary(np)%Fx = Ftip*cos(2*PI/2.0*t)
+            C%layers(il)%boundary(np)%Fx = Ftip!*cos(2*PI/2.0*t)
         end do
 
     end subroutine apply_tip_force_cilia
