@@ -17,7 +17,8 @@ module mod_ibm
               calculate_cilia_array_force, update_cilia, update_cilia_array, spread_force_cilia, &
               spread_force_cilia_array, interpolate_velocity_cilia, &
               interpolate_velocity_cilia_array, initialize_velocity_cilia_array, &
-              apply_tip_force_cilia, apply_tip_force_cilia_array, write_location_cilia
+              apply_tip_force_cilia, apply_tip_force_cilia_array, write_location_cilia, &
+              write_location_cilia_force
 contains
    
     subroutine initialize_ib(B)
@@ -419,7 +420,7 @@ contains
         file_status = "replace"
         file_advance = "no"
 
-        filename = 'ib_loc_force' // itnumber // '.txt'
+        filename = 'force_ib_loc' // itnumber // '.txt'
         
         open(unit=fileunit, file=filename, ACTION="write", Position="Append", & 
                         STATUS=trim(file_status))
@@ -588,7 +589,12 @@ contains
 
             ! Calculate distance between master and slave nodes
             d = norm2([(xsl-xm),(ysl-ym)])
+           
             
+            ! print *, 'Rl =', Rl
+            ! print *, 'd =', d
+            ! print *, 'DD = ', (ysl-ym)
+
             ! Calculate forces (Master node)
             Fmx = ks*(1.0d0-Rl/d)*(xsl-xm)
             Fmy = ks*(1.0d0-Rl/d)*(ysl-ym)
@@ -715,23 +721,22 @@ contains
 
     end subroutine create_structure
 
-    subroutine create_cilia(C,L,W,origin)
+    subroutine create_cilia(C,L,W,dp,origin)
         ! Creates a vertical cilia
         class(cilia), intent(in out) :: C
         class(vec), intent(in) :: origin
         real(real64), intent(in) :: L ! Length of cilia
         real(real64), intent(in) :: W ! Width of cilia
+        real(real64), intent(in) :: dp ! Spacing of particles in a cilia layer
 
         integer(int32) :: nl
         integer(int32) :: np
 
-        real(real64) :: dl, dw
+        real(real64) :: dw
         integer(int32) :: il,ip
 
         nl = C%nl
         np = C%np
-
-        dl = L/(C%np-1)
 
         ! Incase of a single layer/cilia
         if (C%nl.gt.1) then
@@ -748,7 +753,7 @@ contains
             C%layers(il)%boundary(1)%y = origin%y
             do ip = 2,C%np
                 C%layers(il)%boundary(ip)%x = C%layers(il)%boundary(1)%x
-                C%layers(il)%boundary(ip)%y = C%layers(il)%boundary(ip-1)%y + dl
+                C%layers(il)%boundary(ip)%y = C%layers(il)%boundary(ip-1)%y + dp
             end do
         end do
 
@@ -780,6 +785,8 @@ contains
         do il = 1,C%nl
             call calculate_spring_force(C%layers(il),ks,Rl,t)
         end do
+
+
 
         ! Calculate forces on the horizontal links
         ! call calculate_horizontal_link_force(C%layers(1),C%layers(2),ks,Rl)
@@ -897,11 +904,12 @@ contains
 
     end subroutine calculate_diagonal_link_force
 
-    subroutine create_cilia_array(CA,L,W,dc,origin)
+    subroutine create_cilia_array(CA,L,W,dc,dp,origin)
         class(cilia_array), intent(in out) :: CA
         real(real64),   intent(in) :: L     ! Length of cilia
         real(real64),   intent(in) :: W     ! Width of cilia
         real(real64),   intent(in) :: dc    ! Spacing of cilia
+        real(real64),   intent(in) :: dp    ! Spacing of particles in a layer
         class(vec),     intent(in) :: origin
 
         integer(int32) :: ic
@@ -913,7 +921,7 @@ contains
 
         do ic = 1,CA%nc
             corigin%x = origin%x + (ic-1)*dc
-            call create_cilia(CA%array(ic),L,W,corigin)
+            call create_cilia(CA%array(ic),L,W,dp,corigin)
         end do
 
     end subroutine create_cilia_array
