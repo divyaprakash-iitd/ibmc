@@ -43,10 +43,12 @@ contains
 
     end subroutine predictor
     
-    pure subroutine predictor_periodic(M,u,v,us,vs,nu,dt)
+    pure subroutine predictor_periodic(M,u,v,us,vs,nu,dt,Fx,Fy)
         class(mesh), intent(in) :: M
         real(real64), intent(in out) :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
         real(real64), intent(in out) :: us(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), vs(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
+        real(real64), intent(in) :: Fx(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub)
+        real(real64), intent(in) :: Fy(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
         real(real64), intent(in) :: nu, dt
 
         integer(int32) :: i,j
@@ -77,7 +79,7 @@ contains
                         ( nu*(uPad(i-1,j) - 2*uPad(i,j) + uPad(i+1,j))*dxi**2 &
                         + nu*(uPad(i,j-1) -2*uPad(i,j) + uPad(i,j+1))*dyi**2 &
                         - uPad(i,j)*(uPad(i+1,j) - uPad(i-1,j))*0.5*dxi &
-                        - vcenter*(uPad(i,j+1)-uPad(i,j-1))*0.5*dyi)
+                        - vcenter*(uPad(i,j+1)-uPad(i,j-1))*0.5*dyi) + Fx(i,j)
         end do
 
         ! vs 
@@ -89,7 +91,7 @@ contains
                         ( nu*(v(i-1,j) - 2*v(i,j) + v(i+1,j))*dxi**2 &
                         + nu*(v(i,j-1) - 2*v(i,j) + v(i,j+1))*dyi**2 &
                         - ucenter*(v(i+1,j) - v(i-1,j))*0.5*dxi &
-                        - v(i,j)*(v(i,j+1)-v(i,j-1))*0.5*dyi)
+                        - v(i,j)*(v(i,j+1)-v(i,j-1))*0.5*dyi) + Fy(i,j)
         end do
 
     end subroutine predictor_periodic
