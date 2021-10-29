@@ -270,7 +270,7 @@ contains
         real(real64)    :: utop, vtop, ubottom, vbottom, &
                                uleft, vleft, uright, vright
         ! Spring properties
-        real(real64)    :: ks, Rl, Ftip
+        real(real64)    :: ko,kd,Rl,Ftip
         
         ! AmgX
         logical         :: init_status
@@ -289,9 +289,10 @@ contains
         vright  = BC(8)
 
         ! Get spring parameters
-        ks      = SP(1)
-        Rl      = SP(2)
-        Ftip    = SP(3)
+        ko      = SP(1)
+        kd      = SP(2)
+        Rl      = SP(3)
+        Ftip    = SP(4)
 
         ! Get fluid properties
         nu  = FP(1)
@@ -314,10 +315,10 @@ contains
             ! print *, 'Fy = ', CA%array(1)%layers(1)%boundary(CA%array(1)%np)%Fy
             
             ! Calculate forces in the immersed boundary structure
-            call calculate_cilia_array_force(CA,ks,Rl)
+            call calculate_cilia_array_force(CA,ko,kd,Rl)
 
             ! Apply tip force for the first 1 second
-            ! if (t.lt.0.5) then
+            ! if (t.lt.0.2) then
             call apply_tip_force_cilia_array(CA,Ftip,t)
             ! end if
             
@@ -361,10 +362,10 @@ contains
             ! RK2: Step 2
             
             ! Calculate forces in the immersed boundary structure
-            call calculate_cilia_array_force(CAmid,ks,Rl)
+            call calculate_cilia_array_force(CAmid,ko,kd,Rl)
 
             ! Apply tip force for the first 1 second
-            ! if (t.lt.0.5) then
+            ! if (t.lt.0.2) then
             call apply_tip_force_cilia_array(CAmid,Ftip,t)
             ! end if
 
