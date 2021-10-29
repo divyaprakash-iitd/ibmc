@@ -1,6 +1,6 @@
 program ibmc
     use iso_fortran_env,    only: int32, real64
-    use mod_pressure,       only: generate_laplacian_sparse, calculate_pressure_sparse
+    use mod_pressure
     use mod_amgx,           only: calculate_pressure_amgx
     use mod_mesh
     use mod_time
@@ -115,7 +115,8 @@ program ibmc
     FP = [nu,rho]
     
     ! Generate Laplacian matrix
-    call generate_laplacian_sparse(A,M%dx,M%dy)
+    ! call generate_laplacian_sparse(A,M%dx,M%dy)
+    call generate_laplacian_sparse_periodic(A,M%dx,M%dy)
 
     ! AmgX initialization status
     init_status = .False.
@@ -127,7 +128,7 @@ program ibmc
     np      = 6                     ! No. of Particles/Layer
     wbl     = Rl                    ! Width/Distance between two Layers
     dc      = Rl                    ! Distance between two Cilia
-    nc      = 3                     ! Number of cilia
+    nc      = 1                     ! Number of cilia
     origin  = vec(Lx/4,0.1d0)      ! Location of the first Cilium (Bottom-Left Particle)
 
     SP = [ko,kd,Rl,Ftip]
