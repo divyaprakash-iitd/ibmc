@@ -22,21 +22,22 @@ program ibmc
     real(real64)    :: Lx       = 1.0d0
     real(real64)    :: Ly       = 1.0d0
     ! Mesh Paramaters
-    integer(int32)  :: Nx       = 30
-    integer(int32)  :: Ny       = 30
+    integer(int32)  :: Nx       = 50
+    integer(int32)  :: Ny       = 50
     ! Simulation time Paramaters
-    real(real64)    :: tsim     = 1.0000d0
+    real(real64)    :: tsim     = 20.0000d0
     real(real64)    :: dt       = 0.0001d0
     real(real64)    :: t
     ! Physical Constants
     real(real64)    :: nu       = 1.0d0/20.0d0
     real(real64)    :: rho      = 1.0d0
-    real(real64)    :: ks       = 2.0d0
+    real(real64)    :: ko       = 1.0d0
+    real(real64)    :: kd       = 0.5d0
     real(real64)    :: kb       = 10.0d0
     real(real64)    :: theta    = 3.1416d0
     real(real64)    :: Rl
     real(real64)    :: FP(2)
-    real(real64)    :: SP(3)
+    real(real64)    :: SP(4)
     ! Boundary values
     real(real64)    :: utop, vtop, ubottom, vbottom, &
                        uleft, vleft, uright, vright
@@ -48,7 +49,7 @@ program ibmc
     integer(int32)  :: it, NN, il, ip
     logical         :: init_status
     real(real64)    :: tp = 2.0d0 ! Time period
-    real(real64)    :: Ftip = 0.05 ! Tip force
+    real(real64)    :: Ftip = 0.1 ! Tip force
     ! Mesh
     type(mesh)      :: M
     ! Immersed boundary
@@ -120,24 +121,23 @@ program ibmc
     init_status = .False.
 
     ! Create cilia
-    nl      = 2                     ! No. of Layers/Cilia
-    Rl      = 4*M%dx              ! Resting Length of Spring
-    dp      = Rl                ! Spacing between two particles
-    np      = 3!floor(Ll/dp)          ! No. of Particles/Layer
-    !wbl     = 0.05d0                ! Width/Distance between two Layers
-    wbl     = Rl                    ! Make the resting length for the top link equal to the initial spacing
-    dc      = 10*M%dx               ! Distance between two Cilia
-    nc      = 1! floor(Lx/2/dc)     ! Number of cilia
-    origin  = vec(Lx/2,0.05d0)      ! Location of the first Cilium (Bottom-Left Particle)
+    nl      = 2                     ! No. of Layers/Cilia (More or less than 2 is not supported for now!)
+    Rl      = 4*M%dx                ! Resting Length of Spring
+    dp      = Rl                    ! Spacing between two particles
+    np      = 6                     ! No. of Particles/Layer
+    wbl     = Rl                    ! Width/Distance between two Layers
+    dc      = Rl                    ! Distance between two Cilia
+    nc      = 1                     ! Number of cilia
+    origin  = vec(Lx/2,0.1d0)      ! Location of the first Cilium (Bottom-Left Particle)
 
-    SP = [ks,Rl,Ftip]
-    ! print *, 'np=', np
-   CA = cilia_array(nc,nl,np)
-   call create_cilia_array(CA,wbl,dc,dp,origin)
+    SP = [ko,kd,Rl,Ftip]
 
-   call time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,A,P,R,tsim,dt)
+    CA = cilia_array(nc,nl,np)
+    call create_cilia_array(CA,wbl,dc,dp,origin)
 
-   call cpu_time(finish)
-   print '("Time = ",f6.3," seconds.")',finish-start
+    call time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,A,P,R,tsim,dt)
+
+    call cpu_time(finish)
+    print '("Time = ",f6.3," seconds.")',finish-start
 
 end program ibmc
