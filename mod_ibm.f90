@@ -547,9 +547,10 @@ contains
         end do
     end subroutine write_location
 
-    subroutine calculate_spring_force(B,ks,Rl,t)
+    subroutine calculate_spring_force(B,ko,kd,Rl,t)
         class(ib), intent(in out) :: B    ! Immersed boundary
-        real(real64), intent(in)  :: ks   ! Spring stiffness
+        real(real64), intent(in)  :: ko   ! Orthogonal Spring stiffness
+        real(real64), intent(in)  :: kd   ! Diagonal Spring stiffness
         real(real64),intent(in)   :: Rl   ! Resting length
         character(1), intent(in)  :: t    ! Boundary type (Open or Closed) 
 
@@ -596,8 +597,8 @@ contains
             ! print *, 'DD = ', (ysl-ym)
 
             ! Calculate forces (Master node)
-            Fmx = ks*(1.0d0-Rl/d)*(xsl-xm)
-            Fmy = ks*(1.0d0-Rl/d)*(ysl-ym)
+            Fmx = ko*(1.0d0-Rl/d)*(xsl-xm)
+            Fmy = ko*(1.0d0-Rl/d)*(ysl-ym)
 
             ! Calculate forces (Slave node)
             Fslx = -Fmx
@@ -756,9 +757,10 @@ contains
         ! end do
     end subroutine create_cilia
 
-    subroutine calculate_cilia_force(C,ks,Rl)
+    subroutine calculate_cilia_force(C,ko,kd,Rl)
         class(cilia), intent(in out) :: C       ! Cilia structure
-        real(real64), intent(in)  :: ks         ! Spring stiffness
+        real(real64), intent(in)  :: ko         ! Horizontal spring stiffness
+        real(real64), intent(in)  :: kd         ! Diagonal spring stiffness
         real(real64), intent(in)   :: Rl        ! Resting length
 
         character(1)  :: t = 'o'  ! Boundary type (Open for cilia)
@@ -774,17 +776,17 @@ contains
 
         ! Calculate forces on the layers
         do il = 1,C%nl
-            call calculate_spring_force(C%layers(il),ks,Rl,t)
+            call calculate_spring_force(C%layers(il),ko,kd,Rl,t)
         end do
 
 
 
         ! Calculate forces on the horizontal links
-        ! call calculate_horizontal_link_force(C%layers(1),C%layers(2),ks,Rl)
+        call calculate_horizontal_link_force(C%layers(1),C%layers(2),ko,Rl)
 
         ! Calculate forces on the diagonal links (negative slope)
-        ! call calculate_diagonal_link_force(C%layers(2),C%layers(1),ks,Rl)
-        ! call calculate_diagonal_link_force(C%layers(1),C%layers(2),ks,Rl)
+        call calculate_diagonal_link_force(C%layers(1),C%layers(2),kd,Rl)
+        call calculate_diagonal_link_force_pos(C%layers(2),C%layers(1),kd,Rl)
 
         ! Calculate forces on the diagonal links (Positive slope)
         ! call calculate_diagonal_link_force(C%layers(1),C%layers(2),ks,Rl)
@@ -846,9 +848,59 @@ contains
 
     end subroutine calculate_horizontal_link_force
 
-    subroutine calculate_diagonal_link_force(masterL,slaveL,ks,Rl)
+    subroutine calculate_diagonal_link_force_pos(masterL,slaveL,kd,Rl)
         class(ib), intent(in out) :: masterL, slaveL    ! Immersed boundary
-        real(real64), intent(in)  :: ks   ! Spring stiffness
+        real(real64), intent(in)  :: kd   ! Spring stiffness
+        real(real64),intent(in)   :: Rl   ! Resting length
+
+        integer(int32)  :: np   ! Number of nodes/particle
+        integer(int32)  :: ip, master, slave   ! Indices
+        real(real64)    :: d    ! Distance between two nodes
+
+        real(real64) :: Fmx, Fslx, Fmy, Fsly ! Forces (Master(m) and Slave(sl) node)
+        real(real64) :: xm, xsl, ym, ysl ! Location of master and slave nodes
+
+        ! Count the number of nodes/particles in the immersed boundary layers
+        ! (Assuming both the layers have the same number of particles)
+        np = size(masterL%boundary)
+
+        ! Calculates for negative slope diagonal links
+        do ip = 2,np
+            master = ip
+            slave = master - 1
+            ! Master node location
+            xm = masterL%boundary(master)%x
+            ym = masterL%boundary(master)%y
+
+            ! Slave node location
+            xsl = slaveL%boundary(slave)%x
+            ysl = slaveL%boundary(slave)%y
+
+            ! Calculate distance between master and slave nodes
+            d = norm2([(xsl-xm),(ysl-ym)])
+            
+            ! Calculate forces (Master node)
+            Fmx = kd*(1.0d0-Rl/d)*(xsl-xm)
+            Fmy = kd*(1.0d0-Rl/d)*(ysl-ym)
+
+            ! Calculate forces (Slave node)
+            Fslx = -Fmx
+            Fsly = -Fmy
+
+            ! Assign fores to master node
+            masterL%boundary(master)%Fx = masterL%boundary(master)%Fx + Fmx
+            masterL%boundary(master)%Fy = masterL%boundary(master)%Fy + Fmy
+
+            ! Assign forces to slave node
+            slaveL%boundary(slave)%Fx = slaveL%boundary(slave)%Fx + Fslx
+            slaveL%boundary(slave)%Fy = slaveL%boundary(slave)%Fy + Fsly
+        end do
+
+    end subroutine calculate_diagonal_link_force_pos
+
+    subroutine calculate_diagonal_link_force(masterL,slaveL,kd,Rl)
+        class(ib), intent(in out) :: masterL, slaveL    ! Immersed boundary
+        real(real64), intent(in)  :: kd   ! Spring stiffness
         real(real64),intent(in)   :: Rl   ! Resting length
 
         integer(int32)  :: np   ! Number of nodes/particle
@@ -878,8 +930,8 @@ contains
             d = norm2([(xsl-xm),(ysl-ym)])
             
             ! Calculate forces (Master node)
-            Fmx = ks*(1.0d0-Rl/d)*(xsl-xm)
-            Fmy = ks*(1.0d0-Rl/d)*(ysl-ym)
+            Fmx = kd*(1.0d0-Rl/d)*(xsl-xm)
+            Fmy = kd*(1.0d0-Rl/d)*(ysl-ym)
 
             ! Calculate forces (Slave node)
             Fslx = -Fmx
@@ -917,16 +969,17 @@ contains
 
     end subroutine create_cilia_array
 
-    subroutine calculate_cilia_array_force(CA,ks,Rl)
+    subroutine calculate_cilia_array_force(CA,ko,kd,Rl)
         class(cilia_array), intent(in out)  :: CA      ! Cilia array
-        real(real64),       intent(in)      :: ks      ! Spring stiffness
+        real(real64),       intent(in)      :: ko      ! Horizontal spring stiffness
+        real(real64),       intent(in)      :: kd      ! Diagonal spring stiffness
         real(real64),       intent(in)      :: Rl      ! Resting length
 
         integer(int32) :: ic
 
         ! Calculate forces for all the cilia within the array
         do ic = 1,CA%nc
-            call calculate_cilia_force(CA%array(ic),ks,Rl)
+            call calculate_cilia_force(CA%array(ic),ko,kd,Rl)
         end do
     end subroutine calculate_cilia_array_force
 
