@@ -51,7 +51,7 @@ colormap(jet)
 figure(1)
 fig = gcf;
 fig.Position = [1 1 1920 961];
-for iFile = 1:20:nFiles
+for iFile = 1:1:100%1:nFiles
     subplot(1,2,1)
     hold on
     u = load(uFile(iFile).name);
@@ -63,8 +63,30 @@ for iFile = 1:20:nFiles
     for i = 1:2:2*nl
         px = p(i,:);
         py = p(i+1,:);
-        plot(px,py,'k-o','Markersize',5)
+        plot(px,py,'w-o','linewidth',3,'Markersize',5) 
     end
+    
+    % Horizontal links
+    for i = 1:4:2*nl
+        px1 = p(i,:);
+        py1 = p(i+1,:);
+        px2 = p(i+2,:);
+        py2 = p(i+3,:);
+        % Horizontal links
+        for j = 1:numel(px1)
+            plot([px1(j),px2(j)],[py1(j),py2(j)],'w-o','linewidth',1,'Markersize',5) 
+        end
+        % Diagonal links: 1
+        for j = 1:numel(px1)-1
+            plot([px1(j),px2(j+1)],[py1(j),py2(j+1)],'w-o','linewidth',1,'Markersize',5)
+        end
+         % Diagonal links: 2
+        for j = 1:numel(px1)-1
+            plot([px1(j+1),px2(j)],[py1(j+1),py2(j)],'w-o','linewidth',1,'Markersize',5)
+        end
+        
+    end
+    
     mesh(xp,yp,0*xp,'FaceAlpha','0.0','EdgeColor','w','LineStyle','-','EdgeAlpha','0.25')
 %     view(90,0)
     colorbar
@@ -82,7 +104,7 @@ for iFile = 1:20:nFiles
         pfx = pf(i,:);
         pfy = pf(i+1,:);
         
-        quiver(px,py,pfx,pfy,'k')
+        quiver(px,py,pfx,pfy,0.5,'k')
     end
     %axis equal
     title(uFile(iFile).name)
