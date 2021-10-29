@@ -503,8 +503,8 @@ subroutine generate_laplacian_sparse_periodic(A,dx,dy)
 
     ! Set the pressure at the corner cell
     A = -A
-    A(imin,jmin,:) = 0.0d0
-    A(imin,jmin,CENTER) = 1.0d0
+    A(imax/2,jmax/2,:) = 0.0d0
+    A(imax/2,jmax/2,CENTER) = 1.0d0
 
 end subroutine generate_laplacian_sparse_periodic
 
