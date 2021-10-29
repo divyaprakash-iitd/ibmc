@@ -5,8 +5,8 @@ module mod_pressure
 
     private
     public :: generate_laplacian_sparse, calculate_pressure_sparse, &
-              generate_laplacian_sparse_periodic, apply_periodic_pressure
-
+              generate_laplacian_sparse_periodic, apply_periodic_pressure, &
+              calculate_pressure_sparse_periodic
 contains
 
 subroutine calculate_pressure_sparse(A,PIN,R)
@@ -256,6 +256,96 @@ subroutine generate_laplacian_sparse(A,dx,dy)
     A(imin,jmin,CENTER) = 1.0d0
 
 end subroutine generate_laplacian_sparse
+
+subroutine calculate_pressure_sparse_periodic(A,PIN,R)
+
+    real(real64),       intent(in)      :: R(:,:), A(:,:,:)
+    real(real64),       intent(in out)  :: PIN(:,:)
+
+    integer(int32)      :: imin, imax, jmin, jmax
+    real(real64), allocatable :: P(:,:)
+    integer(int32) :: Nx, Ny
+
+    ! Indices 
+    integer(int32) :: i,j,ITER
+
+    ! Parameters for SOR
+    real(real64),   parameter :: OMEGA      = 1.99
+    real(real64),   parameter :: TOLERANCE  = 1E-10
+    integer(int32), parameter :: MAXITER    = 1E5
+    integer(int32), parameter :: BOTTOM     = 1
+    integer(int32), parameter :: LEFT       = 2
+    integer(int32), parameter :: CENTER     = 3
+    integer(int32), parameter :: RIGHT      = 4
+    integer(int32), parameter :: TOP        = 5
+    integer(int32), parameter :: NN         = 5
+    
+    real(real64) :: ERROR
+    real(real64) :: PTEMP
+
+    real(real64), allocatable :: RSDL(:,:)     ! Residual Matrix
+    real(real64), allocatable :: RSDLV(:)    ! Residual Vector
+    
+    imin = lbound(A,1)
+    imax = ubound(A,1)
+    jmin = lbound(A,2)
+    jmax = ubound(A,2)
+   
+    ! Domain Size
+    Nx = size(PIN,1)
+    Ny = size(PIN,2)
+
+    ! Allocate variables
+    allocate(P(imin-1:imax+1,jmin-1:jmax+1))
+    allocate(RSDL(Nx,Ny))
+
+    ! Pressure array with zero padding on the boundaries
+    P = 0.0d0
+    PIN = 0.0d0
+    P(imin:imax,jmin:jmax) = PIN
+    P(imin-1,:) = P(imax,:)
+    P(imax+1,:) = P(imin,:)
+
+    allocate(RSDLV(Nx*Ny))        
+    RSDL = 0.0d0
+    ERROR = 1.0d0
+
+    ITER = 0
+    do while ((ITER.lt.MAXITER).and.(ERROR.gt.TOLERANCE))
+        do j = jmin,jmax
+            do i = imin,imax
+                PTEMP = R(i,j) - &
+                        (A(i,j,BOTTOM)   *   P(i,j-1)    +   &
+                        A(i,j,LEFT)     *   P(i-1,j)    +   &
+                        A(i,j,RIGHT)    *   P(i+1,j)    +   &
+                        A(i,j,TOP)      *   P(i,j+1))
+
+                P(i,j) = (1-OMEGA) * P(i,j) + OMEGA/A(i,j,CENTER) * PTEMP
+            end do
+        end do
+
+        ! Calculate Residual
+        do concurrent (j = jmin:jmax)
+            do concurrent (i = imin:imax)
+                RSDL(i,j) = A(i,j,BOTTOM)   *   P(i,j-1)    +   &
+                            A(i,j,LEFT)     *   P(i-1,j)    +   &
+                            A(i,j,CENTER)   *   P(i,j)      +   &
+                            A(i,j,RIGHT)    *   P(i+1,j)    +   &
+                            A(i,j,TOP)      *   P(i,j+1)    -   &
+                            R(i,j)
+            end do
+        end do
+
+        RSDLV = reshape(RSDL, [Nx*Ny])
+        ERROR = norm2(abs(RSDLV))/Nx/Ny
+
+        ITER = ITER + 1
+    end do
+    PIN = P(imin:imax,jmin:jmax)
+    print *, 'Error = ', ERROR
+    print *, 'Iteration = ', ITER
+end subroutine calculate_pressure_sparse_periodic
+
 
 subroutine generate_laplacian_sparse_periodic(A,dx,dy)
 
