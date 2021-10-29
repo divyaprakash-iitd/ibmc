@@ -127,8 +127,8 @@ program ibmc
     np      = 6                     ! No. of Particles/Layer
     wbl     = Rl                    ! Width/Distance between two Layers
     dc      = Rl                    ! Distance between two Cilia
-    nc      = 1                     ! Number of cilia
-    origin  = vec(Lx/2,0.1d0)      ! Location of the first Cilium (Bottom-Left Particle)
+    nc      = 3                     ! Number of cilia
+    origin  = vec(Lx/4,0.1d0)      ! Location of the first Cilium (Bottom-Left Particle)
 
     SP = [ko,kd,Rl,Ftip]
 
