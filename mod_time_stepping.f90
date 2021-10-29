@@ -1,6 +1,6 @@
 module mod_time_stepping
     use iso_fortran_env, only: int32, real64
-    use mod_pressure,       only: generate_laplacian_sparse, calculate_pressure_sparse
+    use mod_pressure,       only: generate_laplacian_sparse, calculate_pressure_sparse, calculate_pressure_sparse_periodic
     use mod_amgx,           only: calculate_pressure_amgx
     use mod_mesh
     use mod_time
@@ -327,7 +327,8 @@ contains
  
             ! RK2: Step 1
             ! Apply velocity boundary conditions
-            call apply_boundary(M,u,v,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
+            ! call apply_boundary(M,u,v,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
+            call apply_boundary_periodic(M,u,v,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
 
             ! Spread force from the immersed boundary
             Fx = 0.0d0 ! Initialize the forces at every time-step
@@ -336,9 +337,11 @@ contains
 
             ! us = u + 0.5d0*dt*cdu_f(M,u,v,nu,Fx)
             ! vs = v + 0.5d0*dt*cdv_f(M,u,v,nu,Fy)
-            call cdu(M,u,v,us,nu,Fx)
+            ! call cdu(M,u,v,us,nu,Fx)
+            call cdu_p(M,u,v,us,nu,Fx)
             us = u + us*dt/2
-            call cdv(M,u,v,vs,nu,Fy)
+            ! call cdv(M,u,v,vs,nu,Fy)
+            call cdv_p(M,u,v,vs,nu,Fy)
             vs = v + vs*dt/2
 
             ! Form the RHS of the pressure poisson equation
@@ -346,10 +349,12 @@ contains
 
             ! Solve for pressure
             ! call calculate_pressure_sparse(A,P,R)
-            call calculate_pressure_amgx(A,P,R,init_status)
+            call calculate_pressure_sparse_periodic(A,P,R)
+            ! call calculate_pressure_amgx(A,P,R,init_status)
 
             ! Perform the corrector step to obtain the velocity
-            call corrector(M,umid,vmid,us,vs,P,rho,0.5d0*dt)
+            ! call corrector(M,umid,vmid,us,vs,P,rho,0.5d0*dt)
+            call corrector_periodic(M,umid,vmid,us,vs,P,rho,0.5d0*dt)
 
             ! Initialize the velocity at every time-step
             call initialize_velocity_cilia_array(CAmid)
@@ -369,7 +374,8 @@ contains
             call apply_tip_force_cilia_array(CAmid,Ftip,t)
             ! end if
 
-            call apply_boundary(M,umid,vmid,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
+            ! call apply_boundary(M,umid,vmid,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
+            call apply_boundary_periodic(M,umid,vmid,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
 
             ! Spread force from the immersed boundary
             Fx = 0.0d0 ! Initialize the forces at every time-step
@@ -379,9 +385,11 @@ contains
             ! us = u + dt*cdu_f(M,umid,vmid,nu,Fx)
             ! vs = v + dt*cdv_f(M,umid,vmid,nu,Fx)
 
-            call cdu(M,u,v,us,nu,Fx)
+            ! call cdu(M,u,v,us,nu,Fx)
+            call cdu_p(M,u,v,us,nu,Fx)
             us = u + us*dt
-            call cdv(M,u,v,vs,nu,Fy)
+            ! call cdv(M,u,v,vs,nu,Fy)
+            call cdv_p(M,u,v,vs,nu,Fy)
             vs = v + vs*dt
             
             ! Form the RHS of the pressure poisson equation
@@ -389,10 +397,12 @@ contains
 
             ! Solve for pressure
             ! call calculate_pressure_sparse(A,P,R)
-            call calculate_pressure_amgx(A,P,R,init_status)
+            call calculate_pressure_sparse_periodic(A,P,R)
+            ! call calculate_pressure_amgx(A,P,R,init_status)
 
             ! Perform the corrector step to obtain the velocity
-            call corrector(M,u,v,us,vs,p,rho,dt)
+            ! call corrector(M,u,v,us,vs,p,rho,dt)
+            call corrector_periodic(M,u,v,us,vs,p,rho,dt)
 
             ! Initialize the velocity at every time-step
             call initialize_velocity_cilia_array(CA)
@@ -405,7 +415,7 @@ contains
             print *, 'time = ', t
             
             ! Write files every Nth timestep
-            if (mod(it,50).eq.0) then 
+            if (mod(it,1).eq.0) then 
                 call write_field(u,'u',it) 
                 call write_field(v,'v',it) 
                 call write_location_cilia(CA,it)
