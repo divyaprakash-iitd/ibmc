@@ -223,7 +223,7 @@ contains
     pure subroutine cdu_p(M,u,v,us,nu,Fx)
         ! Calculates convection and diffusion terms for u
         class(mesh), intent(in) :: M
-        real(real64), intent(in) :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
+        real(real64), intent(in out) :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
         real(real64), intent(in) :: Fx(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub)
         real(real64), intent(in) :: nu 
 
@@ -259,6 +259,35 @@ contains
         end do
 
     end subroutine cdu_p
+
+    pure subroutine cdv_p(M,u,v,vs,nu,Fy)
+        ! Calculates convection and diffusion terms for u
+        class(mesh), intent(in) :: M
+        real(real64), intent(in out) :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub) 
+        real(real64), intent(in) :: Fy(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
+        real(real64), intent(in) :: nu 
+
+        real(real64), intent(in out) :: vs(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
+        integer(int32) :: i,j
+        real(real64) :: ucenter, dxi, dyi
+
+        ! Apply periodic boundary conditions to v
+        v(M%xv%lb,:) = v(M%xv%ub-1,:) ! Left boundary
+        v(M%xv%ub,:) = v(M%xv%lb+1,:) ! Right boundary
+        dxi = 1/M%dx
+        dyi = 1/M%dy
+
+        ! vs 
+        ! (v-velocity cell)
+        do concurrent (j = M%yv%lb+1:M%yv%ub-1, i = M%xv%lb+1:M%xv%ub-1)
+            ucenter = 0.25*(u(i,j-1)+u(i,j)+u(i+1,j-1)+u(i+1,j))
+            vs(i,j) =   nu*(v(i-1,j) - 2*v(i,j) + v(i+1,j))*dxi**2 &
+                        + nu*(v(i,j-1) - 2*v(i,j) + v(i,j+1))*dyi**2 &
+                        - ucenter*(v(i+1,j) - v(i-1,j))*0.5*dxi &
+                        - v(i,j)*(v(i,j+1)-v(i,j-1))*0.5*dyi + Fy(i,j)
+        end do
+
+    end subroutine cdv_p
 
     pure subroutine cdv(M,u,v,vs,nu,Fy)
         ! Calculates convection and diffusion terms for u
