@@ -18,7 +18,7 @@ module mod_ibm
               spread_force_cilia_array, interpolate_velocity_cilia, &
               interpolate_velocity_cilia_array, initialize_velocity_cilia_array, &
               apply_tip_force_cilia, apply_tip_force_cilia_array, write_location_cilia, &
-              write_location_cilia_force
+              write_location_cilia_force, write_location_cilia_velocity
 contains
    
     subroutine initialize_ib(B)
@@ -52,7 +52,7 @@ contains
         
         ! Calculate the new position
         ! Start from 2 if fixing the first particle in each layer of cilia
-        do inp = 2,np
+        do inp = 1,np
             B%boundary(inp)%x = B%boundary(inp)%x + B%boundary(inp)%Ux * dt
             B%boundary(inp)%y = B%boundary(inp)%y + B%boundary(inp)%Uy * dt
         end do
@@ -456,6 +456,60 @@ contains
         close(fileunit)
 
     end subroutine write_location_cilia_force
+
+    subroutine write_location_cilia_velocity(CA,timestep)
+        class(cilia_array), intent(in) :: CA
+        integer(int32), intent(in) :: timestep        
+
+        integer(int32) :: fileunit = 8
+        character(len=:), allocatable :: filename
+        integer(int32) :: inp, np, nl, il, ic
+        character(len=8) :: itnumber
+        character(len=1) :: idl ! Layer id
+        character(len=1) :: idc ! Cilia id
+        character(len=8) :: file_status
+        character(len=3) :: file_advance
+        write(itnumber,"(I8.8)") timestep
+
+        file_status = "replace"
+        file_advance = "no"
+
+        filename = 'vel_ib_loc' // itnumber // '.txt'
+        
+        open(unit=fileunit, file=filename, ACTION="write", Position="Append", & 
+                        STATUS=trim(file_status))
+        ! Loop through the cilia
+        do ic = 1,CA%nc
+            nl = CA%array(ic)%nl
+            np = CA%array(ic)%np
+
+            ! Loop through the layers of a cilia
+            do il = 1,nl
+                
+                ! Loop through the particles in a cilia layer to write the x position
+                do inp = 1,np
+                    if (inp.eq.np) then 
+                        file_advance='yes'
+                    else 
+                        file_advance='no'
+                    end if
+                    write(fileunit, '(F14.7)',ADVANCE=file_advance) CA%array(ic)%layers(il)%boundary(inp)%Ux
+                end do
+                
+                ! Loop through the particles in a cilia layer to write the y position
+                do inp = 1,np
+                    if (inp.eq.np) then 
+                        file_advance='yes'
+                    else 
+                        file_advance='no'
+                    end if
+                    write(fileunit, '(F14.7)',ADVANCE=file_advance) CA%array(ic)%layers(il)%boundary(inp)%Uy
+                end do
+            end do
+        end do
+        close(fileunit)
+
+    end subroutine write_location_cilia_velocity
 
     subroutine write_location_cilia(CA,timestep)
         class(cilia_array), intent(in) :: CA
