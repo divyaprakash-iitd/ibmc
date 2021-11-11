@@ -55,7 +55,7 @@ for iFile = 1:1:100%1:nFiles
     subplot(1,2,1)
     hold on
     u = load(uFile(iFile).name);
-    v = load(uFile(iFile).name);
+    v = load(vFile(iFile).name);
     [uc,vc] = cellcenter(uc,vc,u,v,Nx,Ny);
     umag = sqrt(uc.^2+vc.^2);
     contourf(xp,yp,umag,50,'edgecolor','none')
