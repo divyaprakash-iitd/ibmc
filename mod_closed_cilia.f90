@@ -5,12 +5,13 @@ module mod_closed_cilia
     use mod_vec
     use mod_cilia
     use mod_cilia_array
+    use mod_ibm
     implicit none
 
     real(real64), parameter :: PI = 3.141592653589793
 
     private
-    public:: create_closed_loop, create_closed_loop_array
+    public:: create_closed_loop, create_closed_loop_array, calculate_closed_loop_array_force
     
 contains
 
