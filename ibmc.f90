@@ -27,7 +27,7 @@ program ibmc
     integer(int32)  :: Ny       = 50
     ! Simulation time Paramaters
     real(real64)    :: tsim     = 20.0000d0
-    real(real64)    :: dt       = 0.0001d0
+    real(real64)    :: dt       = 0.001d0
     real(real64)    :: t
     ! Physical Constants
     real(real64)    :: nu       = 1.0d0/20.0d0
@@ -107,7 +107,7 @@ program ibmc
     Fy  = 0.0d0
 
     ! Define boundary conditions for velocity
-    utop    = 0.0d0
+    utop    = 1.0d0
     vtop    = 0.0d0
     ubottom = 0.0d0
     vbottom = 0.0d0
@@ -130,7 +130,7 @@ program ibmc
     nl      = 2                     ! No. of Layers/Cilia (More or less than 2 is not supported for now!)
     Rl      = 4*M%dx                ! Resting Length of Spring
     dp      = Rl                    ! Spacing between two particles
-    np      = 6                     ! No. of Particles/Layer
+    np      = 7                     ! No. of Particles/Layer
     wbl     = Rl                    ! Width/Distance between two Layers
     dc      = Rl                    ! Distance between two Cilia
     nc      = 3                     ! Number of cilia
@@ -138,18 +138,18 @@ program ibmc
 
     SP = [ko,kd,Rl,Ftip]
 
-    radius = 0.2*Lx
-    originP = vec(Lx/4,Ly/4)
+    radius = 0.1*Lx
+    originP = vec(Lx/3,2.25*Ly/3)
     CAP = cilia_array(1,nl,np)
-    call create_closed_loop_array(CAP,wbl,radius,originP)
+    call create_closed_loop_array(CAP,0.2d0*radius,radius,originP)
     ! CA = cilia_array(nc,nl,np)
     ! call create_cilia_array(CA,wbl,dc,dp,origin)
 
-    ! call time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,A,P,R,tsim,dt)
+    call time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAP,A,P,R,tsim,dt)
 
-    call write_location_cilia(CAP,10)
-    call write_field(u,'u',10) 
-    call write_field(v,'v',10) 
+    ! call write_location_cilia(CAP,10)
+    ! call write_field(u,'u',10) 
+    ! call write_field(v,'v',10) 
     call cpu_time(finish)
     print '("Time = ",f6.3," seconds.")',finish-start
 
