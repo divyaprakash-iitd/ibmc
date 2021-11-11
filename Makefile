@@ -63,7 +63,7 @@ mod_cilia.o: mod_cilia.f90 mod_ib.o Makefile
 mod_cilia_array.o: mod_cilia_array.f90 mod_cilia.o Makefile
 	$(FORT) -c $<
 
-mod_closed_cilia.o: mod_closed_cilia.f90 mod_mesh.o mod_ib.o mod_vec.o mod_cilia.o Makefile
+mod_closed_cilia.o: mod_closed_cilia.f90 mod_mesh.o mod_ib.o mod_vec.o mod_cilia.o mod_cilia_array.o Makefile
 	$(FORT) -c $<
 
 ibmc.o: ibmc.f90 mod_pressure.o mod_amgx.o mod_mesh.o mod_dims.o mod_time.o mod_boundary.o mod_time_stepping.o mod_io.o mod_particle.o mod_ib.o mod_vec.o mod_ibm.o mod_cilia.o mod_cilia_array.o mod_closed_cilia.o Makefile
