@@ -36,7 +36,8 @@ umag = sqrt(uc.^2+vc.^2);
 pFile = dir(strcat('ib_loc','*'));
 p = load(pFile(1).name);
 
-pfFile = dir(strcat('force_ib_loc','*'));
+pfFile = dir(strcat('vel_ib_loc','*'));
+% pfFile = dir(strcat('force_ib_loc','*'));
 
 nc = size(p,1)/4;
 nl = 2*nc;
@@ -51,7 +52,7 @@ colormap(jet)
 figure(1)
 fig = gcf;
 fig.Position = [1 1 1920 961];
-for iFile = 1:1:100%1:nFiles
+for iFile = 1:nFiles
     subplot(1,2,1)
     hold on
     u = load(uFile(iFile).name);
@@ -109,7 +110,7 @@ for iFile = 1:1:100%1:nFiles
     %axis equal
     title(uFile(iFile).name)
     
-    pause(0.001)
+    pause(0.5)
 %     writeVideo(vid,getframe(gca));
     if iFile ~= nFiles
         cla
