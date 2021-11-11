@@ -12,6 +12,7 @@ program ibmc
     use mod_vec
     use mod_cilia
     use mod_cilia_array
+    use mod_closed_cilia
     implicit none
 
     ! Parameters
@@ -69,6 +70,11 @@ program ibmc
     ! Cilia array
     type(cilia_array) :: CA
     type(cilia_array) :: CAmid
+
+    ! Closed cilia parameters
+    type(cilia_array) :: CAP
+    real(real64) :: radius
+    type(vec) :: originP
     !---------------------- Begin Calculations ------------------------------------!
     call cpu_time(start)
 
@@ -132,11 +138,18 @@ program ibmc
 
     SP = [ko,kd,Rl,Ftip]
 
-    CA = cilia_array(nc,nl,np)
-    call create_cilia_array(CA,wbl,dc,dp,origin)
+    radius = 0.2*Lx
+    originP = vec(Lx/4,Ly/4)
+    CAP = cilia_array(1,nl,np)
+    call create_closed_loop_array(CAP,wbl,radius,originP)
+    ! CA = cilia_array(nc,nl,np)
+    ! call create_cilia_array(CA,wbl,dc,dp,origin)
 
-    call time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,A,P,R,tsim,dt)
+    ! call time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,A,P,R,tsim,dt)
 
+    call write_location_cilia(CAP,10)
+    call write_field(u,'u',10) 
+    call write_field(v,'v',10) 
     call cpu_time(finish)
     print '("Time = ",f6.3," seconds.")',finish-start
 
