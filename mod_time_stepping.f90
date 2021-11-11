@@ -11,7 +11,7 @@ module mod_time_stepping
     use mod_vec
     use mod_cilia
     use mod_cilia_array
-
+    use mod_closed_cilia
     implicit none
     
 contains
@@ -234,7 +234,7 @@ contains
 !        end do
 !    end subroutine time_loop
 
-    subroutine time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,A,P,R,tsim,dt)
+    subroutine time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAP,A,P,R,tsim,dt)
         real(real64), intent(in)          :: FP(:)
         real(real64), intent(in)          :: BC(:)
         class(mesh), intent(inout)        :: M
@@ -244,6 +244,7 @@ contains
         real(real64), intent(inout)       :: Fy(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
         real(real64), intent(in)          :: SP(:)
         class(cilia_array), intent(inout) :: CA
+        class(cilia_array), intent(inout) :: CAP
         ! class(cilia_array), intent(inout) :: CAmid
         real(real64), intent(in)          :: A(:,:,:)
         real(real64), intent(inout)       :: P(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub)
@@ -252,7 +253,7 @@ contains
         real(real64), intent(in)          :: dt
 
         ! Intermediate cilia
-        type(cilia_array) :: CAmid
+        type(cilia_array) :: CAmid, CAPmid
 
         ! Intermediate velocities
         real(real64)       :: umid(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), vmid(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
@@ -277,6 +278,7 @@ contains
 
         ! Create temporary cilia array
         CAmid = cilia_array(CA%nc,CA%array(1)%nl,CA%array(1)%np)
+        CAPmid = cilia_array(CAP%nc,CAP%array(1)%nl,CAP%array(1)%np)
 
         ! Assign boundary values
         utop    = BC(1)
@@ -315,15 +317,16 @@ contains
             ! print *, 'Fy = ', CA%array(1)%layers(1)%boundary(CA%array(1)%np)%Fy
             
             ! Calculate forces in the immersed boundary structure
-            call calculate_cilia_array_force(CA,ko,kd,Rl)
+            ! call calculate_cilia_array_force(CA,ko,kd,Rl)
+            call calculate_closed_loop_array_force(CAP,ko,kd,Rl)
 
             ! Apply tip force for the first 1 second
             ! if (t.lt.0.2) then
-            call apply_tip_force_cilia_array(CA,Ftip,t)
+            ! call apply_tip_force_cilia_array(CA,Ftip,t)
             ! end if
             
-            
-            call copy_cilia(CA,CAmid)
+            ! call copy_cilia(CA,CAmid)
+            call copy_cilia(CAP,CAPmid)
  
             ! RK2: Step 1
             ! Apply velocity boundary conditions
@@ -332,7 +335,8 @@ contains
             ! Spread force from the immersed boundary
             Fx = 0.0d0 ! Initialize the forces at every time-step
             Fy = 0.0d0
-            call spread_force_cilia_array(M,CAmid,Fx,Fy)
+            ! call spread_force_cilia_array(M,CAmid,Fx,Fy)
+            call spread_force_cilia_array(M,CAPmid,Fx,Fy)
 
             ! us = u + 0.5d0*dt*cdu_f(M,u,v,nu,Fx)
             ! vs = v + 0.5d0*dt*cdv_f(M,u,v,nu,Fy)
@@ -352,21 +356,25 @@ contains
             call corrector(M,umid,vmid,us,vs,P,rho,0.5d0*dt)
 
             ! Initialize the velocity at every time-step
-            call initialize_velocity_cilia_array(CAmid)
+            ! call initialize_velocity_cilia_array(CAmid)
+            call initialize_velocity_cilia_array(CAPmid)
             ! Interpolate the Eulerian grid velocity to the Lagrangian structure
-            call interpolate_velocity_cilia_array(M,CAmid,umid,vmid)
+            ! call interpolate_velocity_cilia_array(M,CAmid,umid,vmid)
+            call interpolate_velocity_cilia_array(M,CAPmid,umid,vmid)
 
             ! Update the Immersed Boundary
-            call update_cilia_array(CAmid,dt/2)
+            ! call update_cilia_array(CAmid,dt/2)
+            call update_cilia_array(CAPmid,dt/2)
 
             ! RK2: Step 2
             
             ! Calculate forces in the immersed boundary structure
-            call calculate_cilia_array_force(CAmid,ko,kd,Rl)
+            ! call calculate_cilia_array_force(CAmid,ko,kd,Rl)
+            call calculate_closed_loop_array_force(CAPmid,ko,kd,Rl)
 
             ! Apply tip force for the first 1 second
             ! if (t.lt.0.2) then
-            call apply_tip_force_cilia_array(CAmid,Ftip,t)
+            ! call apply_tip_force_cilia_array(CAmid,Ftip,t)
             ! end if
 
             call apply_boundary(M,umid,vmid,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
@@ -374,7 +382,7 @@ contains
             ! Spread force from the immersed boundary
             Fx = 0.0d0 ! Initialize the forces at every time-step
             Fy = 0.0d0
-            call spread_force_cilia_array(M,CAmid,Fx,Fy)
+            call spread_force_cilia_array(M,CAPmid,Fx,Fy)
             
             ! us = u + dt*cdu_f(M,umid,vmid,nu,Fx)
             ! vs = v + dt*cdv_f(M,umid,vmid,nu,Fx)
@@ -395,21 +403,26 @@ contains
             call corrector(M,u,v,us,vs,p,rho,dt)
 
             ! Initialize the velocity at every time-step
-            call initialize_velocity_cilia_array(CA)
+            ! call initialize_velocity_cilia_array(CA)
+            call initialize_velocity_cilia_array(CAP)
             ! Interpolate the Eulerian grid velocity to the Lagrangian structure
-            call interpolate_velocity_cilia_array(M,CA,u,v)
+            ! call interpolate_velocity_cilia_array(M,CA,u,v)
+            call interpolate_velocity_cilia_array(M,CAP,u,v)
 
             ! Update the Immersed Boundary
-            call update_cilia_array(CA,dt)
-
+            ! call update_cilia_array(CA,dt)
+            call update_cilia_array(CAP,dt)
+        
             print *, 'time = ', t
             
             ! Write files every Nth timestep
-            if (mod(it,50).eq.0) then 
+            if (mod(it,20).eq.0) then 
                 call write_field(u,'u',it) 
                 call write_field(v,'v',it) 
-                call write_location_cilia(CA,it)
-                call write_location_cilia_force(CA,it)
+                ! call write_location_cilia(CA,it)
+                call write_location_cilia(CAP,it)
+                call write_location_cilia_force(CAP,it)
+                call write_location_cilia_velocity(CAP,it)
             end if
 
         end do
