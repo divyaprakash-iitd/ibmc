@@ -388,9 +388,9 @@ contains
             ! us = u + dt*cdu_f(M,umid,vmid,nu,Fx)
             ! vs = v + dt*cdv_f(M,umid,vmid,nu,Fx)
 
-            call cdu(M,u,v,us,nu,Fx)
+            call cdu(M,umid,vmid,us,nu,Fx)
             us = u + us*dt
-            call cdv(M,u,v,vs,nu,Fy)
+            call cdv(M,umid,vmid,vs,nu,Fy)
             vs = v + vs*dt
             
             ! Form the RHS of the pressure poisson equation
