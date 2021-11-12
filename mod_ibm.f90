@@ -423,7 +423,7 @@ contains
         character(len=3) :: file_advance
         write(itnumber,"(I8.8)") timestep
 
-        file_status = "replace"
+        file_status = "old"
         file_advance = "no"
 
         filename = 'force_ib_loc' // itnumber // '.txt'
@@ -477,7 +477,7 @@ contains
         character(len=3) :: file_advance
         write(itnumber,"(I8.8)") timestep
 
-        file_status = "replace"
+        file_status = "old"
         file_advance = "no"
 
         filename = 'vel_ib_loc' // itnumber // '.txt'
@@ -517,9 +517,10 @@ contains
 
     end subroutine write_location_cilia_velocity
 
-    subroutine write_location_cilia(CA,timestep)
+    subroutine write_location_cilia(CA,timestep,append)
         class(cilia_array), intent(in) :: CA
         integer(int32), intent(in) :: timestep        
+        character(len=1), intent(in) :: append
 
         integer(int32) :: fileunit = 8
         character(len=:), allocatable :: filename
@@ -531,7 +532,12 @@ contains
         character(len=3) :: file_advance
         write(itnumber,"(I8.8)") timestep
 
-        file_status = "replace"
+        if (append.eq.'y') then
+            file_status = 'old'
+        else if (append.eq.'n') then
+            file_status = 'replace'
+        end if
+
         file_advance = "no"
 
         filename = 'ib_loc' // itnumber // '.txt'
