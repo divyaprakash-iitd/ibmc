@@ -46,13 +46,19 @@ contains
         class(ib), intent(in out) :: B
         real(real64), intent(in) :: dt
 
-        integer(int32) :: np, inp
+        integer(int32) :: firstp, np, inp
 
         np = size(B%boundary)
+       
+        if (B%t.eq.'o') then
+            ! Start from 2 if fixing the first particle in each layer of cilia
+            firstp = 2 ! Represents cilia fixed at their base
+        else if (B%t.eq.'c') then
+            firstp = 1 ! Represents particles which aren't fixed
+        end if
         
         ! Calculate the new position
-        ! Start from 2 if fixing the first particle in each layer of cilia
-        do inp = 1,np
+        do inp = firstp,np
             B%boundary(inp)%x = B%boundary(inp)%x + B%boundary(inp)%Ux * dt
             B%boundary(inp)%y = B%boundary(inp)%y + B%boundary(inp)%Uy * dt
         end do
