@@ -9,6 +9,7 @@ module mod_ib
     type :: ib
         integer(int32) :: np
         type(particle), allocatable :: boundary(:)
+        character(len=1) :: t ! Open or closed
         ! To-do: Add neighbours information
     end type ib
 
@@ -30,6 +31,7 @@ contains
 
         ! Initializes particles in each Immersed Boundary(IB) layer
         self%np = np
+        self%t = 'o' ! Open by default
         do concurrent (i = 1:np)
             self%boundary(i) = particle()
         end do
