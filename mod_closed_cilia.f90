@@ -36,6 +36,7 @@ contains
 
         ! Assign locations to the particles of the cilia
         do il = 1,nl
+            c%layers(il)%t = 'c' ! Closed boundary type
             do ip = 1,np 
                 c%layers(il)%boundary(ip)%x = origin%x + (r - W*(il-1)) * cos((ip-1)*dtheta)
                 c%layers(il)%boundary(ip)%y = origin%y + (r - W*(il-1)) * sin((ip-1)*dtheta)
@@ -78,7 +79,6 @@ contains
         real(real64), intent(in)        :: kd        ! Diagonal spring stiffness
         real(real64), intent(in)        :: Rl        ! Resting length
 
-        character(1)    :: t = 'c'  ! Boundary type (Closed)
         integer(int32)  :: il, ip
 
         ! Initialize the forces to zero on all the nodes at every time step
@@ -91,7 +91,7 @@ contains
 
         ! Calculate forces on the layers
         do il = 1,C%nl
-            call calculate_spring_force(C%layers(il),ko,kd,Rl,t)
+            call calculate_spring_force(C%layers(il),ko,kd,Rl,C%layers(il)%t)
         end do
 
         ! Calculate forces on the horizontal links
