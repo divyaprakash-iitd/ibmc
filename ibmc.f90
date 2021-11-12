@@ -130,7 +130,7 @@ program ibmc
     nl      = 2                     ! No. of Layers/Cilia (More or less than 2 is not supported for now!)
     Rl      = 4*M%dx                ! Resting Length of Spring
     dp      = Rl                    ! Spacing between two particles
-    np      = 7                     ! No. of Particles/Layer
+    np      = 5                     ! No. of Particles/Layer
     wbl     = Rl                    ! Width/Distance between two Layers
     dc      = Rl                    ! Distance between two Cilia
     nc      = 3                     ! Number of cilia
@@ -142,8 +142,8 @@ program ibmc
     originP = vec(Lx/3,2.25*Ly/3)
     CAP = cilia_array(1,nl,np)
     call create_closed_loop_array(CAP,0.2d0*radius,radius,originP)
-    ! CA = cilia_array(nc,nl,np)
-    ! call create_cilia_array(CA,wbl,dc,dp,origin)
+    CA = cilia_array(nc,nl,np)
+    call create_cilia_array(CA,wbl,dc,dp,origin)
 
     call time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAP,A,P,R,tsim,dt)
 
