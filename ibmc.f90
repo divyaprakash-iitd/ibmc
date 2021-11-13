@@ -140,7 +140,7 @@ program ibmc
 
     radius = 0.1*Lx
     originP = vec(Lx/3,2.25*Ly/3)
-    CAP = cilia_array(1,nl,np)
+    CAP = cilia_array(1,nl,8)
     call create_closed_loop_array(CAP,0.2d0*radius,radius,originP)
     CA = cilia_array(nc,nl,np)
     call create_cilia_array(CA,wbl,dc,dp,origin)
