@@ -420,8 +420,8 @@ contains
             if (mod(it,20).eq.0) then 
                 call write_field(u,'u',it) 
                 call write_field(v,'v',it) 
-                call write_location_cilia(CA,it,'n')
-                call write_location_cilia(CAP,it,'y')
+                call write_location_cilia(CA,it,'c')
+                call write_location_cilia(CAP,it,'p')
                 ! call write_location_cilia_force(CAP,it)
                 ! call write_location_cilia_velocity(CAP,it)
             end if
