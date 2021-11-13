@@ -18,7 +18,8 @@ module mod_ibm
               spread_force_cilia_array, interpolate_velocity_cilia, &
               interpolate_velocity_cilia_array, initialize_velocity_cilia_array, &
               apply_tip_force_cilia, apply_tip_force_cilia_array, write_location_cilia, &
-              write_location_cilia_force, write_location_cilia_velocity
+              write_location_cilia_force, write_location_cilia_velocity, calculate_diagonal_link_force_pos
+
 contains
    
     subroutine initialize_ib(B)
@@ -959,6 +960,39 @@ contains
             slaveL%boundary(slave)%Fy = slaveL%boundary(slave)%Fy + Fsly
         end do
 
+        ! For closed loop cilia
+        ! The first node of the outer circle connects to the last node of the inner circle
+        if (masterL%t.eq.'c') then
+            master = 1
+            slave = np
+            ! Master node location
+            xm = masterL%boundary(master)%x
+            ym = masterL%boundary(master)%y
+
+            ! Slave node location
+            xsl = slaveL%boundary(slave)%x
+            ysl = slaveL%boundary(slave)%y
+
+            ! Calculate distance between master and slave nodes
+            d = norm2([(xsl-xm),(ysl-ym)])
+            
+            ! Calculate forces (Master node)
+            Fmx = kd*(1.0d0-Rl/d)*(xsl-xm)
+            Fmy = kd*(1.0d0-Rl/d)*(ysl-ym)
+
+            ! Calculate forces (Slave node)
+            Fslx = -Fmx
+            Fsly = -Fmy
+
+            ! Assign fores to master node
+            masterL%boundary(master)%Fx = masterL%boundary(master)%Fx + Fmx
+            masterL%boundary(master)%Fy = masterL%boundary(master)%Fy + Fmy
+
+            ! Assign forces to slave node
+            slaveL%boundary(slave)%Fx = slaveL%boundary(slave)%Fx + Fslx
+            slaveL%boundary(slave)%Fy = slaveL%boundary(slave)%Fy + Fsly
+        end if
+
     end subroutine calculate_diagonal_link_force_pos
 
     subroutine calculate_diagonal_link_force(masterL,slaveL,kd,Rl)
@@ -1008,6 +1042,39 @@ contains
             slaveL%boundary(slave)%Fx = slaveL%boundary(slave)%Fx + Fslx
             slaveL%boundary(slave)%Fy = slaveL%boundary(slave)%Fy + Fsly
         end do
+
+        ! For closed loops of cilia
+        ! The last node of the outer circle connects to the first node of the inner circle
+        if (masterL%t.eq.'c') then
+            master = np
+            slave = 1
+            ! Master node location
+            xm = masterL%boundary(master)%x
+            ym = masterL%boundary(master)%y
+
+            ! Slave node location
+            xsl = slaveL%boundary(slave)%x
+            ysl = slaveL%boundary(slave)%y
+
+            ! Calculate distance between master and slave nodes
+            d = norm2([(xsl-xm),(ysl-ym)])
+            
+            ! Calculate forces (Master node)
+            Fmx = kd*(1.0d0-Rl/d)*(xsl-xm)
+            Fmy = kd*(1.0d0-Rl/d)*(ysl-ym)
+
+            ! Calculate forces (Slave node)
+            Fslx = -Fmx
+            Fsly = -Fmy
+
+            ! Assign fores to master node
+            masterL%boundary(master)%Fx = masterL%boundary(master)%Fx + Fmx
+            masterL%boundary(master)%Fy = masterL%boundary(master)%Fy + Fmy
+
+            ! Assign forces to slave node
+            slaveL%boundary(slave)%Fx = slaveL%boundary(slave)%Fx + Fslx
+            slaveL%boundary(slave)%Fy = slaveL%boundary(slave)%Fy + Fsly
+        end if
 
     end subroutine calculate_diagonal_link_force
 
@@ -1138,10 +1205,16 @@ contains
         real(real64), intent(in) :: t
 
         integer(int32) :: il, np
+        integer(int32) :: pt
+
+        pt = np
+        if (C%layers(1)%t.eq.'c') then
+           pt = 1 
+        end if
 
         np = size(C%layers(1)%boundary)
         do il = 1,C%nl
-            C%layers(il)%boundary(np)%Fx = Ftip!*cos(2*PI/2.0*t)
+            C%layers(il)%boundary(pt)%Fx = Ftip!*cos(2*PI/2.0*t)
         end do
 
     end subroutine apply_tip_force_cilia
