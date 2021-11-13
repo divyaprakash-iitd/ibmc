@@ -409,9 +409,10 @@ contains
 
     end subroutine interpolate_velocity
 
-    subroutine write_location_cilia_force(CA,timestep)
+    subroutine write_location_cilia_force(CA,timestep,filetype)
         class(cilia_array), intent(in) :: CA
         integer(int32), intent(in) :: timestep        
+        character(len=1), intent(in) :: filetype
 
         integer(int32) :: fileunit = 8
         character(len=:), allocatable :: filename
@@ -423,10 +424,10 @@ contains
         character(len=3) :: file_advance
         write(itnumber,"(I8.8)") timestep
 
-        file_status = "old"
+        file_status = "replace"
         file_advance = "no"
 
-        filename = 'force_ib_loc' // itnumber // '.txt'
+        filename = 'force_ib_loc_' // filetype // itnumber // '.txt'
         
         open(unit=fileunit, file=filename, ACTION="write", Position="Append", & 
                         STATUS=trim(file_status))
