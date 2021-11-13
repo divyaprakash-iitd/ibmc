@@ -50,7 +50,7 @@ program ibmc
     integer(int32)  :: it, NN, il, ip
     logical         :: init_status
     real(real64)    :: tp = 2.0d0 ! Time period
-    real(real64)    :: Ftip = 0.1 ! Tip force
+    real(real64)    :: Ftip = -1.0d0 ! Tip force
     ! Mesh
     type(mesh)      :: M
     ! Immersed boundary
@@ -107,7 +107,7 @@ program ibmc
     Fy  = 0.0d0
 
     ! Define boundary conditions for velocity
-    utop    = 1.0d0
+    utop    = 0.0d0
     vtop    = 0.0d0
     ubottom = 0.0d0
     vbottom = 0.0d0
