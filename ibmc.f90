@@ -20,14 +20,14 @@ program ibmc
     ! Code execution time
     real(real64)    :: start, finish
     ! Computational Domain
-    real(real64)    :: Lx       = 1.0d0
+    real(real64)    :: Lx       = 2.0d0
     real(real64)    :: Ly       = 1.0d0
     ! Mesh Paramaters
-    integer(int32)  :: Nx       = 50
+    integer(int32)  :: Nx       = 100
     integer(int32)  :: Ny       = 50
     ! Simulation time Paramaters
     real(real64)    :: tsim     = 20.0000d0
-    real(real64)    :: dt       = 0.001d0
+    real(real64)    :: dt       = 0.0001d0
     real(real64)    :: t
     ! Physical Constants
     real(real64)    :: nu       = 1.0d0/20.0d0
@@ -132,18 +132,27 @@ program ibmc
     dp      = Rl                    ! Spacing between two particles
     np      = 5                     ! No. of Particles/Layer
     wbl     = Rl                    ! Width/Distance between two Layers
-    dc      = Rl                    ! Distance between two Cilia
-    nc      = 3                     ! Number of cilia
+    dc      = 3*Rl                    ! Distance between two Cilia
+    nc      = 4                     ! Number of cilia
     origin  = vec(Lx/4,0.1d0)      ! Location of the first Cilium (Bottom-Left Particle)
 
     SP = [ko,kd,Rl,Ftip]
 
-    radius = 0.1*Lx
+    radius = 0.025*Lx
     originP = vec(Lx/3,2.25*Ly/3)
     CAP = cilia_array(1,nl,8)
     call create_closed_loop_array(CAP,0.2d0*radius,radius,originP)
     CA = cilia_array(nc,nl,np)
     call create_cilia_array(CA,wbl,dc,dp,origin)
+
+    call write_field(u,'u',1) 
+    call write_field(v,'v',1) 
+    call write_location_cilia(CA,1,'c')
+    call write_location_cilia(CAP,1,'p')
+    call write_location_cilia_force(CA,1,'c')
+    call write_location_cilia_force(CAP,1,'p')
+    call write_location_cilia_velocity(CA,1,'c')
+    call write_location_cilia_velocity(CAP,1,'p')
 
     call time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAP,A,P,R,tsim,dt)
 
