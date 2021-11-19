@@ -32,8 +32,8 @@ program ibmc
     ! Physical Constants
     real(real64)    :: nu       = 1.0d0/50.0d0
     real(real64)    :: rho      = 1.0d0
-    real(real64)    :: ko       = 1.0d0
-    real(real64)    :: kd       = 0.5d0
+    real(real64)    :: ko       = 10.0d0
+    real(real64)    :: kd       = 5.0d0
     real(real64)    :: kb       = 10.0d0
     real(real64)    :: theta    = 3.1416d0
     real(real64)    :: Rl
@@ -138,10 +138,10 @@ program ibmc
 
     SP = [ko,kd,Rl,Ftip]
 
-    radius = 0.025*Lx
+    radius = 0.05*Lx
     originP = vec(Lx/3,2.25*Ly/3)
     CAP = cilia_array(1,nl,8)
-    call create_closed_loop_array(CAP,0.2d0*radius,radius,originP)
+    call create_closed_loop_array(CAP,0.5d0*radius,radius,originP)
     CA = cilia_array(nc,nl,np)
     call create_cilia_array(CA,wbl,dc,dp,origin)
 
