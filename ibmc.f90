@@ -97,9 +97,9 @@ program ibmc
     allocate(A(1:Nx,1:Ny,NN))
 
     ! Initialize
-    u   = 0.0d0
+    u   = 1.0d0
     v   = 0.0d0
-    us  = 0.0d0
+    us  = 1.0d0
     vs  = 0.0d0
     R   = 0.0d0
     A   = 0.0d0
@@ -111,7 +111,7 @@ program ibmc
     vtop    = 0.0d0
     ubottom = 0.0d0
     vbottom = 0.0d0
-    uleft   = 0.0d0
+    uleft   = 1.0d0
     vleft   = 0.0d0
     uright  = 0.0d0
     vright  = 0.0d0
