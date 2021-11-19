@@ -332,6 +332,7 @@ contains
             ! RK2: Step 1
             ! Apply velocity boundary conditions
             call apply_boundary_channel(M,u,v,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
+            call apply_parabolic_inlet(M,u,uleft)
 
             ! Spread force from the immersed boundary
             Fx = 0.0d0 ! Initialize the forces at every time-step
@@ -348,6 +349,7 @@ contains
 
             ! Apply velocity boundary conditions to us and vs
             call apply_boundary_channel(M,us,vs,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
+            call apply_parabolic_inlet(M,us,uleft)
 
             ! Form the RHS of the pressure poisson equation
             call calculate_rhs(M,us,vs,R,rho,0.5d0*dt)
@@ -384,6 +386,7 @@ contains
             ! end if
 
             call apply_boundary_channel(M,umid,vmid,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
+            call apply_parabolic_inlet(M,u,uleft)
 
             ! Spread force from the immersed boundary
             Fx = 0.0d0 ! Initialize the forces at every time-step
@@ -401,6 +404,7 @@ contains
             
             ! Apply velocity boundary conditions to us and vs
             call apply_boundary_channel(M,us,vs,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
+            call apply_parabolic_inlet(M,us,uleft)
 
             ! Form the RHS of the pressure poisson equation
             call calculate_rhs(M,us,vs,R,rho,dt)
