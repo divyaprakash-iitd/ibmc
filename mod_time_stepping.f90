@@ -1,6 +1,6 @@
 module mod_time_stepping
     use iso_fortran_env, only: int32, real64
-    use mod_pressure,       only: generate_laplacian_sparse, calculate_pressure_sparse
+    use mod_pressure,       only: generate_laplacian_sparse, calculate_pressure_sparse, calculate_pressure_sparse_channel
     use mod_amgx,           only: calculate_pressure_amgx
     use mod_mesh
     use mod_time
@@ -323,7 +323,7 @@ contains
             ! Apply tip force for the first 1 second
             ! if (t.lt.0.2) then
             ! call apply_tip_force_cilia_array(CA,Ftip,t)
-            call apply_tip_force_cilia_array(CAP,Ftip,t)
+            ! call apply_tip_force_cilia_array(CAP,Ftip,t)
             ! end if
             
             call copy_cilia(CA,CAmid)
@@ -331,7 +331,7 @@ contains
  
             ! RK2: Step 1
             ! Apply velocity boundary conditions
-            call apply_boundary(M,u,v,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
+            call apply_boundary_channel(M,u,v,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
 
             ! Spread force from the immersed boundary
             Fx = 0.0d0 ! Initialize the forces at every time-step
@@ -346,12 +346,16 @@ contains
             call cdv(M,u,v,vs,nu,Fy)
             vs = v + vs*dt/2
 
+            ! Apply velocity boundary conditions to us and vs
+            call apply_boundary_channel(M,us,vs,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
+
             ! Form the RHS of the pressure poisson equation
             call calculate_rhs(M,us,vs,R,rho,0.5d0*dt)
 
             ! Solve for pressure
             ! call calculate_pressure_sparse(A,P,R)
-            call calculate_pressure_amgx(A,P,R,init_status)
+            ! call calculate_pressure_amgx(A,P,R,init_status)
+            call calculate_pressure_sparse_channel(A,P,R)
 
             ! Perform the corrector step to obtain the velocity
             call corrector(M,umid,vmid,us,vs,P,rho,0.5d0*dt)
@@ -376,10 +380,10 @@ contains
             ! Apply tip force for the first 1 second
             ! if (t.lt.0.2) then
             ! call apply_tip_force_cilia_array(CAmid,Ftip,t)
-            call apply_tip_force_cilia_array(CAPmid,Ftip,t)
+            ! call apply_tip_force_cilia_array(CAPmid,Ftip,t)
             ! end if
 
-            call apply_boundary(M,umid,vmid,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
+            call apply_boundary_channel(M,umid,vmid,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
 
             ! Spread force from the immersed boundary
             Fx = 0.0d0 ! Initialize the forces at every time-step
@@ -395,12 +399,16 @@ contains
             call cdv(M,umid,vmid,vs,nu,Fy)
             vs = v + vs*dt
             
+            ! Apply velocity boundary conditions to us and vs
+            call apply_boundary_channel(M,us,vs,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
+
             ! Form the RHS of the pressure poisson equation
             call calculate_rhs(M,us,vs,R,rho,dt)
 
             ! Solve for pressure
             ! call calculate_pressure_sparse(A,P,R)
-            call calculate_pressure_amgx(A,P,R,init_status)
+            ! call calculate_pressure_amgx(A,P,R,init_status)
+            call calculate_pressure_sparse_channel(A,P,R)
 
             ! Perform the corrector step to obtain the velocity
             call corrector(M,u,v,us,vs,p,rho,dt)
