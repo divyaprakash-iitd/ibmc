@@ -4,7 +4,7 @@ module mod_boundary
     implicit none
    
     private
-    public :: apply_boundary, apply_boundary_periodic
+    public :: apply_boundary, apply_boundary_periodic, apply_boundary_channel
 
 contains
 
@@ -17,7 +17,7 @@ contains
         u(:,M%yu%lb) = 2*ubottom - u(:,M%yu%lb+1);
         u(:,M%yu%ub) = 2*utop    - u(:,M%yu%ub-1);
         v(M%xv%lb,:) = 2*vleft   - v(M%xv%lb+1,:);
-        v(M%yv%ub,:) = 2*vright  - v(M%yv%ub-1,:);
+        v(M%xv%ub,:) = 2*vright  - v(M%xv%ub-1,:);
     
 
         u(M%xu%lb,:)    = uleft;
@@ -26,6 +26,25 @@ contains
         v(:,M%yv%lb)    = vbottom;
     end subroutine apply_boundary
     
+    pure subroutine apply_boundary_channel(M,u,v,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
+        class(mesh), intent(in) :: M
+        real(real64), intent(in) :: utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright
+        real(real64), intent(in out) :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
+
+        ! Apply boundary conditions
+        u(:,M%yu%lb) = 2*ubottom - u(:,M%yu%lb+1);
+        u(:,M%yu%ub) = 2*utop    - u(:,M%yu%ub-1);
+        v(M%xv%lb,:) = 2*vleft   - v(M%xv%lb+1,:);
+
+        u(M%xu%lb,:)    = uleft;
+        v(:,M%yv%ub)    = vtop;
+        v(:,M%yv%lb)    = vbottom;
+
+        ! Outlet
+        u(M%xu%ub,:)    = u(M%xu%ub-1,:);
+        v(M%xv%ub,:)    = v(M%xv%ub-1,:);
+    end subroutine apply_boundary_channel
+
     pure subroutine apply_boundary_periodic(M,u,v,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
         class(mesh), intent(in)         :: M
         real(real64), intent(in)        :: utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright
