@@ -62,7 +62,7 @@ figure(1)
 fig = gcf;
 fig.Position = [1 1 1920 961];
 for iFile = 1:nFiles
-    subplot(2,2,1)
+    %subplot(2,2,1)
     hold on
     
     %% Plot velocity field
@@ -82,7 +82,7 @@ for iFile = 1:nFiles
         plot(ciliaX,ciliaY,'w-o','linewidth',3,'Markersize',5) 
     end
     % Horizontal links
-    for i = 1:4:2*nlayers
+    for i = 1:4:size(cilia,1)
         px1 = cilia(i,:);
         py1 = cilia(i+1,:);
         px2 = cilia(i+2,:);
@@ -141,62 +141,62 @@ for iFile = 1:nFiles
     
     %% Plot mesh
     mesh(xp,yp,0*xp,'FaceAlpha','0.0','EdgeColor','w','LineStyle','-','EdgeAlpha','0.25')
-%     view(90,0)
+    % view(90,0)
     colorbar
     axis equal
     title(uFile(iFile).name)
     
-    %% Plot cilia forces
-    subplot(2,2,2)
-    hold on
-    cilia = load(ciliaFile(iFile).name);
-    ciliaForce = load(ciliaForceFile(iFile).name);
-    for i = 1:2:size(cilia,1) % No. of rows in the cilia file
-        ciliaX = cilia(i,:); % Read x-coordinates
-        ciliaY = cilia(i+1,:); % Read y-coordinates
-        % Read firces
-        ciliaFx = ciliaForce(i,:); % Read x-component force
-        ciliaFy = ciliaForce(i+1,:); % Read y-component force
-        quiver(ciliaX,ciliaY,ciliaFx,ciliaFy,0.25,'k')
-    end
-
-    %% Plot particle forces
-    particle = load(particleFile(iFile).name);
-    particleForce = load(particleForceFile(iFile).name);
-    for i = 1:2:size(particle,1) % No. of rows in the particle file
-        particleX = particle(i,:); % Read x-coordinates
-        particleY = particle(i+1,:); % Read y-coordinates
-        % Read firces
-        particleFx = particleForce(i,:); % Read x-component force
-        particleFy = particleForce(i+1,:); % Read y-component force
-        quiver(particleX,particleY,particleFx,particleFy,0.25,'k')
-    end
-    
-    %% Plot cilia Velocity
-    subplot(2,2,3)
-    hold on
-    cilia = load(ciliaFile(iFile).name);
-    ciliaVelocity = load(ciliaVelocityFile(iFile).name);
-    for i = 1:2:size(cilia,1) % No. of rows in the cilia file
-        ciliaX = cilia(i,:); % Read x-coordinates
-        ciliaY = cilia(i+1,:); % Read y-coordinates
-        % Read firces
-        ciliaFx = ciliaVelocity(i,:); % Read x-component Velocity
-        ciliaFy = ciliaVelocity(i+1,:); % Read y-component Velocity
-        quiver(ciliaX,ciliaY,ciliaFx,ciliaFy,0.25,'k')
-    end
-
-    %% Plot particle Velocity
-    particle = load(particleFile(iFile).name);
-    particleVelocity = load(particleVelocityFile(iFile).name);
-    for i = 1:2:size(particle,1) % No. of rows in the particle file
-        particleX = particle(i,:); % Read x-coordinates
-        particleY = particle(i+1,:); % Read y-coordinates
-        % Read firces
-        particleFx = particleVelocity(i,:); % Read x-component Velocity
-        particleFy = particleVelocity(i+1,:); % Read y-component Velocity
-        quiver(particleX,particleY,particleFx,particleFy,0.25,'k')
-    end
+%     %% Plot cilia forces
+%     subplot(2,2,2)
+%     hold on
+%     cilia = load(ciliaFile(iFile).name);
+%     ciliaForce = load(ciliaForceFile(iFile).name);
+%     for i = 1:2:size(cilia,1) % No. of rows in the cilia file
+%         ciliaX = cilia(i,:); % Read x-coordinates
+%         ciliaY = cilia(i+1,:); % Read y-coordinates
+%         % Read firces
+%         ciliaFx = ciliaForce(i,:); % Read x-component force
+%         ciliaFy = ciliaForce(i+1,:); % Read y-component force
+%         quiver(ciliaX,ciliaY,ciliaFx,ciliaFy,0.25,'k')
+%     end
+% 
+%     %% Plot particle forces
+%     particle = load(particleFile(iFile).name);
+%     particleForce = load(particleForceFile(iFile).name);
+%     for i = 1:2:size(particle,1) % No. of rows in the particle file
+%         particleX = particle(i,:); % Read x-coordinates
+%         particleY = particle(i+1,:); % Read y-coordinates
+%         % Read firces
+%         particleFx = particleForce(i,:); % Read x-component force
+%         particleFy = particleForce(i+1,:); % Read y-component force
+%         quiver(particleX,particleY,particleFx,particleFy,0.25,'k')
+%     end
+%     
+%     %% Plot cilia Velocity
+%     subplot(2,2,3)
+%     hold on
+%     cilia = load(ciliaFile(iFile).name);
+%     ciliaVelocity = load(ciliaVelocityFile(iFile).name);
+%     for i = 1:2:size(cilia,1) % No. of rows in the cilia file
+%         ciliaX = cilia(i,:); % Read x-coordinates
+%         ciliaY = cilia(i+1,:); % Read y-coordinates
+%         % Read firces
+%         ciliaFx = ciliaVelocity(i,:); % Read x-component Velocity
+%         ciliaFy = ciliaVelocity(i+1,:); % Read y-component Velocity
+%         quiver(ciliaX,ciliaY,ciliaFx,ciliaFy,0.25,'k')
+%     end
+% 
+%     %% Plot particle Velocity
+%     particle = load(particleFile(iFile).name);
+%     particleVelocity = load(particleVelocityFile(iFile).name);
+%     for i = 1:2:size(particle,1) % No. of rows in the particle file
+%         particleX = particle(i,:); % Read x-coordinates
+%         particleY = particle(i+1,:); % Read y-coordinates
+%         % Read firces
+%         particleFx = particleVelocity(i,:); % Read x-component Velocity
+%         particleFy = particleVelocity(i+1,:); % Read y-component Velocity
+%         quiver(particleX,particleY,particleFx,particleFy,0.25,'k')
+%     end
     
     title(uFile(iFile).name)
     
@@ -208,38 +208,7 @@ for iFile = 1:nFiles
 end
 % close(vid)
 
-% % Visulaize cilia forces
-% colormap(jet)
-% % vid = VideoWriter('ibm.avi','Uncompressed AVI');
-% % open(vid);
-% figure(2)
-% hold on
-% 
-% for iFile = 1:nFiles
-%    
-%     p = load(pFile(iFile).name);
-%     pf = load(pfFile(iFile).name);
-%     for i = 1:2:2*nl
-%         % Read locations
-%         px = p(i,:);
-%         py = p(i+1,:);
-%         
-%         % Read forces
-%         pfx = pf(i,:);
-%         pfy = pf(i+1,:);
-%         
-%         quiver(px,py,pfx,pfy)
-%     end
-%     axis equal
-%     title(uFile(iFile).name)
-%     pause(0.001)
-% %     writeVideo(vid,getframe(gca));
-%     if iFile ~= nFiles
-%         cla
-%     end
-% end
-% % close(vid)
-
+% Function to convert staggered velocity to cell-centered velocity
 function [uc,vc] = cellcenter(uc,vc,u,v,Nx,Ny)
     for j = 2:Nx+1
         for i = 1:Ny
