@@ -339,6 +339,7 @@ subroutine generate_laplacian_sparse(A,dx,dy)
 
     ! Set the pressure at the corner cell
     A = -A
+    A(imax-1,jmin:jmax,RIGHT) = 0.0d0;
     ! A(imin,jmin,:) = 0.0d0
     ! A(imin,jmin,CENTER) = 1.0d0
 
