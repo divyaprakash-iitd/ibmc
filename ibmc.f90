@@ -32,8 +32,8 @@ program ibmc
     ! Physical Constants
     real(real64)    :: nu       = 1.0d0/50.0d0
     real(real64)    :: rho      = 1.0d0
-    real(real64)    :: ko       = 10.0d0
-    real(real64)    :: kd       = 5.0d0
+    real(real64)    :: ko       = 15.0d0
+    real(real64)    :: kd       = 7.5d0
     real(real64)    :: kb       = 10.0d0
     real(real64)    :: theta    = 3.1416d0
     real(real64)    :: Rl
@@ -133,7 +133,7 @@ program ibmc
     np      = 5                     ! No. of Particles/Layer
     wbl     = Rl                    ! Width/Distance between two Layers
     dc      = 3*Rl                    ! Distance between two Cilia
-    nc      = 4                     ! Number of cilia
+    nc      = 2                     ! Number of cilia
     origin  = vec(Lx/4,0.1d0)      ! Location of the first Cilium (Bottom-Left Particle)
 
     SP = [ko,kd,Rl,Ftip]
@@ -145,14 +145,14 @@ program ibmc
     CA = cilia_array(nc,nl,np)
     call create_cilia_array(CA,wbl,dc,dp,origin)
 
-    call write_field(u,'u',1) 
-    call write_field(v,'v',1) 
-    call write_location_cilia(CA,1,'c')
-    call write_location_cilia(CAP,1,'p')
-    call write_location_cilia_force(CA,1,'c')
-    call write_location_cilia_force(CAP,1,'p')
-    call write_location_cilia_velocity(CA,1,'c')
-    call write_location_cilia_velocity(CAP,1,'p')
+    ! call write_field(u,'u',1) 
+    ! call write_field(v,'v',1) 
+    ! call write_location_cilia(CA,1,'c')
+    ! call write_location_cilia(CAP,1,'p')
+    ! call write_location_cilia_force(CA,1,'c')
+    ! call write_location_cilia_force(CAP,1,'p')
+    ! call write_location_cilia_velocity(CA,1,'c')
+    ! call write_location_cilia_velocity(CAP,1,'p')
 
     call time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAP,A,P,R,tsim,dt)
 
