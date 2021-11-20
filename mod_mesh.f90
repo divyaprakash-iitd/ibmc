@@ -39,6 +39,9 @@ contains
             self%Lx = Lx
             self%Ly = Ly
 
+            self%Nx = Nx
+            self%Ny = Ny
+
             self%dx = Lx/Nx
             self%dy = Ly/Ny
 
