@@ -56,8 +56,8 @@ nFiles = length(uFile);
 
 % Visualize cilia motion over velocity field
 colormap(jet)
-% vid = VideoWriter('ibm.avi','Uncompressed AVI');
-% open(vid);
+vid = VideoWriter('ibm.avi','Uncompressed AVI');
+open(vid);
 figure(1)
 fig = gcf;
 fig.Position = [1 1 1920 961];
@@ -200,13 +200,13 @@ for iFile = 1:nFiles
     
     title(uFile(iFile).name)
     
-    pause(0.5)
-%     writeVideo(vid,getframe(gca));
+%     pause(0.5)
+    writeVideo(vid,getframe(gca));
     if iFile ~= nFiles
         clf
     end
 end
-% close(vid)
+close(vid)
 
 % Function to convert staggered velocity to cell-centered velocity
 function [uc,vc] = cellcenter(uc,vc,u,v,Nx,Ny)
