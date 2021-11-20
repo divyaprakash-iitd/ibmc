@@ -318,7 +318,7 @@ contains
             
             ! Calculate forces in the immersed boundary structure
             call calculate_cilia_array_force(CA,ko,kd,Rl)
-            ! call calculate_closed_loop_array_force(CAP,ko,kd,Rl)
+            call calculate_closed_loop_array_force(CAP,ko,kd,Rl)
 
             ! Apply tip force for the first 1 second
             ! if (t.lt.0.2) then
@@ -327,7 +327,7 @@ contains
             ! end if
             
             call copy_cilia(CA,CAmid)
-            ! call copy_cilia(CAP,CAPmid)
+            call copy_cilia(CAP,CAPmid)
  
             ! RK2: Step 1
             ! Apply velocity boundary conditions
@@ -338,7 +338,7 @@ contains
             Fx = 0.0d0 ! Initialize the forces at every time-step
             Fy = 0.0d0
             call spread_force_cilia_array(M,CAmid,Fx,Fy)
-            ! call spread_force_cilia_array(M,CAPmid,Fx,Fy)
+            call spread_force_cilia_array(M,CAPmid,Fx,Fy)
 
             ! us = u + 0.5d0*dt*cdu_f(M,u,v,nu,Fx)
             ! vs = v + 0.5d0*dt*cdv_f(M,u,v,nu,Fy)
@@ -364,20 +364,20 @@ contains
 
             ! Initialize the velocity at every time-step
             call initialize_velocity_cilia_array(CAmid)
-            ! call initialize_velocity_cilia_array(CAPmid)
+            call initialize_velocity_cilia_array(CAPmid)
             ! Interpolate the Eulerian grid velocity to the Lagrangian structure
             call interpolate_velocity_cilia_array(M,CAmid,umid,vmid)
-            ! call interpolate_velocity_cilia_array(M,CAPmid,umid,vmid)
+            call interpolate_velocity_cilia_array(M,CAPmid,umid,vmid)
 
             ! Update the Immersed Boundary
             call update_cilia_array(CAmid,dt/2)
-            ! call update_cilia_array(CAPmid,dt/2)
+            call update_cilia_array(CAPmid,dt/2)
 
             ! RK2: Step 2
             
             ! Calculate forces in the immersed boundary structure
             call calculate_cilia_array_force(CAmid,ko,kd,Rl)
-            ! call calculate_closed_loop_array_force(CAPmid,ko,kd,Rl)
+            call calculate_closed_loop_array_force(CAPmid,ko,kd,Rl)
 
             ! Apply tip force for the first 1 second
             ! if (t.lt.0.2) then
@@ -392,7 +392,7 @@ contains
             Fx = 0.0d0 ! Initialize the forces at every time-step
             Fy = 0.0d0
             call spread_force_cilia_array(M,CAmid,Fx,Fy)
-            ! call spread_force_cilia_array(M,CAPmid,Fx,Fy)
+            call spread_force_cilia_array(M,CAPmid,Fx,Fy)
             
             ! us = u + dt*cdu_f(M,umid,vmid,nu,Fx)
             ! vs = v + dt*cdv_f(M,umid,vmid,nu,Fx)
@@ -420,14 +420,14 @@ contains
 
             ! Initialize the velocity at every time-step
             call initialize_velocity_cilia_array(CA)
-            ! call initialize_velocity_cilia_array(CAP)
+            call initialize_velocity_cilia_array(CAP)
             ! Interpolate the Eulerian grid velocity to the Lagrangian structure
             call interpolate_velocity_cilia_array(M,CA,u,v)
-            ! call interpolate_velocity_cilia_array(M,CAP,u,v)
+            call interpolate_velocity_cilia_array(M,CAP,u,v)
 
             ! Update the Immersed Boundary
             call update_cilia_array(CA,dt)
-            ! call update_cilia_array(CAP,dt)
+            call update_cilia_array(CAP,dt)
         
             print *, 'time = ', t
             
@@ -436,11 +436,11 @@ contains
                 call write_field(u,'u',it) 
                 call write_field(v,'v',it) 
                 call write_location_cilia(CA,it,'c')
-                ! call write_location_cilia(CAP,it,'p')
-                ! call write_location_cilia_force(CA,it,'c')
-                ! call write_location_cilia_force(CAP,it,'p')
-                ! call write_location_cilia_velocity(CA,it,'c')
-                ! call write_location_cilia_velocity(CAP,it,'p')
+                call write_location_cilia(CAP,it,'p')
+                call write_location_cilia_force(CA,it,'c')
+                call write_location_cilia_force(CAP,it,'p')
+                call write_location_cilia_velocity(CA,it,'c')
+                call write_location_cilia_velocity(CAP,it,'p')
             end if
 
         end do
