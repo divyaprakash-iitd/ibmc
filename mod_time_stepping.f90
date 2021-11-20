@@ -413,7 +413,7 @@ contains
             ! call calculate_pressure_sparse(A,P,R)
             ! call calculate_pressure_amgx(A,P,R,init_status)
             call calculate_pressure_amgx(A(1:M%Nx-1,:,:),P(1:99,:),R(1:M%Nx-1,:),init_status)
-            call calculate_pressure_sparse_channel(A,P,R)
+            ! call calculate_pressure_sparse_channel(A,P,R)
 
             ! Perform the corrector step to obtain the velocity
             call corrector(M,u,v,us,vs,p,rho,dt)
