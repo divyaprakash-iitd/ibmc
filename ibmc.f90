@@ -30,10 +30,10 @@ program ibmc
     real(real64)    :: dt       = 0.001d0
     real(real64)    :: t
     ! Physical Constants
-    real(real64)    :: nu       = 1.0d0/50.0d0
+    real(real64)    :: nu       = 1.0d0/20.0d0
     real(real64)    :: rho      = 1.0d0
-    real(real64)    :: ko       = 15.0d0
-    real(real64)    :: kd       = 7.5d0
+    real(real64)    :: ko       = 1.0d0
+    real(real64)    :: kd       = 0.5d0
     real(real64)    :: kb       = 10.0d0
     real(real64)    :: theta    = 3.1416d0
     real(real64)    :: Rl
@@ -97,9 +97,9 @@ program ibmc
     allocate(A(1:Nx,1:Ny,NN))
 
     ! Initialize
-    u   = 1.0d0
+    u   = 0.1d0
     v   = 0.0d0
-    us  = 1.0d0
+    us  = 0.1d0
     vs  = 0.0d0
     R   = 0.0d0
     A   = 0.0d0
@@ -111,7 +111,7 @@ program ibmc
     vtop    = 0.0d0
     ubottom = 0.0d0
     vbottom = 0.0d0
-    uleft   = 1.0d0
+    uleft   = 0.1d0
     vleft   = 0.0d0
     uright  = 0.0d0
     vright  = 0.0d0
@@ -133,7 +133,7 @@ program ibmc
     np      = 5                     ! No. of Particles/Layer
     wbl     = Rl                    ! Width/Distance between two Layers
     dc      = 3*Rl                    ! Distance between two Cilia
-    nc      = 2                     ! Number of cilia
+    nc      = 4                     ! Number of cilia
     origin  = vec(Lx/4,0.1d0)      ! Location of the first Cilium (Bottom-Left Particle)
 
     SP = [ko,kd,Rl,Ftip]
