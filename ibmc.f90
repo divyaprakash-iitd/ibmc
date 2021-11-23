@@ -26,7 +26,7 @@ program ibmc
     integer(int32)  :: Nx       = 100
     integer(int32)  :: Ny       = 50
     ! Simulation time Paramaters
-    real(real64)    :: tsim     = 20.0000d0
+    real(real64)    :: tsim     = 10.0000d0
     real(real64)    :: dt       = 0.001d0
     real(real64)    :: t
     ! Physical Constants
@@ -97,9 +97,9 @@ program ibmc
     allocate(A(1:Nx,1:Ny,NN))
 
     ! Initialize
-    u   = 0.1d0
+    u   = 0.0d0
     v   = 0.0d0
-    us  = 0.1d0
+    us  = 0.0d0
     vs  = 0.0d0
     R   = 0.0d0
     A   = 0.0d0
@@ -133,7 +133,7 @@ program ibmc
     np      = 5                     ! No. of Particles/Layer
     wbl     = Rl                    ! Width/Distance between two Layers
     dc      = 3*Rl                    ! Distance between two Cilia
-    nc      = 4                     ! Number of cilia
+    nc      = 3                     ! Number of cilia
     origin  = vec(Lx/4,0.1d0)      ! Location of the first Cilium (Bottom-Left Particle)
 
     SP = [ko,kd,Rl,Ftip]

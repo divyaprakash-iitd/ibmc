@@ -61,7 +61,7 @@ open(vid);
 figure(1)
 fig = gcf;
 fig.Position = [1 1 1920 961];
-for iFile = 1:nFiles
+for iFile = 1:5:nFiles
     %subplot(2,2,1)
     hold on
     
