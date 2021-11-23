@@ -17,7 +17,7 @@ contains
         u(:,M%yu%lb) = 2*ubottom - u(:,M%yu%lb+1);
         u(:,M%yu%ub) = 2*utop    - u(:,M%yu%ub-1);
         v(M%xv%lb,:) = 2*vleft   - v(M%xv%lb+1,:);
-        v(M%yv%ub,:) = 2*vright  - v(M%yv%ub-1,:);
+        v(M%xv%ub,:) = 2*vright  - v(M%xv%ub-1,:);
     
 
         u(M%xu%lb,:)    = uleft;
