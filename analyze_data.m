@@ -72,7 +72,7 @@ xlabel('u')
 ylabel('y')
 hold on
 plot(UG,yG,'.','MarkerSize',20,'DisplayName','Ghia et al. (1982)')
-plot(Uq,yq)
+plot(Uq,yq,'DisplayName','Numerical')
 legend('Location','SouthEast')
 title(sprintf('Re = %d, Grid: (%d X %d)',Re,nx,ny))
 grid on
