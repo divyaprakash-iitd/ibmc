@@ -12,7 +12,7 @@ v = load('v.txt');
 
 %u = u(:,1:end-1);
 
-contourf(u',50,'edgecolor','none')
+contourf(u(:,2:end-1)',50,'edgecolor','none')
 colormap(jet)
 colorbar
 %contourf(vel','edgecolor','none')
