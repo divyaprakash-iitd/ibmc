@@ -4,7 +4,8 @@ module mod_boundary
     implicit none
    
     private
-    public :: apply_boundary, apply_boundary_periodic, apply_boundary_channel, apply_parabolic_inlet
+    public :: apply_boundary, apply_boundary_periodic, apply_boundary_channel, &
+              apply_parabolic_inlet, apply_parabolic_initialization
 
 contains
 
@@ -83,4 +84,21 @@ contains
         end do 
 
     end subroutine apply_parabolic_inlet
+
+    subroutine apply_parabolic_initialization(M,u,uleft)
+        class(mesh), intent(in)         :: M
+        real(real64), intent(in out)    :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub)
+        real(real64), intent(in)        :: uleft
+
+        integer(int32) :: i,j
+        real(real64) :: y
+
+        do j = M%yu%lb,M%yu%ub
+            do i = M%xu%lb,M%xu%ub
+                y = M%u_mesh(M%xu%lb,j)%y 
+                u(i,j) = 6*uleft*y/M%Ly*(1-y/M%Ly) 
+        end do
+    end do 
+    end subroutine apply_parabolic_initialization
+
 end module mod_boundary
