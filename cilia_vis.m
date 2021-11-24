@@ -61,7 +61,7 @@ open(vid);
 figure(1)
 fig = gcf;
 fig.Position = [1 1 1920 961];
-for iFile = 1:5:nFiles
+for iFile = 1:nFiles
     %subplot(2,2,1)
     hold on
     
@@ -102,42 +102,42 @@ for iFile = 1:5:nFiles
         
     end
     
-%     %% Plot particles
-%     particle = load(particleFile(iFile).name);
-%     for i = 1:2:size(particle,1) % No. of rows in the particle file
-%         particleX = particle(i,:); % Read x-coordinates
-%         particleY = particle(i+1,:); % Read y-coordinates
-%         plot(particleX,particleY,'w-o','linewidth',3,'Markersize',5)
-%         % Join the ends
-%         plot([particleX(end), particleX(1)],[particleY(end), particleY(1)],'w-o','linewidth',3,'Markersize',5)
-%     end
-%     
-%    % Horizontal links
-%     for i = 1:4:size(particle,1) % No. of rows in the particle file
-%         particleX1 = particle(i,:);
-%         particleY1 = particle(i+1,:);
-%         particleX2 = particle(i+2,:);
-%         particleY2 = particle(i+3,:);
-%         % Horizontal links
-%         for j = 1:numel(particleX1)
-%             plot([particleX1(j),particleX2(j)],[particleY1(j),particleY2(j)],'w-o','linewidth',1,'Markersize',5)
-%         end
-%         
-%         % Diagonal links: 1
-%         for j = 1:numel(particleX1)-1
-%             plot([particleX1(j),particleX2(j+1)],[particleY1(j),particleY2(j+1)],'w-o','linewidth',1,'Markersize',5)
-%         end
-%         % Join the ends
-%         plot([particleX1(end),particleX2(1)],[particleY1(end),particleY2(1)],'w-o','linewidth',1,'Markersize',5)
-%         
-%          % Diagonal links: 2
-%         for j = 1:numel(particleX1)-1
-%             plot([particleX1(j+1),particleX2(j)],[particleY1(j+1),particleY2(j)],'w-o','linewidth',1,'Markersize',5)
-%         end
-%         % Join the ends
-%         plot([particleX1(1),particleX2(end)],[particleY1(1),particleY2(end)],'w-o','linewidth',1,'Markersize',5)
-%         
-%     end
+    %% Plot particles
+    particle = load(particleFile(iFile).name);
+    for i = 1:2:size(particle,1) % No. of rows in the particle file
+        particleX = particle(i,:); % Read x-coordinates
+        particleY = particle(i+1,:); % Read y-coordinates
+        plot(particleX,particleY,'w-o','linewidth',3,'Markersize',5)
+        % Join the ends
+        plot([particleX(end), particleX(1)],[particleY(end), particleY(1)],'w-o','linewidth',3,'Markersize',5)
+    end
+    
+   % Horizontal links
+    for i = 1:4:size(particle,1) % No. of rows in the particle file
+        particleX1 = particle(i,:);
+        particleY1 = particle(i+1,:);
+        particleX2 = particle(i+2,:);
+        particleY2 = particle(i+3,:);
+        % Horizontal links
+        for j = 1:numel(particleX1)
+            plot([particleX1(j),particleX2(j)],[particleY1(j),particleY2(j)],'w-o','linewidth',1,'Markersize',5)
+        end
+        
+        % Diagonal links: 1
+        for j = 1:numel(particleX1)-1
+            plot([particleX1(j),particleX2(j+1)],[particleY1(j),particleY2(j+1)],'w-o','linewidth',1,'Markersize',5)
+        end
+        % Join the ends
+        plot([particleX1(end),particleX2(1)],[particleY1(end),particleY2(1)],'w-o','linewidth',1,'Markersize',5)
+        
+         % Diagonal links: 2
+        for j = 1:numel(particleX1)-1
+            plot([particleX1(j+1),particleX2(j)],[particleY1(j+1),particleY2(j)],'w-o','linewidth',1,'Markersize',5)
+        end
+        % Join the ends
+        plot([particleX1(1),particleX2(end)],[particleY1(1),particleY2(end)],'w-o','linewidth',1,'Markersize',5)
+        
+    end
     
     %% Plot mesh
     mesh(xp,yp,0*xp,'FaceAlpha','0.0','EdgeColor','w','LineStyle','-','EdgeAlpha','0.25')
