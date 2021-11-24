@@ -317,8 +317,8 @@ contains
             ! print *, 'Fy = ', CA%array(1)%layers(1)%boundary(CA%array(1)%np)%Fy
             
             ! Calculate forces in the immersed boundary structure
-            call calculate_cilia_array_force(CA,ko,kd,Rl)
-            ! call calculate_closed_loop_array_force(CAP,ko,kd,Rl)
+            ! call calculate_cilia_array_force(CA,ko,kd,Rl)
+            call calculate_closed_loop_array_force(CAP,ko,kd,Rl)
 
             ! Apply tip force for the first 1 second
             ! if (t.lt.0.2) then
@@ -326,8 +326,8 @@ contains
             ! call apply_tip_force_cilia_array(CAP,Ftip,t)
             ! end if
             
-            call copy_cilia(CA,CAmid)
-            ! call copy_cilia(CAP,CAPmid)
+            ! call copy_cilia(CA,CAmid)
+            call copy_cilia(CAP,CAPmid)
  
             ! RK2: Step 1
             ! Apply velocity boundary conditions
@@ -337,8 +337,8 @@ contains
             ! Spread force from the immersed boundary
             Fx = 0.0d0 ! Initialize the forces at every time-step
             Fy = 0.0d0
-            call spread_force_cilia_array(M,CAmid,Fx,Fy)
-            ! call spread_force_cilia_array(M,CAPmid,Fx,Fy)
+            ! call spread_force_cilia_array(M,CAmid,Fx,Fy)
+            call spread_force_cilia_array(M,CAPmid,Fx,Fy)
 
             ! us = u + 0.5d0*dt*cdu_f(M,u,v,nu,Fx)
             ! vs = v + 0.5d0*dt*cdv_f(M,u,v,nu,Fy)
@@ -364,21 +364,21 @@ contains
             call corrector(M,umid,vmid,us,vs,P,rho,0.5d0*dt)
 
             ! Initialize the velocity at every time-step
-            call initialize_velocity_cilia_array(CAmid)
-            ! call initialize_velocity_cilia_array(CAPmid)
+            ! call initialize_velocity_cilia_array(CAmid)
+            call initialize_velocity_cilia_array(CAPmid)
             ! Interpolate the Eulerian grid velocity to the Lagrangian structure
-            call interpolate_velocity_cilia_array(M,CAmid,umid,vmid)
-            ! call interpolate_velocity_cilia_array(M,CAPmid,umid,vmid)
+            ! call interpolate_velocity_cilia_array(M,CAmid,umid,vmid)
+            call interpolate_velocity_cilia_array(M,CAPmid,umid,vmid)
 
             ! Update the Immersed Boundary
-            call update_cilia_array(CAmid,dt/2)
-            ! call update_cilia_array(CAPmid,dt/2)
+            ! call update_cilia_array(CAmid,dt/2)
+            call update_cilia_array(CAPmid,dt/2)
 
             ! RK2: Step 2
             
             ! Calculate forces in the immersed boundary structure
-            call calculate_cilia_array_force(CAmid,ko,kd,Rl)
-            ! call calculate_closed_loop_array_force(CAPmid,ko,kd,Rl)
+            ! call calculate_cilia_array_force(CAmid,ko,kd,Rl)
+            call calculate_closed_loop_array_force(CAPmid,ko,kd,Rl)
 
             ! Apply tip force for the first 1 second
             ! if (t.lt.0.2) then
@@ -392,9 +392,9 @@ contains
             ! Spread force from the immersed boundary
             Fx = 0.0d0 ! Initialize the forces at every time-step
             Fy = 0.0d0
-            call spread_force_cilia_array(M,CAmid,Fx,Fy)
-            ! call spread_force_cilia_array(M,CAPmid,Fx,Fy)
-            
+            ! call spread_force_cilia_array(M,CAmid,Fx,Fy)
+            call spread_force_cilia_array(M,CAPmid,Fx,Fy)
+            ! 
             ! us = u + dt*cdu_f(M,umid,vmid,nu,Fx)
             ! vs = v + dt*cdv_f(M,umid,vmid,nu,Fx)
 
@@ -421,15 +421,15 @@ contains
             call corrector(M,u,v,us,vs,p,rho,dt)
 
             ! Initialize the velocity at every time-step
-            call initialize_velocity_cilia_array(CA)
-            ! call initialize_velocity_cilia_array(CAP)
+            ! call initialize_velocity_cilia_array(CA)
+            call initialize_velocity_cilia_array(CAP)
             ! Interpolate the Eulerian grid velocity to the Lagrangian structure
-            call interpolate_velocity_cilia_array(M,CA,u,v)
-            ! call interpolate_velocity_cilia_array(M,CAP,u,v)
+            ! call interpolate_velocity_cilia_array(M,CA,u,v)
+            call interpolate_velocity_cilia_array(M,CAP,u,v)
 
             ! Update the Immersed Boundary
-            call update_cilia_array(CA,dt)
-            ! call update_cilia_array(CAP,dt)
+            ! call update_cilia_array(CA,dt)
+            call update_cilia_array(CAP,dt)
         
             print *, 'time = ', t
             
@@ -461,6 +461,7 @@ contains
 
         do ic = 1,nc
             do il = 1,nl
+                CA2%array(ic)%layers(il)%t = CA1%array(ic)%layers(il)%t
                 do ip = 1,np
                     CA2%array(ic)%layers(il)%boundary(ip)%x = CA1%array(ic)%layers(il)%boundary(ip)%x
                     CA2%array(ic)%layers(il)%boundary(ip)%y = CA1%array(ic)%layers(il)%boundary(ip)%y
@@ -468,7 +469,6 @@ contains
                     CA2%array(ic)%layers(il)%boundary(ip)%Uy = CA1%array(ic)%layers(il)%boundary(ip)%Uy
                     CA2%array(ic)%layers(il)%boundary(ip)%Fx = CA1%array(ic)%layers(il)%boundary(ip)%Fx
                     CA2%array(ic)%layers(il)%boundary(ip)%Fy = CA1%array(ic)%layers(il)%boundary(ip)%Fy
-                    ! CA2%array(ic)%layers(il)%boundary(ip)%tag = CA1%array(ic)%layers(il)%boundary(ip)%tag
                 end do
             end do
         end do
