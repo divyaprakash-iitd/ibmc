@@ -59,25 +59,25 @@ contains
         end do
     end subroutine create_closed_loop_array
 
-    subroutine calculate_closed_loop_array_force(CA,ko,kd,Rl)
+    subroutine calculate_closed_loop_array_force(CA,ko,kd,Rlv,Rlh,Rld)
         class(cilia_array), intent(in out)  :: CA      ! Cilia array
         real(real64),       intent(in)      :: ko      ! Horizontal spring stiffness
         real(real64),       intent(in)      :: kd      ! Diagonal spring stiffness
-        real(real64),       intent(in)      :: Rl      ! Resting length
+        real(real64),       intent(in)      :: Rlv,Rlh,Rld      ! Resting length
 
         integer(int32) :: ic
 
         ! Calculate forces for all the cilia within the array
         do ic = 1,CA%nc
-            call calculate_closed_loop_force(CA%array(ic),ko,kd,Rl)
+            call calculate_closed_loop_force(CA%array(ic),ko,kd,Rlv,Rlh,Rld)
         end do
     end subroutine calculate_closed_loop_array_force
 
-    subroutine calculate_closed_loop_force(C,ko,kd,Rl)
+    subroutine calculate_closed_loop_force(C,ko,kd,Rlv,Rlh,Rld)
         class(cilia), intent(in out)    :: C         ! Cilia structure
         real(real64), intent(in)        :: ko        ! Horizontal spring stiffness
         real(real64), intent(in)        :: kd        ! Diagonal spring stiffness
-        real(real64), intent(in)        :: Rl        ! Resting length
+        real(real64), intent(in)        :: Rlv,Rlh,Rld        ! Resting length
 
         integer(int32)  :: il, ip
 
@@ -90,16 +90,19 @@ contains
         end do
 
         ! Calculate forces on the layers
-        do il = 1,C%nl
-            call calculate_spring_force(C%layers(il),ko,kd,Rl,C%layers(il)%t)
-        end do
+        call calculate_spring_force(C%layers(1),ko,kd,Rlv,C%layers(1)%t)
+        call calculate_spring_force(C%layers(2),ko,kd,0.5d0*Rlv,C%layers(2)%t)
+
+        ! do il = 1,C%nl
+        !     call calculate_spring_force(C%layers(il),ko,kd,Rlv,C%layers(il)%t)
+        ! end do
 
         ! Calculate forces on the horizontal links
-        call calculate_horizontal_link_force(C%layers(1),C%layers(2),ko,Rl)
+        call calculate_horizontal_link_force(C%layers(1),C%layers(2),ko,Rlh)
 
         ! Calculate forces on the diagonal links (negative slope)
-        call calculate_diagonal_link_force(C%layers(1),C%layers(2),kd,Rl)
-        call calculate_diagonal_link_force_pos(C%layers(2),C%layers(1),kd,Rl)
+        call calculate_diagonal_link_force(C%layers(1),C%layers(2),kd,Rld)
+        call calculate_diagonal_link_force_pos(C%layers(2),C%layers(1),kd,Rld)
     end subroutine calculate_closed_loop_force
 
 
