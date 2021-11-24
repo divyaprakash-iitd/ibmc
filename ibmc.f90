@@ -30,7 +30,7 @@ program ibmc
     real(real64)    :: dt       = 0.001d0
     real(real64)    :: t
     ! Physical Constants
-    real(real64)    :: nu       = 1.0d0/20.0d0
+    real(real64)    :: nu       = 1.0d0/50.0d0
     real(real64)    :: rho      = 1.0d0
     real(real64)    :: ko       = 1.0d0
     real(real64)    :: kd       = 0.5d0
@@ -138,9 +138,10 @@ program ibmc
 
     SP = [ko,kd,Rl,Ftip]
 
-    radius = 0.05*Lx
-    originP = vec(Lx/3,2.25*Ly/3)
-    CAP = cilia_array(1,nl,8)
+    radius = 0.07*Lx
+    originP = vec(Lx/5,2*Ly/3)
+    ! originP = vec(Lx/3,2.25*Ly/3)
+    CAP = cilia_array(1,2,8)
     call create_closed_loop_array(CAP,0.5d0*radius,radius,originP)
     CA = cilia_array(nc,nl,np)
     call create_cilia_array(CA,wbl,dc,dp,origin)
@@ -153,6 +154,8 @@ program ibmc
     ! call write_location_cilia_force(CAP,1,'p')
     ! call write_location_cilia_velocity(CA,1,'c')
     ! call write_location_cilia_velocity(CAP,1,'p')
+
+    call apply_parabolic_initialization(M,u,uleft)
 
     call time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAP,A,P,R,tsim,dt)
 
