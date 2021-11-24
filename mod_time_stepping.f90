@@ -276,10 +276,54 @@ contains
         ! AmgX
         logical         :: init_status
 
+        ! Resting lengths
+        real(real64) :: RLH, RLD, RLV, xm, ym, xsl, ysl
+
+        ! Calculate Resting Lengths
+        ! Horizontal Link Resting Length
+                    
+        ! Master node location
+        xm = CAP%array(1)%layers(1)%boundary(1)%x
+        ym = CAP%array(1)%layers(1)%boundary(1)%y
+
+        ! Slave node location
+        xsl = CAP%array(1)%layers(2)%boundary(1)%x
+        ysl = CAP%array(1)%layers(2)%boundary(1)%y
+
+        ! Calculate distance between master and slave nodes
+        RLH = norm2([(xsl-xm),(ysl-ym)])
+
+        ! Calculate Resting Lengths
+        ! Diagonal Link Resting Length
+                    
+        ! Master node location
+        xm = CAP%array(1)%layers(1)%boundary(1)%x
+        ym = CAP%array(1)%layers(1)%boundary(1)%y
+
+        ! Slave node location
+        xsl = CAP%array(1)%layers(2)%boundary(2)%x
+        ysl = CAP%array(1)%layers(2)%boundary(2)%y
+
+        ! Calculate distance between master and slave nodes
+        RLD = norm2([(xsl-xm),(ysl-ym)])
+
+        ! Calculate Resting Lengths
+        ! Vertical Link Resting Length
+                    
+        ! Master node location
+        xm = CAP%array(1)%layers(1)%boundary(1)%x
+        ym = CAP%array(1)%layers(1)%boundary(1)%y
+
+        ! Slave node location
+        xsl = CAP%array(1)%layers(1)%boundary(2)%x
+        ysl = CAP%array(1)%layers(1)%boundary(2)%y
+
+        ! Calculate distance between master and slave nodes
+        RLV = norm2([(xsl-xm),(ysl-ym)])
+
         ! Create temporary cilia array
         CAmid = cilia_array(CA%nc,CA%array(1)%nl,CA%array(1)%np)
         CAPmid = cilia_array(CAP%nc,CAP%array(1)%nl,CAP%array(1)%np)
-
         ! Assign boundary values
         utop    = BC(1)
         vtop    = BC(2)
@@ -318,7 +362,7 @@ contains
             
             ! Calculate forces in the immersed boundary structure
             ! call calculate_cilia_array_force(CA,ko,kd,Rl)
-            call calculate_closed_loop_array_force(CAP,ko,kd,Rl)
+            call calculate_closed_loop_array_force(CAP,ko,kd,RLV,RLH,RLD)
 
             ! Apply tip force for the first 1 second
             ! if (t.lt.0.2) then
@@ -378,7 +422,7 @@ contains
             
             ! Calculate forces in the immersed boundary structure
             ! call calculate_cilia_array_force(CAmid,ko,kd,Rl)
-            call calculate_closed_loop_array_force(CAPmid,ko,kd,Rl)
+            call calculate_closed_loop_array_force(CAPmid,ko,kd,RLV,RLH,RLD)
 
             ! Apply tip force for the first 1 second
             ! if (t.lt.0.2) then
