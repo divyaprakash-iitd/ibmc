@@ -110,7 +110,7 @@ subroutine calculate_pressure_sparse(A,PIN,R)
 
     ! Parameters for SOR
     real(real64),   parameter :: OMEGA      = 1.99
-    real(real64),   parameter :: TOLERANCE  = 1E-10
+    real(real64),   parameter :: TOLERANCE  = 1E-8
     integer(int32), parameter :: MAXITER    = 1E5
     integer(int32), parameter :: BOTTOM     = 1
     integer(int32), parameter :: LEFT       = 2
