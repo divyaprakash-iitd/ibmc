@@ -361,7 +361,7 @@ contains
             ! print *, 'Fy = ', CA%array(1)%layers(1)%boundary(CA%array(1)%np)%Fy
             
             ! Calculate forces in the immersed boundary structure
-            ! call calculate_cilia_array_force(CA,ko,kd,Rl)
+            call calculate_cilia_array_force(CA,ko,kd,Rl)
             call calculate_closed_loop_array_force(CAP,ko,kd,RLV,RLH,RLD)
 
             ! Apply tip force for the first 1 second
@@ -370,7 +370,7 @@ contains
             ! call apply_tip_force_cilia_array(CAP,Ftip,t)
             ! end if
             
-            ! call copy_cilia(CA,CAmid)
+            call copy_cilia(CA,CAmid)
             call copy_cilia(CAP,CAPmid)
  
             ! RK2: Step 1
@@ -381,7 +381,7 @@ contains
             ! Spread force from the immersed boundary
             Fx = 0.0d0 ! Initialize the forces at every time-step
             Fy = 0.0d0
-            ! call spread_force_cilia_array(M,CAmid,Fx,Fy)
+            call spread_force_cilia_array(M,CAmid,Fx,Fy)
             call spread_force_cilia_array(M,CAPmid,Fx,Fy)
 
             ! us = u + 0.5d0*dt*cdu_f(M,u,v,nu,Fx)
@@ -400,28 +400,28 @@ contains
 
             ! Solve for pressure
             ! call calculate_pressure_sparse(A,P,R)
-            call calculate_pressure_amgx(A(1:M%Nx-1,:,:),P(1:99,:),R(1:M%Nx-1,:),init_status)
-            ! call calculate_pressure_sparse(A(1:M%Nx-1,:,:),P(1:99,:),R(1:M%Nx-1,:))
+            ! call calculate_pressure_amgx(A(1:M%Nx-1,:,:),P(1:M%Nx-1,:),R(1:M%Nx-1,:),init_status)
+            call calculate_pressure_sparse(A(1:M%Nx-1,:,:),P(1:M%Nx-1,:),R(1:M%Nx-1,:))
             ! call calculate_pressure_sparse_channel(A,P,R)
 
             ! Perform the corrector step to obtain the velocity
             call corrector(M,umid,vmid,us,vs,P,rho,0.5d0*dt)
 
             ! Initialize the velocity at every time-step
-            ! call initialize_velocity_cilia_array(CAmid)
+            call initialize_velocity_cilia_array(CAmid)
             call initialize_velocity_cilia_array(CAPmid)
             ! Interpolate the Eulerian grid velocity to the Lagrangian structure
-            ! call interpolate_velocity_cilia_array(M,CAmid,umid,vmid)
+            call interpolate_velocity_cilia_array(M,CAmid,umid,vmid)
             call interpolate_velocity_cilia_array(M,CAPmid,umid,vmid)
 
             ! Update the Immersed Boundary
-            ! call update_cilia_array(CAmid,dt/2)
+            call update_cilia_array(CAmid,dt/2)
             call update_cilia_array(CAPmid,dt/2)
 
             ! RK2: Step 2
             
             ! Calculate forces in the immersed boundary structure
-            ! call calculate_cilia_array_force(CAmid,ko,kd,Rl)
+            call calculate_cilia_array_force(CAmid,ko,kd,Rl)
             call calculate_closed_loop_array_force(CAPmid,ko,kd,RLV,RLH,RLD)
 
             ! Apply tip force for the first 1 second
@@ -436,7 +436,7 @@ contains
             ! Spread force from the immersed boundary
             Fx = 0.0d0 ! Initialize the forces at every time-step
             Fy = 0.0d0
-            ! call spread_force_cilia_array(M,CAmid,Fx,Fy)
+            call spread_force_cilia_array(M,CAmid,Fx,Fy)
             call spread_force_cilia_array(M,CAPmid,Fx,Fy)
             ! 
             ! us = u + dt*cdu_f(M,umid,vmid,nu,Fx)
@@ -457,22 +457,22 @@ contains
             ! Solve for pressure
             ! call calculate_pressure_sparse(A,P,R)
             ! call calculate_pressure_amgx(A,P,R,init_status)
-            call calculate_pressure_amgx(A(1:M%Nx-1,:,:),P(1:99,:),R(1:M%Nx-1,:),init_status)
-            ! call calculate_pressure_sparse(A(1:M%Nx-1,:,:),P(1:99,:),R(1:M%Nx-1,:))
+            ! call calculate_pressure_amgx(A(1:M%Nx-1,:,:),P(1:M%Nx-1,:),R(1:M%Nx-1,:),init_status)
+            call calculate_pressure_sparse(A(1:M%Nx-1,:,:),P(1:M%Nx-1,:),R(1:M%Nx-1,:))
             ! call calculate_pressure_sparse_channel(A,P,R)
 
             ! Perform the corrector step to obtain the velocity
             call corrector(M,u,v,us,vs,p,rho,dt)
 
             ! Initialize the velocity at every time-step
-            ! call initialize_velocity_cilia_array(CA)
+            call initialize_velocity_cilia_array(CA)
             call initialize_velocity_cilia_array(CAP)
             ! Interpolate the Eulerian grid velocity to the Lagrangian structure
-            ! call interpolate_velocity_cilia_array(M,CA,u,v)
+            call interpolate_velocity_cilia_array(M,CA,u,v)
             call interpolate_velocity_cilia_array(M,CAP,u,v)
 
             ! Update the Immersed Boundary
-            ! call update_cilia_array(CA,dt)
+            call update_cilia_array(CA,dt)
             call update_cilia_array(CAP,dt)
         
             print *, 'time = ', t
