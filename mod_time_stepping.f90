@@ -12,6 +12,7 @@ module mod_time_stepping
     use mod_cilia
     use mod_cilia_array
     use mod_closed_cilia
+    use nvtx
     implicit none
     
 contains
@@ -350,7 +351,9 @@ contains
     
         init_status = .False. ! AmgX initialization status
 
+
         do while (t.lt.tsim)
+            call nvtxStartRange("Time Loop")
             t = t + dt
             it = it + 1
             
@@ -361,8 +364,12 @@ contains
             ! print *, 'Fy = ', CA%array(1)%layers(1)%boundary(CA%array(1)%np)%Fy
             
             ! Calculate forces in the immersed boundary structure
+
+            call nvtxStartRange("RK2:Step-1")
+            call nvtxStartRange("Calculate cilia forces")
             call calculate_cilia_array_force(CA,ko,kd,Rl)
             call calculate_closed_loop_array_force(CAP,ko,kd,RLV,RLH,RLD)
+            call nvtxEndRange
 
             ! Apply tip force for the first 1 second
             ! if (t.lt.0.2) then
@@ -370,59 +377,85 @@ contains
             ! call apply_tip_force_cilia_array(CAP,Ftip,t)
             ! end if
             
+            call nvtxStartRange("Copy cilia")
             call copy_cilia(CA,CAmid)
             call copy_cilia(CAP,CAPmid)
+            call nvtxEndRange
  
             ! RK2: Step 1
             ! Apply velocity boundary conditions
+            call nvtxStartRange("Apply BC")
             call apply_boundary_channel(M,u,v,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
             call apply_parabolic_inlet(M,u,uleft)
+            call nvtxEndRange
 
+        
+            call nvtxStartRange("Spread Forces")
             ! Spread force from the immersed boundary
             Fx = 0.0d0 ! Initialize the forces at every time-step
             Fy = 0.0d0
             call spread_force_cilia_array(M,CAmid,Fx,Fy)
             call spread_force_cilia_array(M,CAPmid,Fx,Fy)
+            call nvtxEndRange
 
             ! us = u + 0.5d0*dt*cdu_f(M,u,v,nu,Fx)
             ! vs = v + 0.5d0*dt*cdv_f(M,u,v,nu,Fy)
+            call nvtxStartRange("Predictor")
             call cdu(M,u,v,us,nu,Fx)
             us = u + us*dt/2
             call cdv(M,u,v,vs,nu,Fy)
             vs = v + vs*dt/2
+            call nvtxEndRange
 
+            call nvtxStartRange("Apply BC")
             ! Apply velocity boundary conditions to us and vs
             call apply_boundary_channel(M,us,vs,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
             call apply_parabolic_inlet(M,us,uleft)
+            call nvtxEndRange
 
+
+            call nvtxStartRange("Calculate RHS")
             ! Form the RHS of the pressure poisson equation
             call calculate_rhs(M,us,vs,R,rho,0.5d0*dt)
+            call nvtxEndRange
 
+            call nvtxStartRange("Calculate pressure")
             ! Solve for pressure
             ! call calculate_pressure_sparse(A,P,R)
-            ! call calculate_pressure_amgx(A(1:M%Nx-1,:,:),P(1:M%Nx-1,:),R(1:M%Nx-1,:),init_status)
-            call calculate_pressure_sparse(A(1:M%Nx-1,:,:),P(1:M%Nx-1,:),R(1:M%Nx-1,:))
+            call calculate_pressure_amgx(A(1:M%Nx-1,:,:),P(1:M%Nx-1,:),R(1:M%Nx-1,:),init_status)
+            ! call calculate_pressure_sparse(A(1:M%Nx-1,:,:),P(1:M%Nx-1,:),R(1:M%Nx-1,:))
             ! call calculate_pressure_sparse_channel(A,P,R)
+            call nvtxEndRange
 
+            call nvtxStartRange("Corrector")
             ! Perform the corrector step to obtain the velocity
             call corrector(M,umid,vmid,us,vs,P,rho,0.5d0*dt)
+            call nvtxEndRange
 
+            call nvtxStartRange("Interpolate velocity")
             ! Initialize the velocity at every time-step
             call initialize_velocity_cilia_array(CAmid)
             call initialize_velocity_cilia_array(CAPmid)
             ! Interpolate the Eulerian grid velocity to the Lagrangian structure
             call interpolate_velocity_cilia_array(M,CAmid,umid,vmid)
             call interpolate_velocity_cilia_array(M,CAPmid,umid,vmid)
+            call nvtxEndRange
 
+            call nvtxStartRange("Update cilia locations")
             ! Update the Immersed Boundary
             call update_cilia_array(CAmid,dt/2)
             call update_cilia_array(CAPmid,dt/2)
+            call nvtxEndRange
 
+            call nvtxEndRange
             ! RK2: Step 2
             
+            call nvtxStartRange("RK2:Step-1")
             ! Calculate forces in the immersed boundary structure
+            call nvtxStartRange("Calculate cilia forces")
             call calculate_cilia_array_force(CAmid,ko,kd,Rl)
             call calculate_closed_loop_array_force(CAPmid,ko,kd,RLV,RLH,RLD)
+            call nvtxEndRange
 
             ! Apply tip force for the first 1 second
             ! if (t.lt.0.2) then
@@ -430,53 +463,73 @@ contains
             ! call apply_tip_force_cilia_array(CAPmid,Ftip,t)
             ! end if
 
+            call nvtxStartRange("Apply BC")
             call apply_boundary_channel(M,umid,vmid,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
             call apply_parabolic_inlet(M,u,uleft)
+            call nvtxEndRange
 
+            call nvtxStartRange("Spread Forces")
             ! Spread force from the immersed boundary
             Fx = 0.0d0 ! Initialize the forces at every time-step
             Fy = 0.0d0
             call spread_force_cilia_array(M,CAmid,Fx,Fy)
             call spread_force_cilia_array(M,CAPmid,Fx,Fy)
+            call nvtxEndRange
             ! 
             ! us = u + dt*cdu_f(M,umid,vmid,nu,Fx)
             ! vs = v + dt*cdv_f(M,umid,vmid,nu,Fx)
 
+            call nvtxStartRange("Predictor")
             call cdu(M,umid,vmid,us,nu,Fx)
             us = u + us*dt
             call cdv(M,umid,vmid,vs,nu,Fy)
             vs = v + vs*dt
+            call nvtxEndRange
             
+            call nvtxStartRange("Apply BC")
             ! Apply velocity boundary conditions to us and vs
             call apply_boundary_channel(M,us,vs,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
             call apply_parabolic_inlet(M,us,uleft)
+            call nvtxEndRange
 
+            call nvtxStartRange("Calculate RHS")
             ! Form the RHS of the pressure poisson equation
             call calculate_rhs(M,us,vs,R,rho,dt)
+            call nvtxEndRange
 
+            call nvtxStartRange("Calculate pressure")
             ! Solve for pressure
             ! call calculate_pressure_sparse(A,P,R)
             ! call calculate_pressure_amgx(A,P,R,init_status)
-            ! call calculate_pressure_amgx(A(1:M%Nx-1,:,:),P(1:M%Nx-1,:),R(1:M%Nx-1,:),init_status)
-            call calculate_pressure_sparse(A(1:M%Nx-1,:,:),P(1:M%Nx-1,:),R(1:M%Nx-1,:))
+            call calculate_pressure_amgx(A(1:M%Nx-1,:,:),P(1:M%Nx-1,:),R(1:M%Nx-1,:),init_status)
+            ! call calculate_pressure_sparse(A(1:M%Nx-1,:,:),P(1:M%Nx-1,:),R(1:M%Nx-1,:))
             ! call calculate_pressure_sparse_channel(A,P,R)
+            call nvtxEndRange
 
+            call nvtxStartRange("Corrector")
             ! Perform the corrector step to obtain the velocity
             call corrector(M,u,v,us,vs,p,rho,dt)
+            call nvtxEndRange
 
+            call nvtxStartRange("Interpolate velocity")
             ! Initialize the velocity at every time-step
             call initialize_velocity_cilia_array(CA)
             call initialize_velocity_cilia_array(CAP)
             ! Interpolate the Eulerian grid velocity to the Lagrangian structure
             call interpolate_velocity_cilia_array(M,CA,u,v)
             call interpolate_velocity_cilia_array(M,CAP,u,v)
+            call nvtxEndRange
 
+            call nvtxStartRange("Update cilia locations")
             ! Update the Immersed Boundary
             call update_cilia_array(CA,dt)
             call update_cilia_array(CAP,dt)
+            call nvtxEndRange
         
+            call nvtxEndRange
             print *, 'time = ', t
             
+        call nvtxEndRange
             ! Write files every Nth timestep
             if (mod(it,10).eq.0) then 
                 call write_field(u,'u',it) 
