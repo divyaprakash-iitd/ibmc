@@ -26,7 +26,7 @@ program ibmc
     integer(int32)  :: Nx       = 500
     integer(int32)  :: Ny       = 100
     ! Simulation time Paramaters
-    real(real64)    :: tsim     = 10.0000d0
+    real(real64)    :: tsim     = 0.004d0
     real(real64)    :: dt       = 0.001d0
     real(real64)    :: t
     ! Physical Constants
