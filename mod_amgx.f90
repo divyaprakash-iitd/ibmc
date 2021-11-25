@@ -1,6 +1,7 @@
 module mod_amgx
     use iso_fortran_env, only: int32, int32, real64, real64
     use iso_c_binding, only: c_int, c_double, c_loc
+    use nvtx
     implicit none
     save
 
@@ -30,7 +31,10 @@ module mod_amgx
         logical, intent(in out) :: init_status
         
         if (init_status .eqv..False.) then
+
+            call nvtxStartRange('Generate CRS matrix')
             call generate_crs_matrix(A)
+            call nvtxEndRange
             NNZ = size(col_ind)
 
             ! Get the CRS data to pass to AmgX
@@ -40,11 +44,16 @@ module mod_amgx
 
             ! Reshape divergence matrix
             rhsv = reshape(b,[Nx*Ny])
+
+            call nvtxStartRange('AmgX: Initialize and solve')
             call init_amgx()
+            call nvtxEndRange
             init_status = .True.
         else
             rhsv = reshape(b,[Nx*Ny])
+            call nvtxStartRange('AmgX: Solve')
             call solve_amgx()
+            call nvtxEndRange
         end if
 
         ! Reshape the solution to a matrix
