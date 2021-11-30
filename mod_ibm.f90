@@ -59,7 +59,7 @@ contains
         end if
         
         ! Calculate the new position
-        do inp = firstp,np
+        do concurrent (inp = firstp:np)
             B%boundary(inp)%x = B%boundary(inp)%x + B%boundary(inp)%Ux * dt
             B%boundary(inp)%y = B%boundary(inp)%y + B%boundary(inp)%Uy * dt
         end do
@@ -88,7 +88,7 @@ contains
         ! Calculate the x-direction force on the u-velocity cells
         ! Iterating over all the grid points including the boundary values
         
-        do inp = 1,np
+        do concurrent (inp = 1:np)
             Lx = B%boundary(inp)%x
             Ly = B%boundary(inp)%y
             Flx = B%boundary(inp)%Fx
@@ -100,8 +100,8 @@ contains
             RightIndex  = LeftIndex     +   2*StencilSize
             TopIndex    = BottomIndex   +   2*StencilSize
 
-            do j = BottomIndex,TopIndex
-                do i = LeftIndex,RightIndex
+            do concurrent (j = BottomIndex:TopIndex)
+                do concurrent (i = LeftIndex:RightIndex)
                     Ex = M%u_mesh(i,j)%x
                     Ey = M%u_mesh(i,j)%y
                     
@@ -111,7 +111,7 @@ contains
         end do
 
         ! Calculate the y-direction force on the v-velocity cells
-        do inp = 1,np
+        do concurrent (inp = 1:np)
             Lx = B%boundary(inp)%x
             Ly = B%boundary(inp)%y
             Fly = B%boundary(inp)%Fy
@@ -122,8 +122,8 @@ contains
             RightIndex  = LeftIndex     +   2*StencilSize
             TopIndex    = BottomIndex   +   2*StencilSize
 
-            do j = BottomIndex,TopIndex
-                do i = LeftIndex,RightIndex
+            do concurrent (j = BottomIndex:TopIndex)
+                do concurrent (i = LeftIndex:RightIndex)
                     Ex = M%v_mesh(i,j)%x
                     Ey = M%v_mesh(i,j)%y
                     
@@ -135,7 +135,7 @@ contains
 
         contains
 
-        function dirac(x,h)
+        pure function dirac(x,h)
             ! Defined for a uniform grid
             real(real64), intent(in) :: x(2)
             real(real64), intent(in) :: h
@@ -259,7 +259,7 @@ contains
 
         ! Calculate the u velocity of Lagrangian points
         ! Iterating over all the grid points including the boundary values for u-velocity cells
-        do inp = 1,np
+        do concurrent (inp = 1:np)
             Lx = B%boundary(inp)%x
             Ly = B%boundary(inp)%y
         
@@ -270,8 +270,8 @@ contains
             RightIndex  = LeftIndex     +   2*StencilSize
             TopIndex    = BottomIndex   +   2*StencilSize
 
-            do j = BottomIndex,TopIndex
-                do i = LeftIndex,RightIndex
+            do concurrent (j = BottomIndex:TopIndex)
+                do concurrent (i = LeftIndex:RightIndex)
                     Ex = M%u_mesh(i,j)%x ! u-cell x location
                     Ey = M%u_mesh(i,j)%y ! u-cell y location
                     UE = u(i,j)
@@ -283,7 +283,7 @@ contains
         ! Calculate the v velocity of Lagrangian points
         ! Iterating over all the grid points including the boundary values for v-velocity cells
         
-        do inp = 1,np
+        do concurrent (inp = 1:np)
             Lx = B%boundary(inp)%x
             Ly = B%boundary(inp)%y
        
@@ -293,8 +293,8 @@ contains
             RightIndex  = LeftIndex     +   2*StencilSize
             TopIndex    = BottomIndex   +   2*StencilSize
 
-            do j = BottomIndex,TopIndex
-                do i = LeftIndex,RightIndex
+            do concurrent (j = BottomIndex:TopIndex)
+                do concurrent (i = LeftIndex:RightIndex)
                     Ex = M%v_mesh(i,j)%x ! v-cell x location
                     Ey = M%v_mesh(i,j)%y ! v-cell y location
                     VE = v(i,j)
@@ -305,7 +305,7 @@ contains
 
         contains 
 
-        function dirac(x,h)
+        pure function dirac(x,h)
             ! Defined for a uniform grid
             real(real64), intent(in) :: x(2)
             real(real64), intent(in) :: h
@@ -831,11 +831,9 @@ contains
         integer(int32) :: il, ip
 
         ! Initialize the forces to zero on all the nodes at every time step
-        do il = 1,C%nl 
-            do ip = 1,C%np
+        do concurrent (il = 1:C%nl, ip = 1:C%np)
                 C%layers(il)%boundary(ip)%Fx = 0.0d0
                 C%layers(il)%boundary(ip)%Fy = 0.0d0
-            end do
         end do
 
         ! Calculate forces on the layers
@@ -1188,9 +1186,9 @@ contains
 
         integer(int32) :: ic,il,ip
         
-        do ic = 1,CA%nc
-            do il = 1,CA%array(ic)%nl
-                do ip = 1,size(CA%array(ic)%layers(il)%boundary)
+        do concurrent (ic = 1:CA%nc)
+            do concurrent (il = 1:CA%array(ic)%nl)
+                do concurrent (ip = 1:size(CA%array(ic)%layers(il)%boundary))
                     CA%array(ic)%layers(il)%boundary(ip)%Ux = 0.0d0
                     CA%array(ic)%layers(il)%boundary(ip)%Uy = 0.0d0
                 end do
