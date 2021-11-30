@@ -251,7 +251,7 @@ contains
         real(real64), intent(inout)       :: P(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub)
         real(real64), intent(inout)       :: R(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub)
         real(real64), intent(in)          :: tsim
-        real(real64), intent(in)          :: dt
+        real(real64), intent(inout)          :: dt
 
         ! Intermediate cilia
         type(cilia_array) :: CAmid, CAPmid
@@ -422,8 +422,8 @@ contains
             call nvtxStartRange("Calculate pressure")
             ! Solve for pressure
             ! call calculate_pressure_sparse(A,P,R)
-            call calculate_pressure_amgx(A(1:M%Nx-1,:,:),P(1:M%Nx-1,:),R(1:M%Nx-1,:),init_status)
-            ! call calculate_pressure_sparse(A(1:M%Nx-1,:,:),P(1:M%Nx-1,:),R(1:M%Nx-1,:))
+            ! call calculate_pressure_amgx(A(1:M%Nx-1,:,:),P(1:M%Nx-1,:),R(1:M%Nx-1,:),init_status)
+            call calculate_pressure_sparse(A(1:M%Nx-1,:,:),P(1:M%Nx-1,:),R(1:M%Nx-1,:))
             ! call calculate_pressure_sparse_channel(A,P,R)
             call nvtxEndRange
 
@@ -450,7 +450,7 @@ contains
             call nvtxEndRange
             ! RK2: Step 2
             
-            call nvtxStartRange("RK2:Step-1")
+            call nvtxStartRange("RK2:Step-2")
             ! Calculate forces in the immersed boundary structure
             call nvtxStartRange("Calculate cilia forces")
             call calculate_cilia_array_force(CAmid,ko,kd,Rl)
@@ -501,8 +501,8 @@ contains
             ! Solve for pressure
             ! call calculate_pressure_sparse(A,P,R)
             ! call calculate_pressure_amgx(A,P,R,init_status)
-            call calculate_pressure_amgx(A(1:M%Nx-1,:,:),P(1:M%Nx-1,:),R(1:M%Nx-1,:),init_status)
-            ! call calculate_pressure_sparse(A(1:M%Nx-1,:,:),P(1:M%Nx-1,:),R(1:M%Nx-1,:))
+            ! call calculate_pressure_amgx(A(1:M%Nx-1,:,:),P(1:M%Nx-1,:),R(1:M%Nx-1,:),init_status)
+            call calculate_pressure_sparse(A(1:M%Nx-1,:,:),P(1:M%Nx-1,:),R(1:M%Nx-1,:))
             ! call calculate_pressure_sparse_channel(A,P,R)
             call nvtxEndRange
 
@@ -528,7 +528,11 @@ contains
         
             call nvtxEndRange
             print *, 'time = ', t
-            
+           
+            ! Calculate CFL
+            ! dt =  0.9*M%dx/(maxval(abs(u)) + maxval(abs(v)))
+            ! print *, 'dt = ', dt
+
         call nvtxEndRange
             ! Write files every Nth timestep
             if (mod(it,10).eq.0) then 
@@ -556,10 +560,9 @@ contains
         nl = CA1%array(1)%nl
         np = CA1%array(1)%layers(1)%np
 
-        do ic = 1,nc
-            do il = 1,nl
+        do concurrent (ic = 1:nc, il = 1:nl)
                 CA2%array(ic)%layers(il)%t = CA1%array(ic)%layers(il)%t
-                do ip = 1,np
+                do concurrent (ip = 1:np)
                     CA2%array(ic)%layers(il)%boundary(ip)%x = CA1%array(ic)%layers(il)%boundary(ip)%x
                     CA2%array(ic)%layers(il)%boundary(ip)%y = CA1%array(ic)%layers(il)%boundary(ip)%y
                     CA2%array(ic)%layers(il)%boundary(ip)%Ux = CA1%array(ic)%layers(il)%boundary(ip)%Ux
@@ -567,7 +570,6 @@ contains
                     CA2%array(ic)%layers(il)%boundary(ip)%Fx = CA1%array(ic)%layers(il)%boundary(ip)%Fx
                     CA2%array(ic)%layers(il)%boundary(ip)%Fy = CA1%array(ic)%layers(il)%boundary(ip)%Fy
                 end do
-            end do
         end do
 
     end subroutine copy_cilia
