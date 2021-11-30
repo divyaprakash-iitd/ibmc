@@ -82,11 +82,9 @@ contains
         integer(int32)  :: il, ip
 
         ! Initialize the forces to zero on all the nodes at every time step
-        do il = 1,C%nl 
-            do ip = 1,C%np
+        do concurrent (il = 1:C%nl, ip = 1:C%np)
                 C%layers(il)%boundary(ip)%Fx = 0.0d0
                 C%layers(il)%boundary(ip)%Fy = 0.0d0
-            end do
         end do
 
         ! Calculate forces on the layers
