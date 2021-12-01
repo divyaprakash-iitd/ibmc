@@ -20,10 +20,10 @@ program ibmc
     ! Code execution time
     real(real64)    :: start, finish
     ! Computational Domain
-    real(real64)    :: Lx       = 5.0d0
+    real(real64)    :: Lx       = 1.0d0
     real(real64)    :: Ly       = 1.0d0
     ! Mesh Paramaters
-    integer(int32)  :: Nx       = 500
+    integer(int32)  :: Nx       = 100
     integer(int32)  :: Ny       = 100
     ! Simulation time Paramaters
     real(real64)    :: tsim     = 10.0000d0
@@ -133,12 +133,12 @@ program ibmc
     np      = 6                     ! No. of Particles/Layer
     wbl     = Rl                    ! Width/Distance between two Layers
     dc      = 3*Rl                    ! Distance between two Cilia
-    nc      = 15                    ! Number of cilia
+    nc      = 1                    ! Number of cilia
     origin  = vec(Lx/4,0.1d0)      ! Location of the first Cilium (Bottom-Left Particle)
 
     SP = [ko,kd,Rl,Ftip]
 
-    radius = 0.02*Lx
+    radius = 0.05*Lx
     originP = vec(Lx/9,2*Ly/3)
     ! originP = vec(Lx/3,2.25*Ly/3)
     CAP = cilia_array(1,2,8)
