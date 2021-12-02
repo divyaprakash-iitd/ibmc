@@ -78,7 +78,7 @@ contains
         integer(int32) :: i
         real(real64) :: y
 
-        do i = M%yu%lb,M%yu%ub
+        do concurrent (i = M%yu%lb:M%yu%ub)
             y = M%u_mesh(M%xu%lb,i)%y 
             u(M%xu%lb,i) = 6*uleft*y/M%Ly*(1-y/M%Ly) 
         end do 
@@ -93,8 +93,8 @@ contains
         integer(int32) :: i,j
         real(real64) :: y
 
-        do j = M%yu%lb,M%yu%ub
-            do i = M%xu%lb,M%xu%ub
+        do concurrent (j = M%yu%lb:M%yu%ub)
+            do concurrent (i = M%xu%lb:M%xu%ub)
                 y = M%u_mesh(M%xu%lb,j)%y 
                 u(i,j) = 6*uleft*y/M%Ly*(1-y/M%Ly) 
         end do
