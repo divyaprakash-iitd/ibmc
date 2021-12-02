@@ -174,14 +174,6 @@ program ibmc
     CA = cilia_array(nc,nl,np)
     call create_cilia_array(CA,wbl,dc,dp,origin)
 
-    ! call write_field(u,'u',1) 
-    ! call write_field(v,'v',1) 
-    ! call write_location_cilia(CA,1,'c')
-    ! call write_location_cilia(CAP,1,'p')
-    ! call write_location_cilia_force(CA,1,'c')
-    ! call write_location_cilia_force(CAP,1,'p')
-    ! call write_location_cilia_velocity(CA,1,'c')
-    ! call write_location_cilia_velocity(CAP,1,'p')
 
     call apply_parabolic_initialization(M,u,uleft)
 
@@ -191,9 +183,6 @@ program ibmc
     SP = [ko,kd,Rl,Ftip]
     call time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAP,A,P,R,tsim,dt,it_save)
 
-    ! call write_location_cilia(CAP,10)
-    ! call write_field(u,'u',10) 
-    ! call write_field(v,'v',10) 
     call cpu_time(finish)
     print '("Time = ",f15.10," seconds.")',finish-start
 

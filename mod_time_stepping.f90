@@ -1,6 +1,6 @@
 module mod_time_stepping
     use iso_fortran_env, only: int32, real64
-    use mod_pressure,       only: generate_laplacian_sparse, calculate_pressure_sparse, calculate_pressure_sparse_channel
+    use mod_pressure,       only: generate_laplacian_sparse, calculate_pressure_sparse 
     use mod_amgx,           only: calculate_pressure_amgx
     use mod_mesh
     use mod_time
@@ -16,224 +16,6 @@ module mod_time_stepping
     implicit none
     
 contains
-
-    pure subroutine euler(M,u,v,us,vs,nu,dt,Fx,Fy)
-        class(mesh), intent(in) :: M
-        real(real64), intent(in) :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
-        real(real64), intent(in out) :: us(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), vs(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
-        real(real64), intent(in) :: Fx(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub)
-        real(real64), intent(in) :: Fy(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
-        real(real64), intent(in) :: nu, dt
-    
-        
-        call cdu(M,u,v,us,nu,Fx)
-        call cdv(M,u,v,vs,nu,Fy) 
-
-        us = u + dt*us
-        vs = v + dt*vs
-
-    end subroutine euler
-    
-    subroutine RK2(M,u,v,us,vs,nu,dt,Fx,Fy)
-        class(mesh), intent(in) :: M
-        real(real64), intent(inout) :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
-        real(real64), intent(in out) :: us(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), vs(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
-        real(real64), intent(in) :: Fx(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub)
-        real(real64), intent(in) :: Fy(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
-        real(real64), intent(in) :: nu, dt
-
-        real(real64) :: du1(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), dv1(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
-        real(real64) :: du2(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), dv2(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
-        real(real64) :: k1u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), k1v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
-        
-        real(real64) :: umid(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), vmid(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
-        
-        ! ! Step 1
-        ! call cdu(M,u,v,k1u,nu,Fx)
-        ! du1 = k1u*dt/2
-        ! call cdv(M,u,v,k1v,nu,Fy)
-        ! dv1 = k1v*dt/2
-
-        ! u = u + du1
-        ! v = v + dv1
-
-        ! ! print *, 'Sum = ', sum(u)
-
-        ! ! Step 2
-        ! call cdu(M,u,v,k2u,nu,Fx)
-        ! call cdv(M,u,v,k2v,nu,Fy)
-
-        ! du2 =k2u*dt
-        ! dv2 =k2v*dt
-
-        ! us = u + du2
-        ! vs = v + dv2
-
-        ! call cdu(M,u,v,us,nu,Fx)
-        ! call cdv(M,u,v,vs,nu,Fy)
-        
-        umid = u + dt/2*cdu_f(M,u,v,nu,Fx)
-        vmid = v + dt/2*cdv_f(M,u,v,nu,Fy)
-        
-        us = u + dt*cdu_f(M,umid,vmid,nu,Fx)
-        vs = v + dt*cdv_f(M,umid,vmid,nu,Fx)
-
-    end subroutine RK2
-
-    subroutine RK4(M,u,v,us,vs,nu,dt,Fx,Fy)
-        class(mesh), intent(in) :: M
-        real(real64), intent(in) :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
-        real(real64), intent(in out) :: us(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), vs(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
-        real(real64), intent(in) :: Fx(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub)
-        real(real64), intent(in) :: Fy(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
-        real(real64), intent(in) :: nu, dt
-
-        real(real64) :: du1(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), dv1(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
-        real(real64) :: du2(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), dv2(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
-        real(real64) :: du3(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), dv3(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
-        real(real64) :: k1u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), k1v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
-        real(real64) :: k2u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), k2v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
-        real(real64) :: k3u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), k3v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
-        real(real64) :: k4u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), k4v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
-
-        ! Step 1
-        call cdu(M,u,v,k1u,nu,Fx)
-        du1 = k1u*dt/2
-        call cdv(M,u,v,k1v,nu,Fy)
-        dv1 = k1v*dt/2
-        
-        ! Step 2
-        call cdu(M,(u+du1),(v+dv1),k2u,nu,Fx)
-        du2 = k2u*dt/2
-        call cdv(M,(u+du1),(v+dv1),k2v,nu,Fy)
-        dv2 = k2v*dt/2
-
-        ! Step 3
-        call cdu(M,(u+du2),(v+dv2),k3u,nu,Fx)
-        du3 = dt*k3u
-        call cdv(M,(u+du2),(v+dv2),k3v,nu,Fy)
-        dv3 = dt*k3v
-
-        ! Step 4
-        call cdu(M,(u+du3),(v+dv3),k4u,nu,Fx)
-        call cdv(M,(u+du3),(v+dv3),k4v,nu,Fy)
-
-        us = u + 1.0d0/6*dt*(k1u + 2*k2u + 2*k3u + k4u)
-        vs = v + 1.0d0/6*dt*(k1v + 2*k2v + 2*k3v + k4v)
-
-        ! us = us/2
-        ! vs = vs/2
-
-        ! call cdu(M,u,v,us,nu)
-        ! call cdv(M,u,v,vs,nu) 
-
-        ! us = u + dt*us
-        ! vs = v + dt*vs
-    end subroutine RK4
-
-!    subroutine time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,A,P,R,tsim,dt)
-!        real(real64), intent(in)          :: FP(:)
-!        real(real64), intent(in)          :: BC(:)
-!        class(mesh), intent(inout)        :: M
-!        real(real64), intent(inout)       :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
-!        real(real64), intent(inout)       :: us(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), vs(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
-!        real(real64), intent(inout)       :: Fx(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub)
-!        real(real64), intent(inout)       :: Fy(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
-!        real(real64), intent(in)          :: SP(:)
-!        class(cilia_array), intent(inout) :: CA
-!        real(real64), intent(in)          :: A(:,:,:)
-!        real(real64), intent(inout)       :: P(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub)
-!        real(real64), intent(inout)       :: R(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub)
-!        real(real64), intent(in)          :: tsim
-!        real(real64), intent(in)          :: dt
-
-
-!        ! Iteration 
-!        integer(int32) :: it
-
-!        ! Time
-!        real(real64) :: t
-
-!        ! Fluid properties
-!        real(real64) :: nu, rho        
-
-!        ! Boundary conditions
-!        real(real64)    :: utop, vtop, ubottom, vbottom, &
-!                               uleft, vleft, uright, vright
-!        ! Spring properties
-!        real(real64)    :: ks, Rl, Ftip
-       
-!        ! Assign boundary values
-!        utop    = BC(1)
-!        vtop    = BC(2)
-!        ubottom = BC(3)
-!        vbottom = BC(4)
-!        uleft   = BC(5)
-!        vleft   = BC(6)
-!        uright  = BC(7)
-!        vright  = BC(8)
-
-!        ! Get spring parameters
-!        ks      = SP(1)
-!        Rl      = SP(2)
-!        Ftip    = SP(3)
-
-!        ! Get fluid properties
-!        nu  = FP(1)
-!        rho = FP(2)
-
-!        ! Start time loop
-!        t = 0.0d0
-!        it = 0
-
-!        do while (t.lt.tsim)
-!            t = t + dt
-!            it = it + 1
-
-!            ! Apply velocity boundary conditions
-!            call apply_boundary(M,u,v,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
-
-!            ! Calculate forces in the cilia
-!            ! call calculate_cilia_array_force(CA,ks,Rl)
-
-!            ! Apply tip force
-!            ! call apply_tip_force_cilia_array(CA,Ftip,t)
-
-!            ! Spread force from the cilia to the fluid
-!            Fx = 0.0d0
-!            Fy = 0.0d0
-!            ! call spread_force_cilia_array(M,CA,Fx,Fy)
-
-!            ! Calculate intermediate velocity (Implement RK4 here)
-!            call euler(M,u,v,us,vs,nu,dt,Fx,Fy)
-
-!            ! Form the RHS of the pressure poisson equation
-!            call calculate_rhs(M,us,vs,R,rho,dt)
-
-!            ! Solve for pressure
-!            call calculate_pressure_sparse(A,P,R)
-
-!            ! Perform the corrector step to obtain the velocity
-!            call corrector(M,u,v,us,vs,p,rho,dt)
-
-!            ! Interpolate the fluid velocity to the cilia
-!            ! call initialize_velocity_cilia_array(CA)
-!            ! call interpolate_velocity_cilia_array(M,CA,u,v)
-
-!            ! Update the cilia node locations
-!            ! call update_cilia_array(CA,dt)
-
-!            print *, 'time = ', t
-           
-!            ! Write files every 10th timestep
-!            if (mod(it,50).eq.0) then 
-!                call write_field(u,'u',it) 
-!                call write_field(v,'v',it) 
-!                ! call write_location(CA,it)
-!            end if
-
-!        end do
-!    end subroutine time_loop
 
     subroutine time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAP,A,P,R,tsim,dt,it_save)
         real(real64), intent(in)          :: FP(:)
@@ -357,25 +139,13 @@ contains
             t = t + dt
             it = it + 1
             
-            ! print *, 'Rl = ', Rl
-            ! print *, 'S = ', CA%array(1)%layers(1)%boundary(CA%array(1)%np)%y - CA%array(1)%layers(1)%boundary(CA%array(1)%np-1)%y
-
-            ! print *, 'Fx = ', CA%array(1)%layers(1)%boundary(CA%array(1)%np)%Fx
-            ! print *, 'Fy = ', CA%array(1)%layers(1)%boundary(CA%array(1)%np)%Fy
             
             ! Calculate forces in the immersed boundary structure
-
             call nvtxStartRange("RK2:Step-1")
             call nvtxStartRange("Calculate cilia forces")
             call calculate_cilia_array_force(CA,ko,kd,Rl)
             call calculate_closed_loop_array_force(CAP,ko,kd,RLV,RLH,RLD)
             call nvtxEndRange
-
-            ! Apply tip force for the first 1 second
-            ! if (t.lt.0.2) then
-            ! call apply_tip_force_cilia_array(CA,Ftip,t)
-            ! call apply_tip_force_cilia_array(CAP,Ftip,t)
-            ! end if
             
             call nvtxStartRange("Copy cilia")
             call copy_cilia(CA,CAmid)
@@ -398,8 +168,6 @@ contains
             call spread_force_cilia_array(M,CAPmid,Fx,Fy)
             call nvtxEndRange
 
-            ! us = u + 0.5d0*dt*cdu_f(M,u,v,nu,Fx)
-            ! vs = v + 0.5d0*dt*cdv_f(M,u,v,nu,Fy)
             call nvtxStartRange("Predictor")
             call cdu(M,u,v,us,nu,Fx)
             us = u + us*dt/2
@@ -421,10 +189,8 @@ contains
 
             call nvtxStartRange("Calculate pressure")
             ! Solve for pressure
-            ! call calculate_pressure_sparse(A,P,R)
             call calculate_pressure_amgx(A(1:M%Nx-1,:,:),P(1:M%Nx-1,:),R(1:M%Nx-1,:),init_status)
             ! call calculate_pressure_sparse(A(1:M%Nx-1,:,:),P(1:M%Nx-1,:),R(1:M%Nx-1,:))
-            ! call calculate_pressure_sparse_channel(A,P,R)
             call nvtxEndRange
 
             call nvtxStartRange("Corrector")
@@ -450,18 +216,12 @@ contains
             call nvtxEndRange
             ! RK2: Step 2
             
-            call nvtxStartRange("RK2:Step-1")
+            call nvtxStartRange("RK2:Step-2")
             ! Calculate forces in the immersed boundary structure
             call nvtxStartRange("Calculate cilia forces")
             call calculate_cilia_array_force(CAmid,ko,kd,Rl)
             call calculate_closed_loop_array_force(CAPmid,ko,kd,RLV,RLH,RLD)
             call nvtxEndRange
-
-            ! Apply tip force for the first 1 second
-            ! if (t.lt.0.2) then
-            ! call apply_tip_force_cilia_array(CAmid,Ftip,t)
-            ! call apply_tip_force_cilia_array(CAPmid,Ftip,t)
-            ! end if
 
             call nvtxStartRange("Apply BC")
             call apply_boundary_channel(M,umid,vmid,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
@@ -475,9 +235,6 @@ contains
             call spread_force_cilia_array(M,CAmid,Fx,Fy)
             call spread_force_cilia_array(M,CAPmid,Fx,Fy)
             call nvtxEndRange
-            ! 
-            ! us = u + dt*cdu_f(M,umid,vmid,nu,Fx)
-            ! vs = v + dt*cdv_f(M,umid,vmid,nu,Fx)
 
             call nvtxStartRange("Predictor")
             call cdu(M,umid,vmid,us,nu,Fx)
@@ -499,11 +256,8 @@ contains
 
             call nvtxStartRange("Calculate pressure")
             ! Solve for pressure
-            ! call calculate_pressure_sparse(A,P,R)
-            ! call calculate_pressure_amgx(A,P,R,init_status)
             call calculate_pressure_amgx(A(1:M%Nx-1,:,:),P(1:M%Nx-1,:),R(1:M%Nx-1,:),init_status)
             ! call calculate_pressure_sparse(A(1:M%Nx-1,:,:),P(1:M%Nx-1,:),R(1:M%Nx-1,:))
-            ! call calculate_pressure_sparse_channel(A,P,R)
             call nvtxEndRange
 
             call nvtxStartRange("Corrector")
@@ -527,7 +281,7 @@ contains
             call nvtxEndRange
         
             call nvtxEndRange
-            print *, 'time = ', t
+            write(*,'(A,F10.5)') 'time = ', t
             
         call nvtxEndRange
             ! Write files every Nth timestep
@@ -573,85 +327,3 @@ contains
     end subroutine copy_cilia
 
 end module mod_time_stepping
-
-    !     do while (t.lt.tsim)
-    !         t = t + dt
-    !         it = it + 1
-
-    !         ! RK2: Step 1
-    !         ! Apply velocity boundary conditions
-    !         call apply_boundary(M,u,v,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
-
-    !         ! Calculate forces in the cilia
-    !         ! call calculate_cilia_array_force(CA,ks,Rl)
-
-    !         ! Apply tip force
-    !         ! call apply_tip_force_cilia_array(CA,Ftip,t)
-
-    !         ! Spread force from the cilia to the fluid
-    !         Fx = 0.0d0
-    !         Fy = 0.0d0
-    !         ! call spread_force_cilia_array(M,CA,Fx,Fy)
-
-    !         ! Calculate intermediate velocity (Implement RK4 here)
-    !         ! call euler(M,u,v,us,vs,nu,dt,Fx,Fy)
-    !         ! call RK2(M,u,v,us,vs,nu,dt,Fx,Fy)
-    !         ! call RK4(M,u,v,us,vs,nu,dt,Fx,Fy)
-
-    !         us = u + dt/2*cdu_f(M,u,v,nu,Fx)
-    !         vs = v + dt/2*cdv_f(M,u,v,nu,Fy)
-
-    !         ! Form the RHS of the pressure poisson equation
-    !         call calculate_rhs(M,us,vs,R,rho,dt/2)
-
-    !         ! Solve for pressure
-    !         call calculate_pressure_sparse(A,P,R)
-    !         ! call calculate_pressure_amgx(A,P,R,init_status)
-
-    !         ! Perform the corrector step to obtain the velocity
-    !         call corrector(M,umid,vmid,us,vs,p,rho,dt/2)
-
-    !         ! print *, sum(r)
-    !         ! Interpolate the fluid velocity to the cilia
-    !         ! call initialize_velocity_cilia_array(CA)
-    !         ! call interpolate_velocity_cilia_array(M,CA,u,v)
-
-    !         ! Update the cilia node locations
-    !         ! call update_cilia_array(CA,dt)
-
-    !         ! RK2: Step 2
-
-    !         call apply_boundary(M,u,v,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
-            
-    !         us = u + dt*cdu_f(M,umid,vmid,nu,Fx)
-    !         vs = v + dt*cdv_f(M,umid,vmid,nu,Fx)
-
-    !         ! Form the RHS of the pressure poisson equation
-    !         call calculate_rhs(M,us,vs,R,rho,dt)
-
-    !         ! Solve for pressure
-    !         call calculate_pressure_sparse(A,P,R)
-    !         ! call calculate_pressure_amgx(A,P,R,init_status)
-
-    !         ! Perform the corrector step to obtain the velocity
-    !         call corrector(M,u,v,us,vs,p,rho,dt)
-
-    !         ! print *, sum(r)
-    !         ! Interpolate the fluid velocity to the cilia
-    !         ! call initialize_velocity_cilia_array(CA)
-    !         ! call interpolate_velocity_cilia_array(M,CA,u,v)
-
-    !         ! Update the cilia node locations
-    !         ! call update_cilia_array(CA,dt)
-
-    !         print *, 'time = ', t
-            
-    !         ! Write files every 10th timestep
-    !         if (mod(it,50).eq.0) then 
-    !             call write_field(u,'u',it) 
-    !             call write_field(v,'v',it) 
-    !             ! call write_location(CA,it)
-    !         end if
-
-    !     end do
-    ! end subroutine time_loop

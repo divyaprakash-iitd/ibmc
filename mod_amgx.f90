@@ -153,28 +153,28 @@ module mod_amgx
 
         row_ptr = [row_ptr, size(val)+1]
 
-       !open(unit=85, file='L_CRS.txt', ACTION="write", STATUS="replace")
-       !do i=1,size(lap,1)
-       !    write(85, '(*(F14.7))')( real(lap(i,j)) ,j=1,size(lap,2))
-       !end do
+        !open(unit=85, file='L_CRS.txt', ACTION="write", STATUS="replace")
+        !do i=1,size(lap,1)
+        !    write(85, '(*(F14.7))')( real(lap(i,j)) ,j=1,size(lap,2))
+        !end do
        
-    !    open(unit=3, file='val.txt', action="write", status="replace")
-    !    do i=1,size(val)
-    !        write(3, '(*(f14.7))') real(val(i))
-    !    end do
-    !    close(unit=3)
+        !    open(unit=3, file='val.txt', action="write", status="replace")
+        !    do i=1,size(val)
+        !        write(3, '(*(f14.7))') real(val(i))
+        !    end do
+        !    close(unit=3)
 
-    !    open(unit=3, file='col_ind.txt', action="write", status="replace")
-    !    do i=1,size(col_ind)
-    !        write(3, '(*(f14.7))') real(col_ind(i))
-    !    end do
-    !    close(unit=3)
+        !    open(unit=3, file='col_ind.txt', action="write", status="replace")
+        !    do i=1,size(col_ind)
+        !        write(3, '(*(f14.7))') real(col_ind(i))
+        !    end do
+        !    close(unit=3)
 
-    !    open(unit=3, file='row_ptr.txt', action="write", status="replace")
-    !    do i=1,size(row_ptr)
-    !        write(3, '(*(f14.7))') real(row_ptr(i))
-    !    end do
-    !    close(unit=3)
+        !    open(unit=3, file='row_ptr.txt', action="write", status="replace")
+        !    do i=1,size(row_ptr)
+        !        write(3, '(*(f14.7))') real(row_ptr(i))
+        !    end do
+        !    close(unit=3)
         
         contains 
 
