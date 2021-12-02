@@ -86,6 +86,7 @@ module mod_amgx
         Nx = size(A,1)
         Ny = size(A,2)
 
+        write(*,*) "!----------Generating CRS Matrix-------------!"
         do j = 1,Ny
             do i = 1,Nx
                 flag = 0
