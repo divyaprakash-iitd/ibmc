@@ -91,7 +91,7 @@ program ibmc
     call cpu_time(start)
 
     ! Read input data from file
-    open(1004,file="input_params.txt",form='formatted')
+    open(1004,file="input_params.dat",form='formatted')
     READ(unit=1004,nml=grid,iostat=err)
     close(1004)
 
@@ -156,7 +156,7 @@ program ibmc
     ! originP = vec(Lx/3,2.25*Ly/3)
 
     ! Read input data from file
-    open(1004,file="input_params.txt",form='formatted')
+    open(1004,file="input_params.dat",form='formatted')
     READ(unit=1004,nml=time,iostat=err)
     READ(unit=1004,nml=flow,iostat=err)
     READ(unit=1004,nml=ciliaprop,iostat=err)
