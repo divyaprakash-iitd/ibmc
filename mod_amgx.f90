@@ -51,6 +51,7 @@ module mod_amgx
             init_status = .True.
         else
             rhsv = reshape(b,[Nx*Ny])
+            sol = reshape(x,[Nx*Ny])
             call nvtxStartRange('AmgX: Solve')
             call solve_amgx()
             call nvtxEndRange
