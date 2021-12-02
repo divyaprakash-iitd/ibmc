@@ -15,20 +15,28 @@ program ibmc
     use mod_closed_cilia
     implicit none
 
+    ! Namelists for input
+    namelist /time/ dt, it_save, tsim
+    namelist /grid/ Nx, Ny, Lx, Ly
+    namelist /flow/ nu, rho, uleft
+    namelist /ciliaprop/ nc, np, ko, kd
+    namelist /particleprop/ nparticles, radius, npparticles, kop, kod
+  
     ! Parameters
     integer(int32), parameter :: PI = 3.141592653589793
     ! Code execution time
     real(real64)    :: start, finish
     ! Computational Domain
-    real(real64)    :: Lx       = 1.0d0
+    real(real64)    :: Lx       = 5.0d0
     real(real64)    :: Ly       = 1.0d0
     ! Mesh Paramaters
-    integer(int32)  :: Nx       = 100
+    integer(int32)  :: Nx       = 500
     integer(int32)  :: Ny       = 100
     ! Simulation time Paramaters
-    real(real64)    :: tsim     = 10.0000d0
+    real(real64)    :: tsim     = 1.000d0
     real(real64)    :: dt       = 0.001d0
     real(real64)    :: t
+    integer(int32)  :: it_save  = 100
     ! Physical Constants
     real(real64)    :: nu       = 1.0d0/50.0d0
     real(real64)    :: rho      = 1.0d0
@@ -47,7 +55,7 @@ program ibmc
     real(real64), allocatable :: u(:,:), v(:,:), us(:,:), vs(:,:), R(:,:), &
                                  P(:,:), A(:,:,:), Fx(:,:), Fy(:,:)
     ! Temporary/Miscellaneous variable
-    integer(int32)  :: it, NN, il, ip
+    integer(int32)  :: it, NN, il, ip, err
     logical         :: init_status
     real(real64)    :: tp = 2.0d0 ! Time period
     real(real64)    :: Ftip = -1.0d0 ! Tip force
@@ -75,8 +83,17 @@ program ibmc
     type(cilia_array) :: CAP
     real(real64) :: radius
     type(vec) :: originP
+    real(real64) :: kop = 1.0d0
+    real(real64) :: kod = 0.50d0
+    integer(int32) :: nparticles
+    integer(int32) :: npparticles
     !---------------------- Begin Calculations ------------------------------------!
     call cpu_time(start)
+
+    ! Read input data from file
+    open(1004,file="input_params.txt",form='formatted')
+    READ(unit=1004,nml=grid,iostat=err)
+    close(1004)
 
     ! Construct and write Mesh data
     M = mesh('M',Lx,Ly,Nx,Ny)
@@ -116,9 +133,6 @@ program ibmc
     uright  = 0.0d0
     vright  = 0.0d0
 
-    ! Arrays to transfer data
-    BC = [utop,vtop,ubottom,vbottom,uleft,vleft,uright,vright]
-    FP = [nu,rho]
     
     ! Generate Laplacian matrix
     call generate_laplacian_sparse(A,M%dx,M%dy)
@@ -133,15 +147,29 @@ program ibmc
     np      = 6                     ! No. of Particles/Layer
     wbl     = Rl                    ! Width/Distance between two Layers
     dc      = 3*Rl                    ! Distance between two Cilia
-    nc      = 1                    ! Number of cilia
+    nc      = 15                    ! Number of cilia
     origin  = vec(Lx/4,0.1d0)      ! Location of the first Cilium (Bottom-Left Particle)
-
-    SP = [ko,kd,Rl,Ftip]
-
-    radius = 0.05*Lx
+    radius = 0.02*Lx
     originP = vec(Lx/9,2*Ly/3)
+    nparticles = 1
+    npparticles = 8
     ! originP = vec(Lx/3,2.25*Ly/3)
-    CAP = cilia_array(1,2,8)
+
+    ! Read input data from file
+    open(1004,file="input_params.txt",form='formatted')
+    READ(unit=1004,nml=time,iostat=err)
+    READ(unit=1004,nml=flow,iostat=err)
+    READ(unit=1004,nml=ciliaprop,iostat=err)
+    READ(unit=1004,nml=particleprop,iostat=err)
+    close(1004)
+
+    write(*,'(2(A,I8),2(A,1p1e15.6))') "Nx = ",Nx, " Ny = ",Ny, &
+    " Lx = ",Lx, " Ly = ",Ly
+    
+    write(*,'(2(A,I8),2(A,1p1e15.6))') "nc = ",nc, " np = ",np
+
+    ! Create cilia and particle arrays
+    CAP = cilia_array(npparticles,nl,npparticles)
     call create_closed_loop_array(CAP,0.5d0*radius,radius,originP)
     CA = cilia_array(nc,nl,np)
     call create_cilia_array(CA,wbl,dc,dp,origin)
@@ -157,12 +185,16 @@ program ibmc
 
     call apply_parabolic_initialization(M,u,uleft)
 
-    call time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAP,A,P,R,tsim,dt)
+    ! Arrays to transfer data
+    BC = [utop,vtop,ubottom,vbottom,uleft,vleft,uright,vright]
+    FP = [nu,rho]
+    SP = [ko,kd,Rl,Ftip]
+    call time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAP,A,P,R,tsim,dt,it_save)
 
     ! call write_location_cilia(CAP,10)
     ! call write_field(u,'u',10) 
     ! call write_field(v,'v',10) 
     call cpu_time(finish)
-    print '("Time = ",f6.3," seconds.")',finish-start
+    print '("Time = ",f15.10," seconds.")',finish-start
 
 end program ibmc
