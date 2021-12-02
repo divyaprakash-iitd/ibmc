@@ -235,7 +235,7 @@ contains
 !        end do
 !    end subroutine time_loop
 
-    subroutine time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAP,A,P,R,tsim,dt)
+    subroutine time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAP,A,P,R,tsim,dt,it_save)
         real(real64), intent(in)          :: FP(:)
         real(real64), intent(in)          :: BC(:)
         class(mesh), intent(inout)        :: M
@@ -252,7 +252,7 @@ contains
         real(real64), intent(inout)       :: R(M%xp%lb:M%xp%ub,M%yp%lb:M%yp%ub)
         real(real64), intent(in)          :: tsim
         real(real64), intent(in)          :: dt
-
+        integer(int32), intent(in)        :: it_save
         ! Intermediate cilia
         type(cilia_array) :: CAmid, CAPmid
 
@@ -531,7 +531,7 @@ contains
             
         call nvtxEndRange
             ! Write files every Nth timestep
-            if (mod(it,100).eq.0) then 
+            if (mod(it,it_save).eq.0) then 
                 call write_field(u,'u',it) 
                 call write_field(v,'v',it) 
                 call write_location_cilia(CA,it,'c')
