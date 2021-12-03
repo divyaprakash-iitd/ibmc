@@ -119,6 +119,7 @@ module mod_amgx
 
         row_ptr(Nx*Ny+1) = NNZ
         
+        write(*,*) "!-----------------Completed------------------!"
         contains 
 
         function id(ix,jy,kz)

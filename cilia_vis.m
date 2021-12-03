@@ -139,13 +139,13 @@ for iFile = 1:nFiles
         
     end
     
-    %% Plot mesh
-    mesh(xp,yp,0*xp,'FaceAlpha','0.0','EdgeColor','w','LineStyle','-','EdgeAlpha','0.25')
-    % view(90,0)
+%     %% Plot mesh
+%     mesh(xp,yp,0*xp,'FaceAlpha','0.0','EdgeColor','w','LineStyle','-','EdgeAlpha','0.25')
+%     % view(90,0)
     colorbar
     axis equal
     title(uFile(iFile).name)
-    
+%     
 %     %% Plot cilia forces
 %     subplot(2,2,2)
 %     hold on
