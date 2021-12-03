@@ -33,7 +33,8 @@ module mod_amgx
         if (init_status .eqv..False.) then
 
             call nvtxStartRange('Generate CRS matrix')
-            call generate_crs_matrix(A)
+            ! call generate_crs_matrix(A)
+            call generate_crs_matrix_fast(A)
             call nvtxEndRange
             NNZ = size(col_ind)
 
@@ -60,6 +61,91 @@ module mod_amgx
         ! Reshape the solution to a matrix
         x = reshape(sol,[Nx,Ny])
     end subroutine calculate_pressure_amgx
+
+    subroutine generate_crs_matrix_fast(A)
+       
+        real(real64), intent(in) :: A(:,:,:)
+
+        integer(int32) :: i,j,k,flag,L,R,T,B,row,col,NNZ, counter
+        real(real64) :: zero
+
+        ! Neighbours of a grid point
+        integer(int32), parameter :: BOTTOM = 1
+        integer(int32), parameter :: LEFT   = 2
+        integer(int32), parameter :: CENTER = 3
+        integer(int32), parameter :: RIGHT  = 4
+        integer(int32), parameter :: TOP    = 5
+        integer(int32), parameter :: NN     = 5
+
+        zero = 1e-14
+
+        Nx = size(A,1)
+        Ny = size(A,2)
+
+        NNZ = 0
+        do concurrent(i=1:Nx, j=1:Ny, k=1:NN)
+            if (abs(A(i,j,k)).gt.zero) then
+                NNZ = NNZ + 1
+            end if
+        end do
+
+        allocate(val(NNZ),col_ind(NNZ),row_ptr(Nx*Ny+1))
+        val = 0.0d0
+        col_ind = 0
+        row_ptr = 0
+
+        write(*,*) "!----------Generating CRS Matrix-------------!"
+        row = 1
+        counter = 1
+        do j = 1,Ny
+            do i = 1,Nx
+                flag = 1
+                do k = 1,NN
+                    if (abs(A(i,j,k)).gt.zero) then
+                        val(counter) = A(i,j,k)
+                        col_ind(counter) = id(i,j,k)
+                        if (flag.eq.1) then
+                            row_ptr(row) = counter
+                            flag = 0
+                        end if
+                        counter = counter + 1
+                    end if
+                end do 
+                row = row + 1
+            end do
+        end do
+        row_ptr = row_ptr - 1
+        col_ind = col_ind - 1        
+
+        row_ptr(Nx*Ny+1) = NNZ
+        
+        contains 
+
+        function id(ix,jy,kz)
+            integer(int32),intent(in) :: ix, jy, kz
+            integer(int32) :: id,i,j,k
+            
+            if (kz.eq.BOTTOM) then
+                i = ix
+                j = jy-1
+            elseif (kz.eq.LEFT) then
+                i = ix-1
+                j = jy
+            elseif (kz.eq.RIGHT) then
+                i = ix+1
+                j = jy
+            elseif(kz.eq.TOP) then
+                i = ix
+                j = jy+1
+            elseif(kz.eq.CENTER) then
+                i = ix
+                j = jy
+            end if
+
+            ! Elements are mapped column by column along a single row
+            id = (j-1)*Nx + i
+        end function id
+    end subroutine generate_crs_matrix_fast
 
     subroutine generate_crs_matrix(A)
        
