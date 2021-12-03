@@ -52,7 +52,7 @@ subroutine calculate_pressure_sparse(A,PIN,R)
 
     ! Pressure array with zero padding on the boundaries
     P = 0.0d0
-    PIN = 0.0d0
+    ! PIN = 0.0d0
     P(imin:imax,jmin:jmax) = PIN
 
     allocate(RSDLV(Nx*Ny))        
