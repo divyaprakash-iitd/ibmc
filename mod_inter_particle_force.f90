@@ -124,4 +124,33 @@ contains
         close(fileunit)
     end subroutine write_particle_data
 
+    subroutine calculate_inter_particle_force(cell_array)
+        class(cell), intent(inout) :: cell_array(:,:)
+
+        integer(int32) :: i, j, p, q, r
+
+        ! For every cell, we look at the (i+1,j) and (i,j+1) cells as its neighbours
+        do j = 1,size(cell_array,2)
+            do i = 1,size(cell_array,1)
+                ! Loop over every particle
+                do p = 1,cell_array(i,j)%NN
+                    do q = 1,cell_array(i,j)%NN
+                        ! Check if the particles isn't being compared against itself
+                        if (p.ne.q) then
+                            ! Check if the cilia id of the particles is same
+                           if ((cell_array(i,j)%Nlist(p)%ciliaId(2).eq.cell_array(i,j)%Nlist(q)%ciliaId(2)) & 
+                           .and.(cell_array(i,j)%Nlist(p)%ciliaId(1).ne.cell_array(i,j)%Nlist(q)%ciliaId(1))) then
+                                ! Calculate pair force and assign to the particle
+                           elseif (cell_array(i,j)%Nlist(p)%ciliaId(2).ne.cell_array(i,j)%Nlist(q)%ciliaId(2)) then
+                                ! Calculate pair force and assign to the particle
+                           elseif (cell_array(i,j)%Nlist(p)%ciliaId(2).ne.cell_array(i,j)%Nlist(q)%ciliaId(2)) then
+                           end if
+                        end if
+                    end do
+                end do 
+            end do
+        end do
+
+    end subroutine calculate_inter_particle_force
+
 end module mod_inter_particle_force
