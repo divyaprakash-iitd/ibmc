@@ -46,12 +46,19 @@ contains
 
         integer(int32) :: Nxcell, Nycell
 
-        integer(int32) :: i, j, k, q, r
+        integer(int32) :: i, j, k, q, r, t
         real(real64) :: px, py
        
         ! Check if the assumption that dim=1 is along is correct or wrong
         Nxcell = size(cell_array,1)
         Nycell = size(cell_array,2)
+
+        ! Check if cilia or particle
+        if (cilia_all%array(1)%layers(1)%t.eq.'o') then
+            t = 1 ! Open cilia or Cilia
+        elseif (cilia_all%array(1)%layers(1)%t.eq.'c') then
+            t = 2 ! Closed cilia or particle
+        end if
 
         ! Loop over the cilia arrays and sort them into the appropriate cell
         do i = 1,cilia_all%nc ! loop over the no. of cilia
@@ -73,7 +80,8 @@ contains
                                     ! Assign the particle's pointer to the Neighbour list of that cell
                                     cell_array(q,r)%Nlist(cell_array(q,r)%NN)%pptr => cilia_all%array(i)%layers(j)%boundary(k)
                                     ! Attach a cilia Id to pointer data type
-                                    cell_array(q,r)%Nlist(cell_array(q,r)%NN)%ciliaId = i 
+                                    cell_array(q,r)%Nlist(cell_array(q,r)%NN)%ciliaId(1) = t 
+                                    cell_array(q,r)%Nlist(cell_array(q,r)%NN)%ciliaId(2) = i 
                                     exit outer
                             end if
                         end do
