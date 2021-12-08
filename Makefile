@@ -8,7 +8,7 @@ OPTS = -O3 -fcheck=bounds
 #OPTS = -fast -stdpar=gpu
 #OPTS = -fast
 
-OBJECTS= ibmc.o mod_pressure.o mod_amgx.o ftn_c.o mod_dims.o mod_mesh.o mod_time.o mod_boundary.o mod_time_stepping.o mod_io.o mod_particle.o mod_ib.o mod_vec.o mod_ibm.o mod_cilia.o mod_cilia_array.o mod_closed_cilia.o nvtx.o
+OBJECTS= ibmc.o mod_pressure.o mod_amgx.o ftn_c.o mod_dims.o mod_mesh.o mod_time.o mod_boundary.o mod_time_stepping.o mod_io.o mod_particle.o mod_ib.o mod_vec.o mod_ibm.o mod_cilia.o mod_cilia_array.o mod_closed_cilia.o nvtx.o mod_cell.o mod_inter_particle_force.o
 
 LIB_DIR= -L/home/divyaprakash/wrappers/amgx_code/axb_amgx
 
@@ -28,7 +28,7 @@ mod_pressure.o: mod_pressure.f90 mod_mesh.o Makefile
 	$(FORT) -c $(OPTS) $<
 
 mod_amgx.o: mod_amgx.f90 ftn_c.o nvtx.o Makefile
-	$(FORT) -c $(OPTS) $<
+	$(FORT) -c $<
 
 ftn_c.o: ftn_c.f90 Makefile
 	$(FORT) -c $<
@@ -40,12 +40,12 @@ mod_mesh.o: mod_mesh.f90 mod_dims.o mod_vec.o Makefile
 	$(FORT) -c $<
 
 mod_time.o: mod_time.f90 mod_mesh.o Makefile
-	$(FORT) -c $<
+	$(FORT) -c $(OPTS) $<
 
 mod_boundary.o: mod_boundary.f90 mod_mesh.o Makefile
 	$(FORT) -c $<
 
-mod_time_stepping.o: mod_time_stepping.f90 mod_pressure.o mod_amgx.o mod_mesh.o mod_dims.o mod_time.o mod_boundary.o mod_io.o mod_particle.o mod_ib.o mod_vec.o mod_ibm.o mod_cilia.o mod_cilia_array.o mod_closed_cilia.o nvtx.o Makefile
+mod_time_stepping.o: mod_time_stepping.f90 mod_pressure.o mod_amgx.o mod_mesh.o mod_dims.o mod_time.o mod_boundary.o mod_io.o mod_particle.o mod_ib.o mod_vec.o mod_ibm.o mod_cilia.o mod_cilia_array.o mod_closed_cilia.o nvtx.o mod_cell.o mod_inter_particle_force.o Makefile
 	$(FORT) -c $<
 
 mod_io.o: mod_io.f90 Makefile
@@ -72,7 +72,13 @@ mod_cilia_array.o: mod_cilia_array.f90 mod_cilia.o Makefile
 mod_closed_cilia.o: mod_closed_cilia.f90 mod_mesh.o mod_ib.o mod_vec.o mod_cilia.o mod_cilia_array.o mod_ibm.o Makefile
 	$(FORT) -c $<
 
-ibmc.o: ibmc.f90 mod_pressure.o mod_amgx.o mod_mesh.o mod_dims.o mod_time.o mod_boundary.o mod_time_stepping.o mod_io.o mod_particle.o mod_ib.o mod_vec.o mod_ibm.o mod_cilia.o mod_cilia_array.o mod_closed_cilia.o Makefile
+mod_cell.o: mod_cell.f90 mod_vec.o Makefile
+	$(FORT) -c $(OPTS) $<
+
+mod_inter_particle_force.o: mod_inter_particle_force.f90 mod_mesh.o mod_cilia_array.o mod_cell.o mod_vec.o Makefile
+	$(FORT) -c $(OPTS) $<
+
+ibmc.o: ibmc.f90 mod_pressure.o mod_amgx.o mod_mesh.o mod_dims.o mod_time.o mod_boundary.o mod_time_stepping.o mod_io.o mod_particle.o mod_ib.o mod_vec.o mod_ibm.o mod_cilia.o mod_cilia_array.o mod_closed_cilia.o mod_cell.o mod_inter_particle_force.o Makefile
 	$(FORT) -c $(OPTS) $<
 
 clean:
