@@ -8,7 +8,7 @@ module mod_inter_particle_force
     implicit none
    
     private
-    public :: create_cells, assign_particles_to_cells, write_cell_data 
+    public :: create_cells, assign_particles_to_cells, write_cell_data, write_particle_data 
 contains
     subroutine create_cells(M,cell_array)
         class(mesh), intent(in) :: M
@@ -40,8 +40,8 @@ contains
 
     end subroutine create_cells
 
-    subroutine assign_particles_to_cells(cell_array,cilia_all,particles_all)
-        class(cilia_array), target, intent(in) :: cilia_all, particles_all
+    subroutine assign_particles_to_cells(cell_array,cilia_all)
+        class(cilia_array), target, intent(in) :: cilia_all
         class(cell), target, intent(inout) :: cell_array(:,:)
 
         integer(int32) :: Nxcell, Nycell
@@ -54,12 +54,12 @@ contains
         Nycell = size(cell_array,2)
 
         ! Loop over the cilia arrays and sort them into the appropriate cell
-        do i = 1,cilia_all%nc
-            do j = 1,cilia_all%array(i)%nl
-                do k = 1,cilia_all%array(i)%layers(j)%np
+        do i = 1,cilia_all%nc ! loop over the no. of cilia
+            do j = 1,cilia_all%array(i)%nl ! loop over the no. layers per cilia
+                do k = 1,cilia_all%array(i)%layers(j)%np ! loop over the no. of nodes/particles per layer
                     px = cilia_all%array(i)%layers(j)%boundary(k)%x
                     py = cilia_all%array(i)%layers(j)%boundary(k)%y
-                    print *, px, py
+                    ! print *, px, py
                     ! find a box for this particle
                     outer: do q = 1,Nxcell
                         do r = 1,Nycell
@@ -68,7 +68,7 @@ contains
                                 .and.(px.lt.(cell_array(q,r)%loc%x + cell_array(q,r)%L%x)) &
                                 .and.(py.lt.(cell_array(q,r)%loc%y + cell_array(q,r)%L%y))) then
                                     ! Increment the No. of neighbours for that cell
-                                    print *, Nxcell, Nycell
+                                    ! print *, Nxcell, Nycell
                                     cell_array(q,r)%NN = cell_array(q,r)%NN+1 
                                     ! Assign the particle's pointer to the Neighbour list of that cell
                                     cell_array(q,r)%Nlist(cell_array(q,r)%NN)%pptr => cilia_all%array(i)%layers(j)%boundary(k)
@@ -101,14 +101,16 @@ contains
     subroutine write_particle_data(cell_array)
         class(cell), intent(inout) :: cell_array(:,:)
 
-        integer(int32) :: i, j, fileunit
+        integer(int32) :: i, j, k, fileunit
 
         fileunit = 699
         open(unit=fileunit, file='cell_particles.txt', ACTION="write", STATUS="replace")
         do j = 1,size(cell_array,2)
             do i = 1,size(cell_array,1)
-            write(fileunit, '(F10.5,F10.5,F10.5,F10.5)') cell_array(i,j)%loc%x, cell_array(i,j)%loc%y,&
-                                                         cell_array(i,j)%L%x, cell_array(i,j)%L%y
+                if (cell_array(i,j)%NN.gt.0) then
+                    write(fileunit, '(*(F14.7))')( cell_array(i,j)%Nlist(k)%pptr%x , k = 1,cell_array(i,j)%NN)
+                    write(fileunit, '(*(F14.7))')( cell_array(i,j)%Nlist(k)%pptr%y , k = 1,cell_array(i,j)%NN)
+                end if
             end do
         end do
         close(fileunit)
