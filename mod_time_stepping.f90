@@ -145,6 +145,7 @@ contains
             call nvtxStartRange("Calculate cilia forces")
             call calculate_cilia_array_force(CA,ko,kd,Rl)
             call calculate_closed_loop_array_force(CAP,ko,kd,RLV,RLH,RLD)
+            ! Calculate cilia force potential
             call nvtxEndRange
             
             call nvtxStartRange("Copy cilia")
