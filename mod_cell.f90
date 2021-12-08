@@ -9,7 +9,7 @@ module mod_cell
 
     type particleptr
         type(particle), pointer :: pptr
-        integer(int32) :: ciliaId
+        integer(int32) :: ciliaId(2)
     end type particleptr
 
     type :: cell
@@ -36,6 +36,7 @@ contains
         self%NN = 0
         do i = 1,size(self%Nlist)
             nullify(self%Nlist(i)%pptr)
+            self%Nlist(i)%ciliaId = 0
         end do
     end function
 end module mod_cell
