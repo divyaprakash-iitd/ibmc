@@ -13,6 +13,8 @@ module mod_time_stepping
     use mod_cilia_array
     use mod_closed_cilia
     use nvtx
+    use mod_cell
+    use mod_inter_particle_force
     implicit none
     
 contains
@@ -61,6 +63,10 @@ contains
 
         ! Resting lengths
         real(real64) :: RLH, RLD, RLV, xm, ym, xsl, ysl
+    
+        ! Create an array of cells
+        type(cell), allocatable, target :: cell_array(:,:)
+        integer(int32) :: Nxcell, Nycell
 
         ! Calculate Resting Lengths
         ! Horizontal Link Resting Length
@@ -133,19 +139,29 @@ contains
     
         init_status = .False. ! AmgX initialization status
 
+        ! Neghbour's list computations
+        Nxcell = 7
+        Nycell = 5
+        allocate(cell_array(Nxcell,Nycell))
 
         do while (t.lt.tsim)
             call nvtxStartRange("Time Loop")
             t = t + dt
             it = it + 1
             
-            
+            ! Create cells to assign particles to it
+            call create_cells(M,cell_array)
+            ! Reinitialize the no. of particles in each cell at each time step
+            cell_array%NN = 0
+
             ! Calculate forces in the immersed boundary structure
             call nvtxStartRange("RK2:Step-1")
             call nvtxStartRange("Calculate cilia forces")
             call calculate_cilia_array_force(CA,ko,kd,Rl)
             call calculate_closed_loop_array_force(CAP,ko,kd,RLV,RLH,RLD)
             ! Calculate cilia force potential
+            call assign_particles_to_cells(cell_array,CA)
+            call assign_particles_to_cells(cell_array,CAP)
             call nvtxEndRange
             
             call nvtxStartRange("Copy cilia")
@@ -295,6 +311,8 @@ contains
                 call write_location_cilia_force(CAP,it,'p')
                 call write_location_cilia_velocity(CA,it,'c')
                 call write_location_cilia_velocity(CAP,it,'p')
+                call write_cell_data(cell_array)
+                call write_particle_data(cell_array)
             end if
 
         end do
