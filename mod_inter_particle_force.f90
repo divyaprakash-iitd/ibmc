@@ -127,7 +127,8 @@ contains
     subroutine calculate_inter_particle_force(cell_array)
         class(cell), intent(inout) :: cell_array(:,:)
 
-        integer(int32) :: i, j, p, q, r
+        integer(int32) :: i, j, p, q, m, n
+        real(real64) :: Fx, Fy
 
         ! For every cell, we look at the (i+1,j) and (i,j+1) cells as its neighbours
         do j = 1,size(cell_array,2)
@@ -137,14 +138,55 @@ contains
                     do q = 1,cell_array(i,j)%NN
                         ! Check if the particles isn't being compared against itself
                         if (p.ne.q) then
-                            ! Check if the cilia id of the particles is same
-                           if ((cell_array(i,j)%Nlist(p)%ciliaId(2).eq.cell_array(i,j)%Nlist(q)%ciliaId(2)) & 
-                           .and.(cell_array(i,j)%Nlist(p)%ciliaId(1).ne.cell_array(i,j)%Nlist(q)%ciliaId(1))) then
+                            ! Check for Cilia type
+                            if ((cell_array(i,j)%Nlist(p)%ciliaId(1).ne.cell_array(i,j)%Nlist(q)%ciliaId(1)) & 
+                            ! Check for Cilia Id
+                            .or.(cell_array(i,j)%Nlist(p)%ciliaId(2).ne.cell_array(i,j)%Nlist(q)%ciliaId(2))) then
                                 ! Calculate pair force and assign to the particle
-                           elseif (cell_array(i,j)%Nlist(p)%ciliaId(2).ne.cell_array(i,j)%Nlist(q)%ciliaId(2)) then
-                                ! Calculate pair force and assign to the particle
-                           elseif (cell_array(i,j)%Nlist(p)%ciliaId(2).ne.cell_array(i,j)%Nlist(q)%ciliaId(2)) then
-                           end if
+                                Fx = 0.0d0
+                                Fy = 0.0d0
+                                cell_array(i,j)%Nlist(p)%pptr%Fx = cell_array(i,j)%Nlist(p)%pptr%Fx + Fx 
+                                cell_array(i,j)%Nlist(p)%pptr%Fy = cell_array(i,j)%Nlist(p)%pptr%Fy + Fy
+                                Fx = -Fx 
+                                Fy = -Fy
+                                cell_array(i,j)%Nlist(q)%pptr%Fx = cell_array(i,j)%Nlist(q)%pptr%Fx + Fx 
+                                cell_array(i,j)%Nlist(q)%pptr%Fy = cell_array(i,j)%Nlist(q)%pptr%Fy + Fy
+                            end if
+                            ! Also check in neighbouring cells
+                            if ((i+1).le.size(cell_array,1)) then
+                                ! Check for Cilia type
+                                if ((cell_array(i+1,j)%Nlist(p)%ciliaId(1).ne.cell_array(i+1,j)%Nlist(q)%ciliaId(1)) & 
+                                ! Check for Cilia Id
+                                .or.(cell_array(i+1,j)%Nlist(p)%ciliaId(2).ne.cell_array(i+1,j)%Nlist(q)%ciliaId(2))) then
+                                    ! Calculate pair force and assign to the particle
+                                    Fx = 0.0d0
+                                    Fy = 0.0d0
+                                    cell_array(i+1,j)%Nlist(p)%pptr%Fx = cell_array(i+1,j)%Nlist(p)%pptr%Fx + Fx 
+                                    cell_array(i+1,j)%Nlist(p)%pptr%Fy = cell_array(i+1,j)%Nlist(p)%pptr%Fy + Fy
+                                    Fx = -Fx 
+                                    Fy = -Fy
+                                    cell_array(i+1,j)%Nlist(q)%pptr%Fx = cell_array(i+1,j)%Nlist(q)%pptr%Fx + Fx 
+                                    cell_array(i+1,j)%Nlist(q)%pptr%Fy = cell_array(i+1,j)%Nlist(q)%pptr%Fy + Fy
+                                end if
+                            end if
+
+                            if ((j+1).le.size(cell_array,2)) then
+                                ! Check for Cilia type
+                                if ((cell_array(i,j+1)%Nlist(p)%ciliaId(1).ne.cell_array(i,j+1)%Nlist(q)%ciliaId(1)) & 
+                                ! Check for Cilia Id
+                                .or.(cell_array(i,j+1)%Nlist(p)%ciliaId(2).ne.cell_array(i,j+1)%Nlist(q)%ciliaId(2))) then
+                                    ! Calculate pair force and assign to the particle
+                                    Fx = 0.0d0
+                                    Fy = 0.0d0
+                                    cell_array(i,j+1)%Nlist(p)%pptr%Fx = cell_array(i,j+1)%Nlist(p)%pptr%Fx + Fx 
+                                    cell_array(i,j+1)%Nlist(p)%pptr%Fy = cell_array(i,j+1)%Nlist(p)%pptr%Fy + Fy
+                                    Fx = -Fx 
+                                    Fy = -Fy
+                                    cell_array(i,j+1)%Nlist(q)%pptr%Fx = cell_array(i,j+1)%Nlist(q)%pptr%Fx + Fx 
+                                    cell_array(i,j+1)%Nlist(q)%pptr%Fy = cell_array(i,j+1)%Nlist(q)%pptr%Fy + Fy
+                                end if
+                            end if
+
                         end if
                     end do
                 end do 
