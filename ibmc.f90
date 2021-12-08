@@ -13,6 +13,8 @@ program ibmc
     use mod_cilia
     use mod_cilia_array
     use mod_closed_cilia
+    use mod_cell
+    use mod_inter_particle_force
     implicit none
 
     ! Namelists for input
@@ -76,17 +78,24 @@ program ibmc
     ! Cilia
     type(cilia)     :: Cil
     ! Cilia array
-    type(cilia_array) :: CA
+    type(cilia_array), target :: CA
     type(cilia_array) :: CAmid
 
     ! Closed cilia parameters
-    type(cilia_array) :: CAP
+    type(cilia_array), target :: CAP
     real(real64) :: radius
     type(vec) :: originP
     real(real64) :: kop = 1.0d0
     real(real64) :: kod = 0.50d0
     integer(int32) :: nparticles
     integer(int32) :: npparticles
+
+    ! Understanding pointers
+    type(cilia_array), pointer :: ca_pointer
+
+    ! Create an array of cells
+    type(cell), allocatable, target :: cell_array(:,:)
+    integer(int32) :: Nxcell, Nycell
     !---------------------- Begin Calculations ------------------------------------!
     call cpu_time(start)
 
@@ -170,10 +179,24 @@ program ibmc
 
     ! Create cilia and particle arrays
     CAP = cilia_array(npparticles,nl,npparticles)
+    ca_pointer => CAP
     call create_closed_loop_array(CAP,0.5d0*radius,radius,originP)
     CA = cilia_array(nc,nl,np)
     call create_cilia_array(CA,wbl,dc,dp,origin)
 
+
+    ! Neghbour's list computations
+    Nxcell = 50
+    Nycell = 10
+    allocate(cell_array(Nxcell,Nycell))
+    call create_cells(M,cell_array)
+    call assign_particles_to_cells(cell_array,CA)
+    call assign_particles_to_cells(cell_array,CAP)
+    call write_cell_data(cell_array)
+    call write_particle_data(cell_array)
+
+    ! print *, ca_pointer%array(1)%nl
+    ! stop
 
     call apply_parabolic_initialization(M,u,uleft)
 
