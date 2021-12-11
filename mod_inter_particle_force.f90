@@ -31,6 +31,7 @@ contains
         do i = 1,Nxcell
             origin%y = 0.0d0
             do j = 1,Nycell
+                cell_array(i,j)%cellId = i + (j-1)*Nxcell
                 cell_array(i,j)%loc = origin
                 cell_array(i,j)%L = L
                 origin%y= origin%y+L%y
@@ -123,6 +124,95 @@ contains
         end do
         close(fileunit)
     end subroutine write_particle_data
+
+    subroutine calculate_forces(cell_array)
+        class(cell), intent(inout) :: cell_array(:,:)
+
+        integer(int32) :: i, j, Nx, Ny
+
+        Nx = size(cell_array,1)
+        Ny = size(cell_array,2)
+
+        do j = 1,Ny
+            do i = 1,Nx
+                ! Calculate same cell forces
+                call calculate_force_neighbouring_cells(cell_array(i,j),cell_array(i,j))
+
+                ! Right
+                if ((i+1).le.Nx) then
+                    call calculate_force_neighbouring_cells(cell_array(i,j),cell_array(i+1,j))
+                end if
+                
+                ! Top
+                if ((j+1).le.Ny) then
+                    call calculate_force_neighbouring_cells(cell_array(i,j),cell_array(i,j+1))
+                end if
+
+                ! Top Right
+                if (((i+1).le.Nx).and.((j+1).le.Ny)) then
+                    call calculate_force_neighbouring_cells(cell_array(i,j),cell_array(i+1,j+1))
+                end if
+                
+                ! Top Left
+                if (((i-1).ge.1).and.((j+1).le.Ny)) then
+                    call calculate_force_neighbouring_cells(cell_array(i,j),cell_array(i-1,j+1))
+                end if
+
+            end do
+        end do
+    end subroutine calculate_forces
+
+    subroutine calculate_force_neighbouring_cells(masterC, slaveC)
+        class(cell), intent(inout) :: masterC
+        class(cell), intent(inout) :: slaveC
+
+        integer(int32) :: i, j
+        real(real64) :: xm, ym, xsl, ysl, d, Fmx, Fmy, Fslx, Fsly, dcutoff, k
+
+        ! Spring constants
+        k = 0.1
+
+        ! Cut-off distnace
+        dcutoff = 0.01
+
+        do i = 1,masterC%NN
+                ! Master particle location
+                xm = masterC%Nlist(i)%pptr%x
+                ym = masterC%Nlist(i)%pptr%y
+            do j = 1,slaveC%NN
+                ! Check for cilia type
+                if (masterC%Nlist(i)%ciliaId(1).ne.slaveC%Nlist(j)%ciliaId(1) &
+                ! Check for cilia Id    
+                .or.(masterC%Nlist(i)%ciliaId(2).ne.slaveC%Nlist(j)%ciliaId(2))) then 
+                    ! Calculate the distance between the two particles
+
+                    ! Slave particle location
+                    xsl = slaveC%Nlist(j)%pptr%x
+                    ysl = slaveC%Nlist(j)%pptr%y
+
+                    ! Calculate the distance between the master and cell particle
+                    d = norm2([(xsl-xm),(ysl-ym)])
+
+                    ! Check for cut-off distance
+                    if (abs(d).le.dcutoff) then
+                        ! Calculate forces (Master particle)
+                        Fmx = k*(1.0d0-dcutoff/d)*(xsl-xm)
+                        Fmy = k*(1.0d0-dcutoff/d)*(ysl-ym)
+                        ! Calculate forces (Slave particle)
+                        Fslx = -Fmx
+                        Fsly = -Fmy
+                        ! Assign the forces to the respective pointers
+                        ! Master cell pointers
+                        masterC%Nlist(i)%pptr%Fx = masterC%Nlist(i)%pptr%Fx + Fmx
+                        masterC%Nlist(i)%pptr%Fy = masterC%Nlist(i)%pptr%Fy + Fmy
+                        ! Slave cell pointers
+                        slaveC%Nlist(j)%pptr%Fx = slaveC%Nlist(j)%pptr%Fx + Fslx
+                        slaveC%Nlist(j)%pptr%Fy = slaveC%Nlist(j)%pptr%Fy + Fsly
+                    end if
+                end if                
+            end do
+        end do
+    end subroutine calculate_force_neighbouring_cells
 
     subroutine calculate_inter_particle_force(cell_array)
         class(cell), intent(inout) :: cell_array(:,:)
