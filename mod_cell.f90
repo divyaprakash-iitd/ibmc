@@ -16,7 +16,8 @@ module mod_cell
         type(vec)                           :: loc                  ! Location of the Bottom-Left point
         type(vec)                           :: L                    ! Dimension of the square cell
         type(particleptr)                   :: Nlist(50)    ! Pointers of all the particles in a cell
-        integer(int32)                      :: NN ! No. of particles in the cell 
+        integer(int32)                      :: NN ! No. of particles in the cell
+        integer(int32)                      :: cellId 
     end type 
 
     interface cell
@@ -34,6 +35,7 @@ contains
         self%L%x = 0.0d0
         self%L%y = 0.0d0
         self%NN = 0
+        self%cellId = 0
         do i = 1,size(self%Nlist)
             nullify(self%Nlist(i)%pptr)
             self%Nlist(i)%ciliaId = 0
