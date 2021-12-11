@@ -29,7 +29,7 @@ contains
         integer(int32) :: np, inp
 
         np = size(B%boundary)
-        do concurrent (inp = 1:np)
+        do inp = 1,np
             ! To-do: Implement some function defining a structure
             ! Location
             B%boundary(inp)%x = 0.0d0
