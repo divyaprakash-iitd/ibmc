@@ -140,30 +140,37 @@ contains
         init_status = .False. ! AmgX initialization status
 
         ! Neghbour's list computations
-        Nxcell = 7
-        Nycell = 5
+        Nxcell = 10
+        Nycell = 10
         allocate(cell_array(Nxcell,Nycell))
+        ! Create cells to assign particles to it
+        call create_cells(M,cell_array)
 
         do while (t.lt.tsim)
             call nvtxStartRange("Time Loop")
             t = t + dt
             it = it + 1
             
-            ! Create cells to assign particles to it
-            call create_cells(M,cell_array)
-            ! Reinitialize the no. of particles in each cell at each time step
-            cell_array%NN = 0
-
             ! Calculate forces in the immersed boundary structure
             call nvtxStartRange("RK2:Step-1")
-            call nvtxStartRange("Calculate cilia forces")
-            call calculate_cilia_array_force(CA,ko,kd,Rl)
-            call calculate_closed_loop_array_force(CAP,ko,kd,RLV,RLH,RLD)
-            ! Calculate cilia force potential
+            
+            call nvtxStartRange("Assign particles to cells")
+            ! Reinitialize the no. of particles before assignment
+            cell_array%NN = 0
+            ! Assign particles to cells
             call assign_particles_to_cells(cell_array,CA)
             call assign_particles_to_cells(cell_array,CAP)
             call nvtxEndRange
+           
+            call nvtxStartRange("Calculate cilia forces")
+            call calculate_cilia_array_force(CA,ko,kd,Rl)
+            call calculate_closed_loop_array_force(CAP,ko,kd,RLV,RLH,RLD)
+            call nvtxEndRange
             
+            call nvtxStartRange("Calculate inter-particle forces")
+            call calculate_forces(cell_array)
+            call nvtxEndRange
+           
             call nvtxStartRange("Copy cilia")
             call copy_cilia(CA,CAmid)
             call copy_cilia(CAP,CAPmid)
@@ -175,7 +182,6 @@ contains
             call apply_boundary_channel(M,u,v,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
             call apply_parabolic_inlet(M,u,uleft)
             call nvtxEndRange
-
         
             call nvtxStartRange("Spread Forces")
             ! Spread force from the immersed boundary
@@ -228,16 +234,30 @@ contains
             ! Update the Immersed Boundary
             call update_cilia_array(CAmid,dt/2)
             call update_cilia_array(CAPmid,dt/2)
-            call nvtxEndRange
+            call nvtxEndrange
+
 
             call nvtxEndRange
             ! RK2: Step 2
             
             call nvtxStartRange("RK2:Step-2")
+            
+            call nvtxStartRange("Assign particles to cells")
+            ! Reinitialize the no. of particles before assignment
+            cell_array%NN = 0
+            ! Assign particles to cells
+            call assign_particles_to_cells(cell_array,CAmid)
+            call assign_particles_to_cells(cell_array,CAPmid)
+            call nvtxEndRange
+            
             ! Calculate forces in the immersed boundary structure
             call nvtxStartRange("Calculate cilia forces")
             call calculate_cilia_array_force(CAmid,ko,kd,Rl)
             call calculate_closed_loop_array_force(CAPmid,ko,kd,RLV,RLH,RLD)
+            call nvtxEndRange
+            
+            call nvtxStartRange("Calculate inter-particle forces")
+            call calculate_forces(cell_array)
             call nvtxEndRange
 
             call nvtxStartRange("Apply BC")
