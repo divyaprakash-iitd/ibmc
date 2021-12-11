@@ -32,7 +32,7 @@ contains
         ! Initializes particles in each Immersed Boundary(IB) layer
         self%np = np
         self%t = 'o' ! Open by default
-        do concurrent (i = 1:np)
+        do i = 1,np
             self%boundary(i) = particle()
         end do
 
