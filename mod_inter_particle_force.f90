@@ -8,7 +8,7 @@ module mod_inter_particle_force
     implicit none
    
     private
-    public :: create_cells, assign_particles_to_cells, write_cell_data, write_particle_data 
+    public :: create_cells, assign_particles_to_cells, write_cell_data, write_particle_data, calculate_forces 
 contains
     subroutine create_cells(M,cell_array)
         class(mesh), intent(in) :: M
@@ -128,33 +128,33 @@ contains
     subroutine calculate_forces(cell_array)
         class(cell), intent(inout) :: cell_array(:,:)
 
-        integer(int32) :: i, j, Nx, Ny
+        integer(int32) :: i, j, NNx, NNy
 
-        Nx = size(cell_array,1)
-        Ny = size(cell_array,2)
+        NNx = size(cell_array,1)
+        NNy = size(cell_array,2)
 
-        do j = 1,Ny
-            do i = 1,Nx
-                ! Calculate same cell forces
+        do j = 1,NNy
+            do i = 1,NNx
+                ! ! Calculate same cell forces
                 call calculate_force_neighbouring_cells(cell_array(i,j),cell_array(i,j))
 
                 ! Right
-                if ((i+1).le.Nx) then
+                if ((i+1).le.NNx) then
                     call calculate_force_neighbouring_cells(cell_array(i,j),cell_array(i+1,j))
                 end if
                 
                 ! Top
-                if ((j+1).le.Ny) then
+                if ((j+1).le.NNy) then
                     call calculate_force_neighbouring_cells(cell_array(i,j),cell_array(i,j+1))
                 end if
 
                 ! Top Right
-                if (((i+1).le.Nx).and.((j+1).le.Ny)) then
+                if (((i+1).le.NNx).and.((j+1).le.NNy)) then
                     call calculate_force_neighbouring_cells(cell_array(i,j),cell_array(i+1,j+1))
                 end if
                 
                 ! Top Left
-                if (((i-1).ge.1).and.((j+1).le.Ny)) then
+                if (((i-1).ge.1).and.((j+1).le.NNy)) then
                     call calculate_force_neighbouring_cells(cell_array(i,j),cell_array(i-1,j+1))
                 end if
 
@@ -175,6 +175,7 @@ contains
         ! Cut-off distnace
         dcutoff = 0.01
 
+
         do i = 1,masterC%NN
                 ! Master particle location
                 xm = masterC%Nlist(i)%pptr%x
@@ -186,6 +187,7 @@ contains
                 .or.(masterC%Nlist(i)%ciliaId(2).ne.slaveC%Nlist(j)%ciliaId(2))) then 
                     ! Calculate the distance between the two particles
 
+                    ! print *, masterC%NN
                     ! Slave particle location
                     xsl = slaveC%Nlist(j)%pptr%x
                     ysl = slaveC%Nlist(j)%pptr%y
@@ -196,11 +198,17 @@ contains
                     ! Check for cut-off distance
                     if (abs(d).le.dcutoff) then
                         ! Calculate forces (Master particle)
-                        Fmx = k*(1.0d0-dcutoff/d)*(xsl-xm)
-                        Fmy = k*(1.0d0-dcutoff/d)*(ysl-ym)
+                        if (((xsl-xm).lt.1e-10).and.((ysl-ym).lt.1e-10)) then
+                            Fmx = 0.0d0
+                            Fmy = 0.0d0
+                        else
+                            Fmx = k*(1.0d0-dcutoff/d)*(xsl-xm)
+                            Fmy = k*(1.0d0-dcutoff/d)*(ysl-ym)
+                        end if
                         ! Calculate forces (Slave particle)
                         Fslx = -Fmx
                         Fsly = -Fmy
+                        ! print *, xsl-xm
                         ! Assign the forces to the respective pointers
                         ! Master cell pointers
                         masterC%Nlist(i)%pptr%Fx = masterC%Nlist(i)%pptr%Fx + Fmx
