@@ -158,8 +158,9 @@ program ibmc
     dc      = 3*Rl                    ! Distance between two Cilia
     nc      = 15                    ! Number of cilia
     origin  = vec(Lx/4,0.1d0)      ! Location of the first Cilium (Bottom-Left Particle)
-    radius = 0.02*Lx
-    originP = vec(Lx/9,2*Ly/3)
+    radius = 0.04*Lx
+    ! originP = vec(Lx/9,2*Ly/3)
+    originP = vec(0.55,0.42)
     nparticles = 1
     npparticles = 8
     ! originP = vec(Lx/3,2.25*Ly/3)
