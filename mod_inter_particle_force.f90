@@ -32,8 +32,10 @@ contains
             origin%y = 0.0d0
             do j = 1,Nycell
                 cell_array(i,j)%cellId = i + (j-1)*Nxcell
-                cell_array(i,j)%loc = origin
-                cell_array(i,j)%L = L
+                cell_array(i,j)%loc%x = origin%x
+                cell_array(i,j)%loc%y = origin%y
+                cell_array(i,j)%L%x = L%x
+                cell_array(i,j)%L%y = L%y
                 origin%y= origin%y+L%y
             end do
             origin%x = origin%x+L%x
@@ -173,7 +175,7 @@ contains
         k = 0.1
 
         ! Cut-off distnace
-        dcutoff = 0.01
+        dcutoff = 0.1
 
 
         do i = 1,masterC%NN
