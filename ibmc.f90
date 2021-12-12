@@ -158,9 +158,10 @@ program ibmc
     dc      = 3*Rl                    ! Distance between two Cilia
     nc      = 15                    ! Number of cilia
     origin  = vec(Lx/4,0.1d0)      ! Location of the first Cilium (Bottom-Left Particle)
+    ! origin  = vec(Lx/2,0.1d0)      ! Location of the first Cilium (Bottom-Left Particle)
     radius = 0.04*Lx
     ! originP = vec(Lx/9,2*Ly/3)
-    originP = vec(0.55,0.42)
+    originP = vec(0.55,0.4)
     nparticles = 1
     npparticles = 8
     ! originP = vec(Lx/3,2.25*Ly/3)
@@ -179,7 +180,7 @@ program ibmc
     write(*,'(2(A,I8),2(A,1p1e15.6))') "nc = ",nc, " np = ",np
 
     ! Create cilia and particle arrays
-    CAP = cilia_array(npparticles,nl,npparticles)
+    CAP = cilia_array(nparticles,nl,npparticles)
     ca_pointer => CAP
     call create_closed_loop_array(CAP,0.5d0*radius,radius,originP)
     CA = cilia_array(nc,nl,np)
