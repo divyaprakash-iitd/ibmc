@@ -53,15 +53,16 @@ nlayers = 2*ncilia; % Total number of layers across all cilia
 % Total number of files (Same for velocity components, cilia and particles)
 nFiles = length(uFile);
 
-
 % Visualize cilia motion over velocity field
 colormap(jet)
-vid = VideoWriter('ibm.avi','Uncompressed AVI');
+vid = VideoWriter('ibm_part3.avi','Uncompressed AVI');
 open(vid);
 figure(1)
 fig = gcf;
 fig.Position = [1 1 1920 961];
-for iFile = 1:nFiles
+
+%nFiles = 800;
+for iFile = 1:5:nFiles
     %subplot(2,2,1)
     hold on
     
@@ -73,6 +74,15 @@ for iFile = 1:nFiles
     umag = sqrt(uc.^2+vc.^2);
     
     contourf(xp,yp,umag,50,'edgecolor','none')
+    
+    cell_data = load('cell.txt');
+
+%     % Plot the cells
+%     %hold on
+%     for i = 1:size(cell_data,1) % No. of rows/entries
+%         rectangle('Position',cell_data(i,:))
+%     end
+
     
     %% Plot cilia
     cilia = load(ciliaFile(iFile).name);
@@ -203,7 +213,7 @@ for iFile = 1:nFiles
 %     pause(0.5)
     writeVideo(vid,getframe(gca));
     if iFile ~= nFiles
-        clf
+%         clf
     end
 end
 close(vid)
