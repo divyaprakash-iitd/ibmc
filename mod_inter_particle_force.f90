@@ -78,13 +78,12 @@ contains
                                 .and.(px.lt.(cell_array(q,r)%loc%x + cell_array(q,r)%L%x)) &
                                 .and.(py.lt.(cell_array(q,r)%loc%y + cell_array(q,r)%L%y))) then
                                     ! Increment the No. of neighbours for that cell
-                                    ! print *, Nxcell, Nycell
                                     cell_array(q,r)%NN = cell_array(q,r)%NN+1 
                                     ! Assign the particle's pointer to the Neighbour list of that cell
                                     cell_array(q,r)%Nlist(cell_array(q,r)%NN)%pptr => cilia_all%array(i)%layers(j)%boundary(k)
                                     ! Attach a cilia Id to pointer data type
                                     cell_array(q,r)%Nlist(cell_array(q,r)%NN)%ciliaId(1) = t 
-                                    cell_array(q,r)%Nlist(cell_array(q,r)%NN)%ciliaId(2) = i 
+                                    cell_array(q,r)%Nlist(cell_array(q,r)%NN)%ciliaId(2) = i
                                     exit outer
                             end if
                         end do
