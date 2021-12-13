@@ -83,10 +83,14 @@ module mod_amgx
         Ny = size(A,2)
 
         NNZ = 0
-        do concurrent(i=1:Nx, j=1:Ny, k=1:NN)
-            if (abs(A(i,j,k)).gt.zero) then
-                NNZ = NNZ + 1
-            end if
+        do i=1,Nx
+            do j=1,Ny
+                do k=1,NN
+                    if (abs(A(i,j,k)).gt.zero) then
+                        NNZ = NNZ + 1
+                    end if
+                end do
+            end do
         end do
 
         allocate(val(NNZ),col_ind(NNZ),row_ptr(Nx*Ny+1))
