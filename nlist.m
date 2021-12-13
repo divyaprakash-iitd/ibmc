@@ -16,8 +16,12 @@ p_data = dlmread('cell_particles.txt');
 p_data(p_data==0) = nan;
 
 % Plot the particlesplot()
-for i = 1:2:size(p_data,1) % No. of rows in the cilia file
+nrows = size(p_data,1);
+cm = lines(nrows);
+for i = 1:2:nrows % No. of rows in the cilia file
     px = p_data(i,:); % Read x-coordinates
     py = p_data(i+1,:); % Read y-coordinates
-    plot(px,py,'*','linewidth',3,'Markersize',5) 
+    plot(px,py,'.','color',cm(i,:),'linewidth',3,'Markersize',20) 
 end
+
+axis equal off
