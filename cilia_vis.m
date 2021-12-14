@@ -55,13 +55,15 @@ nFiles = length(uFile);
 
 % Visualize cilia motion over velocity field
 colormap(jet)
-vid = VideoWriter('ibm_part3.avi','Uncompressed AVI');
-open(vid);
+%vid = VideoWriter('ibm.avi','Uncompressed AVI');
+%open(vid);
 figure(1)
 fig = gcf;
-fig.Position = [1 1 1920 961];
+fig.Visible = 'off';
+%fig.Position = [1 1 1920 961];
 
 %nFiles = 800;
+image_num = 1;
 for iFile = 1:5:nFiles
     %subplot(2,2,1)
     hold on
@@ -73,9 +75,9 @@ for iFile = 1:5:nFiles
     [uc,vc] = cellcenter(uc,vc,u,v,Nx,Ny);
     umag = sqrt(uc.^2+vc.^2);
     
-    contourf(xp,yp,umag,50,'edgecolor','none')
+    contourf(xp,yp,umag,20,'edgecolor','none')
     
-    cell_data = load('cell.txt');
+%     cell_data = load('cell.txt');
 
 %     % Plot the cells
 %     %hold on
@@ -211,12 +213,16 @@ for iFile = 1:5:nFiles
     title(uFile(iFile).name)
     
 %     pause(0.5)
-    writeVideo(vid,getframe(gca));
+    %writeVideo(vid,getframe(gca));
+    filename = sprintf('images/cil_img_%010d.png',image_num)
+    fig.Position = [1 1 1920 961];
+    exportgraphics(fig,filename,'Resolution',100);
+    image_num = image_num + 1;
     if iFile ~= nFiles
-%         clf
+         %clf
     end
 end
-close(vid)
+%close(vid)
 
 % Function to convert staggered velocity to cell-centered velocity
 function [uc,vc] = cellcenter(uc,vc,u,v,Nx,Ny)
