@@ -45,6 +45,42 @@ contains
 
     end subroutine create_closed_loop
    
+    subroutine create_closed_loop_ellipse(C,W,r,origin)
+        class(cilia),   intent(in out)    :: C
+        class(vec),     intent(in)        :: origin
+        real(real64),   intent(in)        :: W          ! Width of cilia
+        real(real64),   intent(in)        :: r          ! Radius of the loop
+
+        real(real64)    :: dtheta   ! Spacing of particles in the closed loop
+        integer(int32)  :: nl       ! No. of layers
+        integer(int32)  :: np       ! No. of particle
+
+        integer(int32) :: il,ip
+
+        real(real64) :: a, b
+
+        ! Semi-minor and semi-major axis
+        a = 2*r
+        b = r    
+
+        ! Assign values
+        nl = C%nl
+        np = C%np
+
+        ! Calculate angular spacing
+        dtheta = 2*PI/np
+
+        ! Assign locations to the particles of the cilia
+        do il = 1,nl
+            c%layers(il)%t = 'c' ! Closed boundary type
+            do ip = 1,np 
+                c%layers(il)%boundary(ip)%x = origin%x + (a - W*(il-1)) * cos((ip-1)*dtheta)
+                c%layers(il)%boundary(ip)%y = origin%y + (b - W*(il-1)) * sin((ip-1)*dtheta)
+            end do
+        end do
+
+    end subroutine create_closed_loop_ellipse
+
     subroutine create_closed_loop_array(CA,W,r,origin)
         class(cilia_array),   intent(in out)    :: CA
         class(vec),     intent(in)        :: origin
@@ -55,7 +91,8 @@ contains
 
         ! Assign locations to the particles of the cilia
         do ic = 1,CA%nc
-            call create_closed_loop(CA%array(ic),W,r,origin)
+            ! call create_closed_loop(CA%array(ic),W,r,origin)
+            call create_closed_loop_ellipse(CA%array(ic),W,r,origin)
         end do
     end subroutine create_closed_loop_array
 
