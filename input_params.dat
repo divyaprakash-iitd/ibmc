@@ -16,7 +16,7 @@ Ny  = 100/         ! Number of points in y direction
 !***********************************
 !*** Parameters related to flow
 !***********************************
-&flow,
+&flow
 nu      = 0.1,     ! Kinematic viscosity
 rho     = 1,        ! Density
 uleft   = 0.05/      ! Inlet velocity
