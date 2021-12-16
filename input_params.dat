@@ -33,7 +33,7 @@ kd  = 0.5/         ! Spring-stiffness constant for non-orthogonal links
 !***********************************
 &particleprop
 nparticles  = 1,        ! Number of particle
-radius      = 0.2,     ! Radius of particle
-npparticles = 8,        ! Number of nodes in each layer of particle
-kop         = 1.0,      ! Spring-stiffness constant for orthogonal links
-kdp         = 0.5/      ! Spring-stiffness constant for non-orthogonal links
+radius      = 0.1,     ! Radius of particle
+npparticles = 20,        ! Number of nodes in each layer of particle
+kop         = 5.0,      ! Spring-stiffness constant for orthogonal links
+kdp         = 2.5/      ! Spring-stiffness constant for non-orthogonal links

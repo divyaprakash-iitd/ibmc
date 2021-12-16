@@ -59,12 +59,12 @@ colormap(jet)
 %open(vid);
 figure(1)
 fig = gcf;
-fig.Visible = 'off';
+%fig.Visible = 'off';
 %fig.Position = [1 1 1920 961];
 
 %nFiles = 800;
 image_num = 1;
-for iFile = 1:5:nFiles
+for iFile = 1:nFiles
     %subplot(2,2,1)
     hold on
     
