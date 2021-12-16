@@ -5,6 +5,7 @@ module mod_ibm
     use mod_vec
     use mod_cilia
     use mod_cilia_array
+    use mod_particle
     implicit none
    
     real(real64), parameter :: PI = 3.141592653589793
@@ -626,6 +627,7 @@ contains
 
         real(real64) :: Fmx, Fslx, Fmy, Fsly ! Forces (Master(m) and Slave(sl) node)
         real(real64) :: xm, xsl, ym, ysl ! Location of master and slave nodes
+        type(vec) :: F
 
         ! Original resting length
         real(real64)   :: Rl   ! Resting length
@@ -648,39 +650,12 @@ contains
                 slave = master+1
             end if
             
-            ! Calculate the original spacing between the particles
-            ! Master node location
-            xm = B%boundary(master)%xo
-            ym = B%boundary(master)%yo
-
-            ! Slave node location
-            xsl = B%boundary(slave)%xo
-            ysl = B%boundary(slave)%yo
-
-            ! Calculate distance between master and slave nodes
-            Rl = norm2([(xsl-xm),(ysl-ym)])
-
-            ! Calculate the current spacing between particles
-            ! Master node location
-            xm = B%boundary(master)%x
-            ym = B%boundary(master)%y
-
-            ! Slave node location
-            xsl = B%boundary(slave)%x
-            ysl = B%boundary(slave)%y
-
-            ! Calculate distance between master and slave nodes
-            d = norm2([(xsl-xm),(ysl-ym)])
-           
-            ! print *, 'delta = ', Rl-d 
-            ! print *, 'Rl =', Rl
-            ! print *, 'd =', d
-            ! print *, 'DD = ', (ysl-ym)
-
+            ! Calculate the spring force between master and slave nodes
+            F = spring_force(B%boundary(master),B%boundary(slave),ko)
 
             ! Calculate forces (Master node)
-            Fmx = ko*(1.0d0-Rl/d)*(xsl-xm)
-            Fmy = ko*(1.0d0-Rl/d)*(ysl-ym)
+            Fmx = F%x
+            Fmy = F%y
 
             ! Calculate forces (Slave node)
             Fslx = -Fmx
@@ -1342,5 +1317,41 @@ contains
         end do
 
     end subroutine store_original_locations
-   
+
+    function spring_force(master,slave,k) result(F)
+        class(particle), intent(in) :: master, slave
+        real(real64), intent(in) :: k
+
+        type(vec) :: F
+        real(real64) :: xm,ym,xsl,ysl,Rl,d 
+        
+        ! Calculate the original spacing between the particles
+        ! Master node location
+        xm = master%xo
+        ym = master%yo
+
+        ! Slave node location
+        xsl = slave%xo
+        ysl = slave%yo
+
+        ! Calculate distance between master and slave nodes
+        Rl = norm2([(xsl-xm),(ysl-ym)])
+
+        ! Calculate the current spacing between particles
+        ! Master node location
+        xm = master%x
+        ym = master%y
+
+        ! Slave node location
+        xsl = slave%x
+        ysl = slave%y
+
+        ! Calculate distance between master and slave nodes
+        d = norm2([(xsl-xm),(ysl-ym)])
+        
+        ! Calculate forces (Master node)
+        F%x = k*(1.0d0-Rl/d)*(xsl-xm)
+        F%y = k*(1.0d0-Rl/d)*(ysl-ym)
+    end function spring_force
+
 end module mod_ibm
