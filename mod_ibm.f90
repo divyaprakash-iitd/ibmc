@@ -622,15 +622,10 @@ contains
 
         integer(int32)  :: np   ! Number of nodes/particle
         integer(int32)  :: lastp ! Last particle while calculating forces
-        integer(int32)  :: inp, master, slave  ! Indices
-        real(real64)    :: d    ! Distance between two nodes
+        integer(int32)  :: master, slave  ! Indices
 
-        real(real64) :: Fmx, Fslx, Fmy, Fsly ! Forces (Master(m) and Slave(sl) node)
-        real(real64) :: xm, xsl, ym, ysl ! Location of master and slave nodes
         type(vec) :: F
 
-        ! Original resting length
-        real(real64)   :: Rl   ! Resting length
         ! Count the number of nodes/particles in the immersed boundary
         np = size(B%boundary)
 
@@ -653,21 +648,13 @@ contains
             ! Calculate the spring force between master and slave nodes
             F = spring_force(B%boundary(master),B%boundary(slave),ko)
 
-            ! Calculate forces (Master node)
-            Fmx = F%x
-            Fmy = F%y
-
-            ! Calculate forces (Slave node)
-            Fslx = -Fmx
-            Fsly = -Fmy
-
             ! Assign fores to master node
-            B%boundary(master)%Fx = B%boundary(master)%Fx + Fmx
-            B%boundary(master)%Fy = B%boundary(master)%Fy + Fmy
+            B%boundary(master)%Fx = B%boundary(master)%Fx + F%x
+            B%boundary(master)%Fy = B%boundary(master)%Fy + F%y
 
             ! Assign forces to slave node
-            B%boundary(slave)%Fx = B%boundary(slave)%Fx + Fslx
-            B%boundary(slave)%Fy = B%boundary(slave)%Fy + Fsly
+            B%boundary(slave)%Fx = B%boundary(slave)%Fx - F%x
+            B%boundary(slave)%Fy = B%boundary(slave)%Fy - F%y
         end do
 
     end subroutine calculate_spring_force
@@ -863,59 +850,26 @@ contains
 
         integer(int32)  :: np   ! Number of nodes/particle
         integer(int32)  :: ip   ! Indices
-        real(real64)    :: d    ! Distance between two nodes
 
-        real(real64) :: Fmx, Fslx, Fmy, Fsly ! Forces (Master(m) and Slave(sl) node)
-        real(real64) :: xm, xsl, ym, ysl ! Location of master and slave nodes
-
-        ! Original resting length
-        real(real64)   :: Rl   ! Resting length
-
+        type(vec) :: F
 
         ! Count the number of nodes/particles in the immersed boundary layers
         ! (Assuming both the layers have the same number of particles)
-        np = size(masterL%boundary)
+        ! np = size(masterL%boundary)
+        np = masterL%np
 
         do ip = 1,np
-            ! Calculate the original spcing between particles
-            ! Master node location
-            xm = masterL%boundary(ip)%xo
-            ym = masterL%boundary(ip)%yo
 
-            ! Slave node location
-            xsl = slaveL%boundary(ip)%xo
-            ysl = slaveL%boundary(ip)%yo
-
-            ! Calculate distance between master and slave nodes
-            Rl = norm2([(xsl-xm),(ysl-ym)])
-            
-            ! Calculate the current spcing between particles
-            ! Master node location
-            xm = masterL%boundary(ip)%x
-            ym = masterL%boundary(ip)%y
-
-            ! Slave node location
-            xsl = slaveL%boundary(ip)%x
-            ysl = slaveL%boundary(ip)%y
-
-            ! Calculate distance between master and slave nodes
-            d = norm2([(xsl-xm),(ysl-ym)])
-            
-            ! Calculate forces (Master node)
-            Fmx = ks*(1.0d0-Rl/d)*(xsl-xm)
-            Fmy = ks*(1.0d0-Rl/d)*(ysl-ym)
-
-            ! Calculate forces (Slave node)
-            Fslx = -Fmx
-            Fsly = -Fmy
+            ! Calculate the spring force between master and slave nodes
+            F = spring_force(masterL%boundary(ip),slaveL%boundary(ip),ks)
 
             ! Assign fores to master node
-            masterL%boundary(ip)%Fx = masterL%boundary(ip)%Fx + Fmx
-            masterL%boundary(ip)%Fy = masterL%boundary(ip)%Fy + Fmy
+            masterL%boundary(ip)%Fx = masterL%boundary(ip)%Fx + F%x
+            masterL%boundary(ip)%Fy = masterL%boundary(ip)%Fy + F%y
 
             ! Assign forces to slave node
-            slaveL%boundary(ip)%Fx = slaveL%boundary(ip)%Fx + Fslx
-            slaveL%boundary(ip)%Fy = slaveL%boundary(ip)%Fy + Fsly
+            slaveL%boundary(ip)%Fx = slaveL%boundary(ip)%Fx - F%x
+            slaveL%boundary(ip)%Fy = slaveL%boundary(ip)%Fy - F%y
         end do
 
     end subroutine calculate_horizontal_link_force
@@ -927,62 +881,29 @@ contains
 
         integer(int32)  :: np   ! Number of nodes/particle
         integer(int32)  :: ip, master, slave   ! Indices
-        real(real64)    :: d    ! Distance between two nodes
 
-        real(real64) :: Fmx, Fslx, Fmy, Fsly ! Forces (Master(m) and Slave(sl) node)
-        real(real64) :: xm, xsl, ym, ysl ! Location of master and slave nodes
-
-        ! Original resting length
-        real(real64)   :: Rl   ! Resting length
+        type(vec) :: F
 
         ! Count the number of nodes/particles in the immersed boundary layers
         ! (Assuming both the layers have the same number of particles)
-        np = size(masterL%boundary)
+        ! np = size(masterL%boundary)
+        np = masterL%np
 
         ! Calculates for negative slope diagonal links
         do ip = 2,np
             master = ip
             slave = master - 1
 
-            ! Calculate the original spacing between the particles
-            ! Master node location
-            xm = masterL%boundary(master)%xo
-            ym = masterL%boundary(master)%yo
-
-            ! Slave node location
-            xsl = slaveL%boundary(slave)%xo
-            ysl = slaveL%boundary(slave)%yo
-
-            ! Calculate distance between master and slave nodes
-            Rl = norm2([(xsl-xm),(ysl-ym)])
+            ! Calculate the spring force between master and slave nodes
+            F = spring_force(masterL%boundary(master),slaveL%boundary(slave),kd)
             
-            ! Calculate the current spacing between the particles
-            ! Master node location
-            xm = masterL%boundary(master)%x
-            ym = masterL%boundary(master)%y
-
-            ! Slave node location
-            xsl = slaveL%boundary(slave)%x
-            ysl = slaveL%boundary(slave)%y
-
-            ! Calculate distance between master and slave nodes
-            d = norm2([(xsl-xm),(ysl-ym)])
-            
-            ! Calculate forces (Master node)
-            Fmx = kd*(1.0d0-Rl/d)*(xsl-xm)
-            Fmy = kd*(1.0d0-Rl/d)*(ysl-ym)
-
-            ! Calculate forces (Slave node)
-            Fslx = -Fmx
-            Fsly = -Fmy
-
             ! Assign fores to master node
-            masterL%boundary(master)%Fx = masterL%boundary(master)%Fx + Fmx
-            masterL%boundary(master)%Fy = masterL%boundary(master)%Fy + Fmy
+            masterL%boundary(master)%Fx = masterL%boundary(master)%Fx + F%x
+            masterL%boundary(master)%Fy = masterL%boundary(master)%Fy + F%y
 
             ! Assign forces to slave node
-            slaveL%boundary(slave)%Fx = slaveL%boundary(slave)%Fx + Fslx
-            slaveL%boundary(slave)%Fy = slaveL%boundary(slave)%Fy + Fsly
+            slaveL%boundary(slave)%Fx = slaveL%boundary(slave)%Fx - F%x
+            slaveL%boundary(slave)%Fy = slaveL%boundary(slave)%Fy - F%y
         end do
 
         ! For closed loop cilia
@@ -991,45 +912,16 @@ contains
             master = 1
             slave = np
 
-            ! Calculate the original spacing between the particles
-            ! Master node location
-            xm = masterL%boundary(master)%xo
-            ym = masterL%boundary(master)%yo
-
-            ! Slave node location
-            xsl = slaveL%boundary(slave)%xo
-            ysl = slaveL%boundary(slave)%yo
-
-            ! Calculate distance between master and slave nodes
-            RL = norm2([(xsl-xm),(ysl-ym)])
-            
-            ! Calculate the current spacing between the particles
-            ! Master node location
-            xm = masterL%boundary(master)%x
-            ym = masterL%boundary(master)%y
-
-            ! Slave node location
-            xsl = slaveL%boundary(slave)%x
-            ysl = slaveL%boundary(slave)%y
-
-            ! Calculate distance between master and slave nodes
-            d = norm2([(xsl-xm),(ysl-ym)])
-            
-            ! Calculate forces (Master node)
-            Fmx = kd*(1.0d0-Rl/d)*(xsl-xm)
-            Fmy = kd*(1.0d0-Rl/d)*(ysl-ym)
-
-            ! Calculate forces (Slave node)
-            Fslx = -Fmx
-            Fsly = -Fmy
+            ! Calculate the spring force between master and slave nodes
+            F = spring_force(masterL%boundary(master),slaveL%boundary(slave),kd)
 
             ! Assign fores to master node
-            masterL%boundary(master)%Fx = masterL%boundary(master)%Fx + Fmx
-            masterL%boundary(master)%Fy = masterL%boundary(master)%Fy + Fmy
+            masterL%boundary(master)%Fx = masterL%boundary(master)%Fx + F%x
+            masterL%boundary(master)%Fy = masterL%boundary(master)%Fy + F%y
 
             ! Assign forces to slave node
-            slaveL%boundary(slave)%Fx = slaveL%boundary(slave)%Fx + Fslx
-            slaveL%boundary(slave)%Fy = slaveL%boundary(slave)%Fy + Fsly
+            slaveL%boundary(slave)%Fx = slaveL%boundary(slave)%Fx - F%x
+            slaveL%boundary(slave)%Fy = slaveL%boundary(slave)%Fy - F%y
         end if
 
     end subroutine calculate_diagonal_link_force_pos
@@ -1048,6 +940,7 @@ contains
 
         ! Original resting length
         real(real64)   :: Rl   ! Resting length
+        type(vec) :: F
 
         ! Count the number of nodes/particles in the immersed boundary layers
         ! (Assuming both the layers have the same number of particles)
@@ -1058,45 +951,16 @@ contains
             master = ip
             slave = master + 1
 
-            ! Calculate the original spacing between particles
-            ! Master node location
-            xm = masterL%boundary(master)%xo
-            ym = masterL%boundary(master)%yo
-
-            ! Slave node location
-            xsl = slaveL%boundary(slave)%xo
-            ysl = slaveL%boundary(slave)%yo
-
-            ! Calculate distance between master and slave nodes
-            Rl = norm2([(xsl-xm),(ysl-ym)])
-            
-            ! Calculate the current spacing between particles
-            ! Master node location
-            xm = masterL%boundary(master)%x
-            ym = masterL%boundary(master)%y
-
-            ! Slave node location
-            xsl = slaveL%boundary(slave)%x
-            ysl = slaveL%boundary(slave)%y
-
-            ! Calculate distance between master and slave nodes
-            d = norm2([(xsl-xm),(ysl-ym)])
-            
-            ! Calculate forces (Master node)
-            Fmx = kd*(1.0d0-Rl/d)*(xsl-xm)
-            Fmy = kd*(1.0d0-Rl/d)*(ysl-ym)
-
-            ! Calculate forces (Slave node)
-            Fslx = -Fmx
-            Fsly = -Fmy
+            ! Calculate the spring force between master and slave nodes
+            F = spring_force(masterL%boundary(master),slaveL%boundary(slave),kd)
 
             ! Assign fores to master node
-            masterL%boundary(master)%Fx = masterL%boundary(master)%Fx + Fmx
-            masterL%boundary(master)%Fy = masterL%boundary(master)%Fy + Fmy
+            masterL%boundary(master)%Fx = masterL%boundary(master)%Fx + F%x
+            masterL%boundary(master)%Fy = masterL%boundary(master)%Fy + F%y
 
             ! Assign forces to slave node
-            slaveL%boundary(slave)%Fx = slaveL%boundary(slave)%Fx + Fslx
-            slaveL%boundary(slave)%Fy = slaveL%boundary(slave)%Fy + Fsly
+            slaveL%boundary(slave)%Fx = slaveL%boundary(slave)%Fx - F%x
+            slaveL%boundary(slave)%Fy = slaveL%boundary(slave)%Fy - F%y
         end do
 
         ! For closed loops of cilia
@@ -1105,45 +969,16 @@ contains
             master = np
             slave = 1
             
-            ! Calculate the original spacing between the particles
-            ! Master node location
-            xm = masterL%boundary(master)%xo
-            ym = masterL%boundary(master)%yo
-
-            ! Slave node location
-            xsl = slaveL%boundary(slave)%xo
-            ysl = slaveL%boundary(slave)%yo
-
-            ! Calculate distance between master and slave nodes
-            Rl = norm2([(xsl-xm),(ysl-ym)])
-
-            ! Calculate the current spacing between the particles
-            ! Master node location
-            xm = masterL%boundary(master)%x
-            ym = masterL%boundary(master)%y
-
-            ! Slave node location
-            xsl = slaveL%boundary(slave)%x
-            ysl = slaveL%boundary(slave)%y
-
-            ! Calculate distance between master and slave nodes
-            d = norm2([(xsl-xm),(ysl-ym)])
-            
-            ! Calculate forces (Master node)
-            Fmx = kd*(1.0d0-Rl/d)*(xsl-xm)
-            Fmy = kd*(1.0d0-Rl/d)*(ysl-ym)
-
-            ! Calculate forces (Slave node)
-            Fslx = -Fmx
-            Fsly = -Fmy
+            ! Calculate the spring force between master and slave nodes
+            F = spring_force(masterL%boundary(master),slaveL%boundary(slave),kd)
 
             ! Assign fores to master node
-            masterL%boundary(master)%Fx = masterL%boundary(master)%Fx + Fmx
-            masterL%boundary(master)%Fy = masterL%boundary(master)%Fy + Fmy
+            masterL%boundary(master)%Fx = masterL%boundary(master)%Fx + F%x
+            masterL%boundary(master)%Fy = masterL%boundary(master)%Fy + F%y
 
             ! Assign forces to slave node
-            slaveL%boundary(slave)%Fx = slaveL%boundary(slave)%Fx + Fslx
-            slaveL%boundary(slave)%Fy = slaveL%boundary(slave)%Fy + Fsly
+            slaveL%boundary(slave)%Fx = slaveL%boundary(slave)%Fx - F%x
+            slaveL%boundary(slave)%Fy = slaveL%boundary(slave)%Fy - F%y
         end if
 
     end subroutine calculate_diagonal_link_force
