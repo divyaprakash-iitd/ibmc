@@ -202,7 +202,7 @@ contains
         call calculate_spring_force(C%layers(2),ko,kd,0.5d0*Rlv,C%layers(2)%t)
 
         ! do il = 1,C%nl
-        !     call calculate_spring_force(C%layers(il),ko,kd,Rlv,C%layers(il)%t)
+            ! call calculate_spring_force(C%layers(il),ko,kd,Rlv,C%layers(il)%t)
         ! end do
 
         ! Calculate forces on the horizontal links
