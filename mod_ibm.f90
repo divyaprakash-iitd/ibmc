@@ -18,7 +18,8 @@ module mod_ibm
               spread_force_cilia_array, interpolate_velocity_cilia, &
               interpolate_velocity_cilia_array, initialize_velocity_cilia_array, &
               apply_tip_force_cilia, apply_tip_force_cilia_array, write_location_cilia, &
-              write_location_cilia_force, write_location_cilia_velocity, calculate_diagonal_link_force_pos
+              write_location_cilia_force, write_location_cilia_velocity, calculate_diagonal_link_force_pos, &
+              store_original_locations
 
 contains
    
@@ -1232,4 +1233,20 @@ contains
 
     end subroutine apply_tip_force_cilia_array
 
+    subroutine store_original_locations(CA)
+        class(cilia_array), intent(inout) :: CA
+
+        integer(int32) :: ic, il, ip
+
+        do ic = 1,CA%nc
+            do il = 1,CA%array(ic)%nl
+                do ip = 1,CA%array(ic)%layers(il)%np
+                    CA%array(ic)%layers(il)%boundary(ip)%xo = CA%array(ic)%layers(il)%boundary(ip)%x
+                    CA%array(ic)%layers(il)%boundary(ip)%yo = CA%array(ic)%layers(il)%boundary(ip)%y
+                end do
+            end do
+        end do
+
+    end subroutine store_original_locations
+   
 end module mod_ibm
