@@ -612,11 +612,11 @@ contains
         end do
     end subroutine write_location
 
-    subroutine calculate_spring_force(B,ko,kd,Rl,t)
+    subroutine calculate_spring_force(B,ko,kd,Rlo,t)
         class(ib), intent(in out) :: B    ! Immersed boundary
         real(real64), intent(in)  :: ko   ! Orthogonal Spring stiffness
         real(real64), intent(in)  :: kd   ! Diagonal Spring stiffness
-        real(real64),intent(in)   :: Rl   ! Resting length
+        real(real64),intent(in)   :: Rlo   ! Resting length
         character(1), intent(in)  :: t    ! Boundary type (Open or Closed) 
 
         integer(int32)  :: np   ! Number of nodes/particle
@@ -627,6 +627,8 @@ contains
         real(real64) :: Fmx, Fslx, Fmy, Fsly ! Forces (Master(m) and Slave(sl) node)
         real(real64) :: xm, xsl, ym, ysl ! Location of master and slave nodes
 
+        ! Original resting length
+        real(real64)   :: Rl   ! Resting length
         ! Count the number of nodes/particles in the immersed boundary
         np = size(B%boundary)
 
@@ -645,6 +647,20 @@ contains
             else 
                 slave = master+1
             end if
+            
+            ! Calculate the original spacing between the particles
+            ! Master node location
+            xm = B%boundary(master)%xo
+            ym = B%boundary(master)%yo
+
+            ! Slave node location
+            xsl = B%boundary(slave)%xo
+            ysl = B%boundary(slave)%yo
+
+            ! Calculate distance between master and slave nodes
+            Rl = norm2([(xsl-xm),(ysl-ym)])
+
+            ! Calculate the current spacing between particles
             ! Master node location
             xm = B%boundary(master)%x
             ym = B%boundary(master)%y
@@ -656,10 +672,11 @@ contains
             ! Calculate distance between master and slave nodes
             d = norm2([(xsl-xm),(ysl-ym)])
            
-            
+            ! print *, 'delta = ', Rl-d 
             ! print *, 'Rl =', Rl
             ! print *, 'd =', d
             ! print *, 'DD = ', (ysl-ym)
+
 
             ! Calculate forces (Master node)
             Fmx = ko*(1.0d0-Rl/d)*(xsl-xm)
@@ -864,10 +881,10 @@ contains
 
     end subroutine calculate_cilia_force
 
-    subroutine calculate_horizontal_link_force(masterL,slaveL,ks,Rl)
+    subroutine calculate_horizontal_link_force(masterL,slaveL,ks,Rlo)
         class(ib), intent(in out) :: masterL, slaveL    ! Immersed boundary
         real(real64), intent(in)  :: ks   ! Spring stiffness
-        real(real64),intent(in)   :: Rl   ! Resting length
+        real(real64),intent(in)   :: Rlo   ! Resting length
 
         integer(int32)  :: np   ! Number of nodes/particle
         integer(int32)  :: ip   ! Indices
@@ -876,6 +893,8 @@ contains
         real(real64) :: Fmx, Fslx, Fmy, Fsly ! Forces (Master(m) and Slave(sl) node)
         real(real64) :: xm, xsl, ym, ysl ! Location of master and slave nodes
 
+        ! Original resting length
+        real(real64)   :: Rl   ! Resting length
 
 
         ! Count the number of nodes/particles in the immersed boundary layers
@@ -883,6 +902,19 @@ contains
         np = size(masterL%boundary)
 
         do ip = 1,np
+            ! Calculate the original spcing between particles
+            ! Master node location
+            xm = masterL%boundary(ip)%xo
+            ym = masterL%boundary(ip)%yo
+
+            ! Slave node location
+            xsl = slaveL%boundary(ip)%xo
+            ysl = slaveL%boundary(ip)%yo
+
+            ! Calculate distance between master and slave nodes
+            Rl = norm2([(xsl-xm),(ysl-ym)])
+            
+            ! Calculate the current spcing between particles
             ! Master node location
             xm = masterL%boundary(ip)%x
             ym = masterL%boundary(ip)%y
@@ -913,10 +945,10 @@ contains
 
     end subroutine calculate_horizontal_link_force
 
-    subroutine calculate_diagonal_link_force_pos(masterL,slaveL,kd,Rl)
+    subroutine calculate_diagonal_link_force_pos(masterL,slaveL,kd,Rlo)
         class(ib), intent(in out) :: masterL, slaveL    ! Immersed boundary
         real(real64), intent(in)  :: kd   ! Spring stiffness
-        real(real64),intent(in)   :: Rl   ! Resting length
+        real(real64),intent(in)   :: Rlo   ! Resting length
 
         integer(int32)  :: np   ! Number of nodes/particle
         integer(int32)  :: ip, master, slave   ! Indices
@@ -924,6 +956,9 @@ contains
 
         real(real64) :: Fmx, Fslx, Fmy, Fsly ! Forces (Master(m) and Slave(sl) node)
         real(real64) :: xm, xsl, ym, ysl ! Location of master and slave nodes
+
+        ! Original resting length
+        real(real64)   :: Rl   ! Resting length
 
         ! Count the number of nodes/particles in the immersed boundary layers
         ! (Assuming both the layers have the same number of particles)
@@ -933,6 +968,20 @@ contains
         do ip = 2,np
             master = ip
             slave = master - 1
+
+            ! Calculate the original spacing between the particles
+            ! Master node location
+            xm = masterL%boundary(master)%xo
+            ym = masterL%boundary(master)%yo
+
+            ! Slave node location
+            xsl = slaveL%boundary(slave)%xo
+            ysl = slaveL%boundary(slave)%yo
+
+            ! Calculate distance between master and slave nodes
+            Rl = norm2([(xsl-xm),(ysl-ym)])
+            
+            ! Calculate the current spacing between the particles
             ! Master node location
             xm = masterL%boundary(master)%x
             ym = masterL%boundary(master)%y
@@ -966,6 +1015,20 @@ contains
         if (masterL%t.eq.'c') then
             master = 1
             slave = np
+
+            ! Calculate the original spacing between the particles
+            ! Master node location
+            xm = masterL%boundary(master)%xo
+            ym = masterL%boundary(master)%yo
+
+            ! Slave node location
+            xsl = slaveL%boundary(slave)%xo
+            ysl = slaveL%boundary(slave)%yo
+
+            ! Calculate distance between master and slave nodes
+            RL = norm2([(xsl-xm),(ysl-ym)])
+            
+            ! Calculate the current spacing between the particles
             ! Master node location
             xm = masterL%boundary(master)%x
             ym = masterL%boundary(master)%y
@@ -996,10 +1059,10 @@ contains
 
     end subroutine calculate_diagonal_link_force_pos
 
-    subroutine calculate_diagonal_link_force(masterL,slaveL,kd,Rl)
+    subroutine calculate_diagonal_link_force(masterL,slaveL,kd,Rlo)
         class(ib), intent(in out) :: masterL, slaveL    ! Immersed boundary
         real(real64), intent(in)  :: kd   ! Spring stiffness
-        real(real64),intent(in)   :: Rl   ! Resting length
+        real(real64),intent(in)   :: Rlo   ! Resting length
 
         integer(int32)  :: np   ! Number of nodes/particle
         integer(int32)  :: ip, master, slave   ! Indices
@@ -1007,6 +1070,9 @@ contains
 
         real(real64) :: Fmx, Fslx, Fmy, Fsly ! Forces (Master(m) and Slave(sl) node)
         real(real64) :: xm, xsl, ym, ysl ! Location of master and slave nodes
+
+        ! Original resting length
+        real(real64)   :: Rl   ! Resting length
 
         ! Count the number of nodes/particles in the immersed boundary layers
         ! (Assuming both the layers have the same number of particles)
@@ -1016,6 +1082,20 @@ contains
         do ip = 1,np-1
             master = ip
             slave = master + 1
+
+            ! Calculate the original spacing between particles
+            ! Master node location
+            xm = masterL%boundary(master)%xo
+            ym = masterL%boundary(master)%yo
+
+            ! Slave node location
+            xsl = slaveL%boundary(slave)%xo
+            ysl = slaveL%boundary(slave)%yo
+
+            ! Calculate distance between master and slave nodes
+            Rl = norm2([(xsl-xm),(ysl-ym)])
+            
+            ! Calculate the current spacing between particles
             ! Master node location
             xm = masterL%boundary(master)%x
             ym = masterL%boundary(master)%y
@@ -1049,6 +1129,20 @@ contains
         if (masterL%t.eq.'c') then
             master = np
             slave = 1
+            
+            ! Calculate the original spacing between the particles
+            ! Master node location
+            xm = masterL%boundary(master)%xo
+            ym = masterL%boundary(master)%yo
+
+            ! Slave node location
+            xsl = slaveL%boundary(slave)%xo
+            ysl = slaveL%boundary(slave)%yo
+
+            ! Calculate distance between master and slave nodes
+            Rl = norm2([(xsl-xm),(ysl-ym)])
+
+            ! Calculate the current spacing between the particles
             ! Master node location
             xm = masterL%boundary(master)%x
             ym = masterL%boundary(master)%y
