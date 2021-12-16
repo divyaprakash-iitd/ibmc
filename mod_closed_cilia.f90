@@ -54,14 +54,14 @@ contains
         real(real64)    :: dtheta   ! Spacing of particles in the closed loop
         integer(int32)  :: nl       ! No. of layers
         integer(int32)  :: np       ! No. of particle
-
+        real(real64) :: particle_loc(C%np,2)
         integer(int32) :: il,ip
 
         real(real64) :: a, b
 
         ! Semi-minor and semi-major axis
-        a = 2*r
-        b = r    
+        a = r    
+        b = 2*r
 
         ! Assign values
         nl = C%nl
@@ -70,14 +70,85 @@ contains
         ! Calculate angular spacing
         dtheta = 2*PI/np
 
+    
         ! Assign locations to the particles of the cilia
         do il = 1,nl
             c%layers(il)%t = 'c' ! Closed boundary type
+            ! Generate the cooridnates of the ilth layer
+            a = a - W*(il-1)
+            b = b - W*(il-1)
+            particle_loc = ellipse_points(a,b,np)
+            ! print *, particle_loc 
             do ip = 1,np 
-                c%layers(il)%boundary(ip)%x = origin%x + (a - W*(il-1)) * cos((ip-1)*dtheta)
-                c%layers(il)%boundary(ip)%y = origin%y + (b - W*(il-1)) * sin((ip-1)*dtheta)
+                c%layers(il)%boundary(ip)%x = origin%x + particle_loc(ip,1)
+                c%layers(il)%boundary(ip)%y = origin%y + particle_loc(ip,2)
             end do
         end do
+
+        ! ! Assign locations to the particles of the cilia
+        ! do il = 1,nl
+        !     c%layers(il)%t = 'c' ! Closed boundary type
+        !     do ip = 1,np 
+        !         c%layers(il)%boundary(ip)%x = origin%x + (a - W*(il-1)) * cos((ip-1)*dtheta)
+        !         c%layers(il)%boundary(ip)%y = origin%y + (b - W*(il-1)) * sin((ip-1)*dtheta)
+        !     end do
+        ! end do
+
+        contains
+
+        function ellipse_points(r1,r2,n) result(coordinates)
+            integer(int32), intent(in) :: n
+            real(real64), intent(in) :: r1, r2
+
+
+            real(real64) :: coordinates(n,2)
+            real(real64) :: theta, circ, dpt, run
+            real(real64) :: deltaTheta, subIntegral
+            integer(int32) :: numIntegrals, nextPoint
+
+            integer(int32) :: i
+
+            nextPoint = 0
+            run = 0.0d0
+            theta = 0.0d0
+            deltaTheta = 0.0001
+            numIntegrals = nint(2*PI/deltaTheta)
+            circ = 0.0d0
+            coordinates = 0.0d0
+
+            ! Calculate the circumference
+            do i = 1,numIntegrals
+                theta = theta + deltaTheta
+                dpt = computeDpt(r1,r2,theta)
+                circ = circ + dpt
+            end do
+
+            ! print *, 'circumference = ', circ
+            ! print *, 'numIntegrals = ', numIntegrals
+
+            theta = 0.0d0
+            ! Generate coordinates
+            do i = 1,numIntegrals
+                theta = theta + deltaTheta
+                subIntegral = n*run/circ
+                if (subIntegral.ge.nextPoint) then
+                    ! print *, 'hi'
+                    coordinates(nextPoint+1,1) = r1 * cos(theta)
+                    coordinates(nextPoint+1,2) = r2 * sin(theta)
+                    nextPoint = nextPoint + 1
+                end if
+                run = run + computeDpt(r1,r2,theta)
+            end do
+
+        end function ellipse_points
+
+        function computeDpt(r1,r2,theta)
+            real(real64), intent(in) :: r1, r2, theta
+            real(real64) :: computeDpt
+
+            computeDpt = sqrt((r1*sin(theta))**2+(r2*cos(theta))**2)
+
+        end function computeDpt
 
     end subroutine create_closed_loop_ellipse
 
