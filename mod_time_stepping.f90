@@ -62,53 +62,14 @@ contains
         logical         :: init_status
 
         ! Resting lengths
-        real(real64) :: RLH, RLD, RLV, xm, ym, xsl, ysl
+        real(real64) :: RLH, RLD, RLV
     
         ! Create an array of cells
         type(cell), allocatable, target :: cell_array(:,:)
         integer(int32) :: Nxcell, Nycell
 
-        ! Calculate Resting Lengths
-        ! Horizontal Link Resting Length
-                    
-        ! Master node location
-        xm = CAP%array(1)%layers(1)%boundary(1)%x
-        ym = CAP%array(1)%layers(1)%boundary(1)%y
+        RLH = 0.0; RLD = 0.0; RLV = 0.0
 
-        ! Slave node location
-        xsl = CAP%array(1)%layers(2)%boundary(1)%x
-        ysl = CAP%array(1)%layers(2)%boundary(1)%y
-
-        ! Calculate distance between master and slave nodes
-        RLH = norm2([(xsl-xm),(ysl-ym)])
-
-        ! Calculate Resting Lengths
-        ! Diagonal Link Resting Length
-                    
-        ! Master node location
-        xm = CAP%array(1)%layers(1)%boundary(1)%x
-        ym = CAP%array(1)%layers(1)%boundary(1)%y
-
-        ! Slave node location
-        xsl = CAP%array(1)%layers(2)%boundary(2)%x
-        ysl = CAP%array(1)%layers(2)%boundary(2)%y
-
-        ! Calculate distance between master and slave nodes
-        RLD = norm2([(xsl-xm),(ysl-ym)])
-
-        ! Calculate Resting Lengths
-        ! Vertical Link Resting Length
-                    
-        ! Master node location
-        xm = CAP%array(1)%layers(1)%boundary(1)%x
-        ym = CAP%array(1)%layers(1)%boundary(1)%y
-
-        ! Slave node location
-        xsl = CAP%array(1)%layers(1)%boundary(2)%x
-        ysl = CAP%array(1)%layers(1)%boundary(2)%y
-
-        ! Calculate distance between master and slave nodes
-        RLV = norm2([(xsl-xm),(ysl-ym)])
 
         ! Create temporary cilia array
         CAmid = cilia_array(CA%nc,CA%array(1)%nl,CA%array(1)%np)
