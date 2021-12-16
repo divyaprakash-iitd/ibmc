@@ -8,6 +8,7 @@ module mod_particle
     ! Immersed boundary
     type :: particle
         real(real64), allocatable       :: x, y
+        real(real64), allocatable       :: xo, yo
         real(real64), allocatable       :: Fx, Fy
         real(real64), allocatable       :: Ux, Uy 
     end type particle
@@ -21,6 +22,8 @@ contains
     pure type(particle) function ib_constructor() result(self)
             self%x  = 0.0d0
             self%y  = 0.0d0
+            self%xo  = 0.0d0
+            self%yo  = 0.0d0
             self%Fx = 0.0d0
             self%Fy = 0.0d0
             self%Ux = 0.0d0
