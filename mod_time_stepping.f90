@@ -56,7 +56,7 @@ contains
         real(real64)    :: utop, vtop, ubottom, vbottom, &
                                uleft, vleft, uright, vright
         ! Spring properties
-        real(real64)    :: ko,kd,Rl,Ftip
+        real(real64)    :: ko,kd,Rl,Ftip,kop,kod
         
         ! AmgX
         logical         :: init_status
@@ -126,8 +126,10 @@ contains
         ! Get spring parameters
         ko      = SP(1)
         kd      = SP(2)
-        Rl      = SP(3)
-        Ftip    = SP(4)
+        kop     = SP(3)
+        kod     = SP(4)
+        Rl      = SP(5)
+        Ftip    = SP(6)
 
         ! Get fluid properties
         nu  = FP(1)
@@ -164,7 +166,7 @@ contains
            
             call nvtxStartRange("Calculate cilia forces")
             call calculate_cilia_array_force(CA,ko,kd,Rl)
-            call calculate_closed_loop_array_force(CAP,ko,kd,RLV,RLH,RLD)
+            call calculate_closed_loop_array_force(CAP,kop,kod,RLV,RLH,RLD)
             call nvtxEndRange
             
             call nvtxStartRange("Calculate inter-particle forces")
@@ -253,7 +255,7 @@ contains
             ! Calculate forces in the immersed boundary structure
             call nvtxStartRange("Calculate cilia forces")
             call calculate_cilia_array_force(CAmid,ko,kd,Rl)
-            call calculate_closed_loop_array_force(CAPmid,ko,kd,RLV,RLH,RLD)
+            call calculate_closed_loop_array_force(CAPmid,kop,kod,RLV,RLH,RLD)
             call nvtxEndRange
             
             call nvtxStartRange("Calculate inter-particle forces")
