@@ -48,7 +48,7 @@ program ibmc
     real(real64)    :: theta    = 3.1416d0
     real(real64)    :: Rl
     real(real64)    :: FP(2)
-    real(real64)    :: SP(4)
+    real(real64)    :: SP(6)
     ! Boundary values
     real(real64)    :: utop, vtop, ubottom, vbottom, &
                        uleft, vleft, uright, vright
@@ -161,7 +161,7 @@ program ibmc
     ! origin  = vec(Lx/2,0.1d0)      ! Location of the first Cilium (Bottom-Left Particle)
     radius = 0.04*Lx
     ! originP = vec(Lx/9,2*Ly/3)
-    originP = vec(0.55,0.4)
+    originP = vec(0.6,0.4)
     nparticles = 1
     npparticles = 8
     ! originP = vec(Lx/3,2.25*Ly/3)
@@ -205,7 +205,7 @@ program ibmc
     ! Arrays to transfer data
     BC = [utop,vtop,ubottom,vbottom,uleft,vleft,uright,vright]
     FP = [nu,rho]
-    SP = [ko,kd,Rl,Ftip]
+    SP = [ko,kd,kop,kod,Rl,Ftip]
     call time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAP,A,P,R,tsim,dt,it_save)
 
     call cpu_time(finish)
