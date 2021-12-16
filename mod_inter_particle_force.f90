@@ -293,5 +293,4 @@ contains
         end do
 
     end subroutine calculate_inter_particle_force
-
 end module mod_inter_particle_force
