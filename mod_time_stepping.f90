@@ -357,6 +357,8 @@ contains
                 do ip = 1,np
                     CA2%array(ic)%layers(il)%boundary(ip)%x = CA1%array(ic)%layers(il)%boundary(ip)%x
                     CA2%array(ic)%layers(il)%boundary(ip)%y = CA1%array(ic)%layers(il)%boundary(ip)%y
+                    CA2%array(ic)%layers(il)%boundary(ip)%xo = CA1%array(ic)%layers(il)%boundary(ip)%xo
+                    CA2%array(ic)%layers(il)%boundary(ip)%yo = CA1%array(ic)%layers(il)%boundary(ip)%yo
                     CA2%array(ic)%layers(il)%boundary(ip)%Ux = CA1%array(ic)%layers(il)%boundary(ip)%Ux
                     CA2%array(ic)%layers(il)%boundary(ip)%Uy = CA1%array(ic)%layers(il)%boundary(ip)%Uy
                     CA2%array(ic)%layers(il)%boundary(ip)%Fx = CA1%array(ic)%layers(il)%boundary(ip)%Fx
