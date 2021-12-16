@@ -183,8 +183,12 @@ program ibmc
     CAP = cilia_array(nparticles,nl,npparticles)
     ca_pointer => CAP
     call create_closed_loop_array(CAP,0.5d0*radius,radius,originP)
+    ! Store the original locations
+    call store_original_locations(CAP)
     CA = cilia_array(nc,nl,np)
     call create_cilia_array(CA,wbl,dc,dp,origin)
+    ! Store the original locations
+    call store_original_locations(CA)
 
 
     ! ! Neghbour's list computations
