@@ -21,8 +21,8 @@ program ibmc
     namelist /time/ dt, it_save, tsim
     namelist /grid/ Nx, Ny, Lx, Ly
     namelist /flow/ nu, rho, uleft
-    namelist /ciliaprop/ nc, np, ko, kd
-    namelist /particleprop/ nparticles, radius, npparticles, kop, kod
+    namelist /ciliaprop/ nc, np, xoc, yoc, ko, kd, Ftip
+    namelist /particleprop/ nparticles, radius, npparticles, xop, yop, kop, kod
   
     ! Parameters
     integer(int32), parameter :: PI = 3.141592653589793
@@ -89,6 +89,8 @@ program ibmc
     real(real64) :: kod = 0.50d0
     integer(int32) :: nparticles
     integer(int32) :: npparticles
+    real(real64) :: xoc, yoc
+    real(real64) :: xop, yop
 
     ! Understanding pointers
     type(cilia_array), pointer :: ca_pointer
@@ -157,11 +159,14 @@ program ibmc
     wbl     = Rl                    ! Width/Distance between two Layers
     dc      = 3*Rl                    ! Distance between two Cilia
     nc      = 15                    ! Number of cilia
-    origin  = vec(Lx/4,0.1d0)      ! Location of the first Cilium (Bottom-Left Particle)
+    xoc = Lx/4
+    yoc = 0.1d0
+    xop = 0.6
+    yop = 0.4
+
     ! origin  = vec(Lx/2,0.1d0)      ! Location of the first Cilium (Bottom-Left Particle)
     radius = 0.04*Lx
     ! originP = vec(Lx/9,2*Ly/3)
-    originP = vec(0.6,0.4)
     nparticles = 1
     npparticles = 8
     ! originP = vec(Lx/3,2.25*Ly/3)
@@ -179,6 +184,8 @@ program ibmc
     
     write(*,'(2(A,I8),2(A,1p1e15.6))') "nc = ",nc, " np = ",np
 
+    origin  = vec(xoc,yoc)      ! Location of the first Cilium (Bottom-Left Particle)
+    originP = vec(xop,yop)
     ! Create cilia and particle arrays
     CAP = cilia_array(nparticles,nl,npparticles)
     ca_pointer => CAP
@@ -210,7 +217,11 @@ program ibmc
     BC = [utop,vtop,ubottom,vbottom,uleft,vleft,uright,vright]
     FP = [nu,rho]
     SP = [ko,kd,kop,kod,Rl,Ftip]
-    call time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAP,A,P,R,tsim,dt,it_save)
+   
+    print *, Ftip
+
+    ! call time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAP,A,P,R,tsim,dt,it_save)
+    call time_loop_cilia(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAP,A,P,R,tsim,dt,it_save)
 
     call cpu_time(finish)
     print '("Time = ",f15.10," seconds.")',finish-start
