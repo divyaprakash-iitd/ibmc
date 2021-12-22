@@ -3,37 +3,42 @@
 !***********************************
 &time
 dt      = 0.0001,       ! Time step    
-it_save = 100,         ! Number of time steps between saving fields
+it_save = 500,         ! Number of time steps between saving fields
 tsim    = 28.0/       ! Maximum time for which simulation will run
 !***********************************
 !***  Parameters related to grid and computational domain
 !***********************************
 &grid
-Lx  = 3.0,         ! Size of box in x direction 
-Ly  = 1.0,         ! Size of box in y direction
-Nx  = 300,         ! Number of points in x direction
-Ny  = 100/         ! Number of points in y direction
+Lx  = 0.5,         ! Size of box in x direction 
+Ly  = 0.5,         ! Size of box in y direction
+Nx  = 50,         ! Number of points in x direction
+Ny  = 50/         ! Number of points in y direction
 !***********************************
 !*** Parameters related to flow
 !***********************************
 &flow
 nu      = 0.1,     ! Kinematic viscosity
 rho     = 1,        ! Density
-uleft   = 0.05/      ! Inlet velocity
+uleft   = 0.0/      ! Inlet velocity
 !***********************************
 !***  Parameters related to cilia
 !***********************************
 &ciliaprop
-nc  = 10,          ! Number of cilia
+nc  = 1,          ! Number of cilia
 np  = 6,           ! Number of nodes in each cilium
+xoc  = 0.25,         ! X-coordinate of the lower-left corner of the first cilium
+yoc  = 0.1,         ! Y-coordinate of the lower-left corner of the first cilium
 ko  = 1.0,         ! Spring-stiffness constant for orthogonal links
-kd  = 0.5/         ! Spring-stiffness constant for non-orthogonal links
+kd  = 0.5,          ! Spring-stiffness constant for non-orthogonal links
+Ftip = 0.01/        ! Tip force 
 !***********************************
 !***  Parameters related to particles
 !***********************************
 &particleprop
-nparticles  = 1,        ! Number of particle
-radius      = 0.1,     ! Radius of particle
+nparticles  = 1,         ! Number of particle
+radius      = 0.1,       ! Radius of particle
 npparticles = 20,        ! Number of nodes in each layer of particle
-kop         = 5.0,      ! Spring-stiffness constant for orthogonal links
-kdp         = 2.5/      ! Spring-stiffness constant for non-orthogonal links
+xop         = 0.3,      ! X-coordinate of the lower-left corner of the first cilium
+yop         = 0.4,       ! Y-coordinate of the lower-left corner of the first cilium
+kop         = 5.0,       ! Spring-stiffness constant for orthogonal links
+kdp         = 2.5/       ! Spring-stiffness constant for non-orthogonal links
