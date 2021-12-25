@@ -415,7 +415,7 @@ contains
             call apply_tip_force_cilia_array(CA,Ftip,t)
             
             call nvtxStartRange("Calculate inter-particle forces")
-            call calculate_forces(cell_array)
+            ! call calculate_forces(cell_array)
             call nvtxEndRange
            
             call nvtxStartRange("Copy cilia")
@@ -504,7 +504,7 @@ contains
             call nvtxEndRange
             
             call nvtxStartRange("Calculate inter-particle forces")
-            call calculate_forces(cell_array)
+            ! call calculate_forces(cell_array)
             call nvtxEndRange
 
             call apply_tip_force_cilia_array(CAmid,Ftip,t)
@@ -586,6 +586,66 @@ contains
 
         end do
     end subroutine time_loop_cilia
+
+    subroutine time_loop_lsm(FP,SP,CA,tsim,dt,it_save)
+        real(real64), intent(in)          :: FP(:)
+        real(real64), intent(in)          :: SP(:)
+        class(cilia_array), intent(inout) :: CA
+        real(real64), intent(in)          :: tsim
+        real(real64), intent(in)          :: dt
+        integer(int32), intent(in)        :: it_save
+
+        ! Iteration 
+        integer(int32) :: it
+
+        ! Time
+        real(real64) :: t
+
+        ! Fluid properties
+        real(real64) :: nu, rho        
+
+        ! Spring properties
+        real(real64)    :: ko,kd,Rl,Ftip,kop,kod
+        
+        ! Get spring parameters
+        ko      = SP(1)
+        kd      = SP(2)
+        kop     = SP(3)
+        kod     = SP(4)
+        Rl      = SP(5)
+        Ftip    = SP(6)
+
+        ! Get fluid properties
+        nu  = FP(1)
+        rho = FP(2)
+
+        ! Start time loop
+        t = 0.0d0
+        it = 0
+
+        do while (t.lt.tsim)
+            call nvtxStartRange("Time Loop")
+            t = t + dt
+            it = it + 1
+            
+            call nvtxStartRange("Calculate cilia forces")
+            call calculate_cilia_array_force(CA,ko,kd,Rl)
+            call apply_tip_force_cilia_array(CA,Ftip,t)
+            call nvtxEndRange
+            
+            call nvtxStartRange("Update cilia locations")
+            call update_beam(CA%array(1),dt,nu)
+            call nvtxEndrange
+
+            ! Write files every Nth timestep
+            if (mod(it,it_save).eq.0) then 
+                call write_location_cilia(CA,it,'c')
+                call write_location_cilia_force(CA,it,'c')
+                call write_location_cilia_velocity(CA,it,'c')
+            end if
+
+        end do
+    end subroutine time_loop_lsm
 
     subroutine copy_cilia(CA1,CA2)
         class(cilia_array), intent(in) :: CA1
