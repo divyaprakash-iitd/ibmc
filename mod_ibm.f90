@@ -848,7 +848,7 @@ contains
 
         ! Calculate forces on the diagonal links (negative slope)
         call calculate_diagonal_link_force(C%layers(1),C%layers(2),kd,Rl)
-        ! call calculate_diagonal_link_force_new(c%layers(1),C%layers(2),kd,Rl)
+        ! call calculate_diagonal_link_force_new(C%layers(1),C%layers(2),kd,Rl)
         call calculate_diagonal_link_force(C%layers(2),C%layers(1),kd,Rl)
         ! call calculate_diagonal_link_force_pos(C%layers(2),C%layers(1),kd,Rl)
 
