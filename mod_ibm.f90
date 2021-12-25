@@ -20,7 +20,7 @@ module mod_ibm
               interpolate_velocity_cilia_array, initialize_velocity_cilia_array, &
               apply_tip_force_cilia, apply_tip_force_cilia_array, write_location_cilia, &
               write_location_cilia_force, write_location_cilia_velocity, calculate_diagonal_link_force_pos, &
-              store_original_locations
+              store_original_locations, update_beam
 
 contains
    
@@ -67,6 +67,22 @@ contains
         end do
 
     end subroutine update_ib
+
+    subroutine update_beam(C,dt,nu)
+        class(cilia), intent(inout) :: C
+        real(real64), intent(in) :: dt
+        real(real64), intent(in) :: nu
+
+        integer(int32) :: il,ip 
+
+        do il = 1,C%nl
+            do ip = 2,C%np ! First point is fixed in each layer
+                C%layers(il)%boundary(ip)%x = C%layers(il)%boundary(ip)%x + dt/nu * C%layers(il)%boundary(ip)%Fx
+                C%layers(il)%boundary(ip)%y = C%layers(il)%boundary(ip)%y + dt/nu * C%layers(il)%boundary(ip)%Fy
+            end do
+        end do
+
+    end subroutine update_beam
 
     subroutine spread_force_compact(M,B,Fx,Fy)
         class(mesh), intent(in) :: M
@@ -638,6 +654,8 @@ contains
             print *, "Wrong type of Immersed Boundary: Enter 'o' or 'c' "
         end if
 
+
+        
         do master = 1,lastp
             if (master == np) then ! This condition will never be satisfied for open case 
                 slave = 1
@@ -830,7 +848,9 @@ contains
 
         ! Calculate forces on the diagonal links (negative slope)
         call calculate_diagonal_link_force(C%layers(1),C%layers(2),kd,Rl)
-        call calculate_diagonal_link_force_pos(C%layers(2),C%layers(1),kd,Rl)
+        ! call calculate_diagonal_link_force_new(c%layers(1),C%layers(2),kd,Rl)
+        call calculate_diagonal_link_force(C%layers(2),C%layers(1),kd,Rl)
+        ! call calculate_diagonal_link_force_pos(C%layers(2),C%layers(1),kd,Rl)
 
         ! Calculate forces on the diagonal links (Positive slope)
         ! call calculate_diagonal_link_force(C%layers(1),C%layers(2),ks,Rl)
@@ -889,6 +909,7 @@ contains
         ! np = size(masterL%boundary)
         np = masterL%np
 
+        ! print *, np
         ! Calculates for negative slope diagonal links
         do ip = 2,np
             master = ip
@@ -926,6 +947,62 @@ contains
 
     end subroutine calculate_diagonal_link_force_pos
 
+    subroutine calculate_diagonal_link_force_new(masterL,slaveL,kd,Rlo)
+        class(ib), intent(in out) :: masterL, slaveL    ! Immersed boundary
+        real(real64), intent(in)  :: kd   ! Spring stiffness
+        real(real64),intent(in)   :: Rlo   ! Resting length
+
+        integer(int32)  :: np   ! Number of nodes/particle
+        integer(int32)  :: ip, master, slave   ! Indices
+        real(real64)    :: d    ! Distance between two nodes
+
+        real(real64) :: Fmx, Fslx, Fmy, Fsly ! Forces (Master(m) and Slave(sl) node)
+        real(real64) :: xm, xsl, ym, ysl ! Location of master and slave nodes
+
+        ! Original resting length
+        real(real64)   :: Rl   ! Resting length
+        type(vec) :: F
+
+        ! Count the number of nodes/particles in the immersed boundary layers
+        ! (Assuming both the layers have the same number of particles)
+        np = size(masterL%boundary)
+        ! Calculates for negative slope diagonal links
+        do ip = 2,np
+            master = ip
+            slave = master - 1
+
+            ! Calculate the spring force between master and slave nodes
+            F = spring_force(masterL%boundary(master),slaveL%boundary(slave),kd)
+
+            ! Assign fores to master node
+            masterL%boundary(master)%Fx = masterL%boundary(master)%Fx + F%x
+            masterL%boundary(master)%Fy = masterL%boundary(master)%Fy + F%y
+
+            ! Assign forces to slave node
+            slaveL%boundary(slave)%Fx = slaveL%boundary(slave)%Fx - F%x
+            slaveL%boundary(slave)%Fy = slaveL%boundary(slave)%Fy - F%y
+        end do
+
+        ! For closed loops of cilia
+        ! The last node of the outer circle connects to the first node of the inner circle
+        if (masterL%t.eq.'c') then
+            master = np
+            slave = 1
+            
+            ! Calculate the spring force between master and slave nodes
+            F = spring_force(masterL%boundary(master),slaveL%boundary(slave),kd)
+
+            ! Assign fores to master node
+            masterL%boundary(master)%Fx = masterL%boundary(master)%Fx + F%x
+            masterL%boundary(master)%Fy = masterL%boundary(master)%Fy + F%y
+
+            ! Assign forces to slave node
+            slaveL%boundary(slave)%Fx = slaveL%boundary(slave)%Fx - F%x
+            slaveL%boundary(slave)%Fy = slaveL%boundary(slave)%Fy - F%y
+        end if
+
+    end subroutine calculate_diagonal_link_force_new
+
     subroutine calculate_diagonal_link_force(masterL,slaveL,kd,Rlo)
         class(ib), intent(in out) :: masterL, slaveL    ! Immersed boundary
         real(real64), intent(in)  :: kd   ! Spring stiffness
@@ -945,7 +1022,6 @@ contains
         ! Count the number of nodes/particles in the immersed boundary layers
         ! (Assuming both the layers have the same number of particles)
         np = size(masterL%boundary)
-
         ! Calculates for negative slope diagonal links
         do ip = 1,np-1
             master = ip
@@ -1112,14 +1188,13 @@ contains
         integer(int32) :: il, np
         integer(int32) :: pt
 
-        pt = np
+        pt = C%layers(1)%np
         if (C%layers(1)%t.eq.'c') then
            pt = 1 
         end if
 
-        np = size(C%layers(1)%boundary)
         do il = 1,C%nl
-            C%layers(il)%boundary(pt)%Fx = Ftip!*cos(2*PI/2.0*t)
+            C%layers(il)%boundary(pt)%Fx = C%layers(il)%boundary(pt)%Fx + Ftip!*cos(2*PI/2.0*t)
         end do
 
     end subroutine apply_tip_force_cilia
