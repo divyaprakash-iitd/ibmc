@@ -3,21 +3,21 @@
 !***********************************
 &time
 dt      = 0.0001,       ! Time step    
-it_save = 500,         ! Number of time steps between saving fields
-tsim    = 28.0/       ! Maximum time for which simulation will run
+it_save = 1000,         ! Number of time steps between saving fields
+tsim    = 30.0/       ! Maximum time for which simulation will run
 !***********************************
 !***  Parameters related to grid and computational domain
 !***********************************
 &grid
 Lx  = 0.5,         ! Size of box in x direction 
-Ly  = 0.5,         ! Size of box in y direction
-Nx  = 50,         ! Number of points in x direction
-Ny  = 50/         ! Number of points in y direction
+Ly  = 1.0,         ! Size of box in y direction
+Nx  = 100,         ! Number of points in x direction
+Ny  = 200/         ! Number of points in y direction
 !***********************************
 !*** Parameters related to flow
 !***********************************
 &flow
-nu      = 0.1,     ! Kinematic viscosity
+nu      = 0.05,     ! Kinematic viscosity
 rho     = 1,        ! Density
 uleft   = 0.0/      ! Inlet velocity
 !***********************************
@@ -25,12 +25,12 @@ uleft   = 0.0/      ! Inlet velocity
 !***********************************
 &ciliaprop
 nc  = 1,          ! Number of cilia
-np  = 6,           ! Number of nodes in each cilium
+np  = 11,           ! Number of nodes in each cilium
 xoc  = 0.25,         ! X-coordinate of the lower-left corner of the first cilium
 yoc  = 0.1,         ! Y-coordinate of the lower-left corner of the first cilium
 ko  = 1.0,         ! Spring-stiffness constant for orthogonal links
 kd  = 0.5,          ! Spring-stiffness constant for non-orthogonal links
-Ftip = 0.01/        ! Tip force 
+Ftip = 0.0005/        ! Tip force 
 !***********************************
 !***  Parameters related to particles
 !***********************************
