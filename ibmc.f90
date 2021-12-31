@@ -221,8 +221,8 @@ program ibmc
     print *, Ftip
 
     ! call time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAP,A,P,R,tsim,dt,it_save)
-    ! call time_loop_cilia(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAP,A,P,R,tsim,dt,it_save)
-    call time_loop_lsm(FP,SP,CA,tsim,dt,it_save)
+    call time_loop_cilia(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAP,A,P,R,tsim,dt,it_save)
+    ! call time_loop_lsm(FP,SP,CA,tsim,dt,it_save)
 
     call cpu_time(finish)
     print '("Time = ",f15.10," seconds.")',finish-start

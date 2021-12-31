@@ -62,7 +62,7 @@ figure(1)
 fig = gcf;
 fig.Position = [1 1 1920 961];
 for iFile = 1:nFiles
-    %subplot(2,2,1)
+    subplot(1,2,1)
     hold on
     
     %% Plot velocity field
@@ -102,49 +102,27 @@ for iFile = 1:nFiles
         
     end
     
-%     %% Plot particles
-%     particle = load(particleFile(iFile).name);
-%     for i = 1:2:size(particle,1) % No. of rows in the particle file
-%         particleX = particle(i,:); % Read x-coordinates
-%         particleY = particle(i+1,:); % Read y-coordinates
-%         plot(particleX,particleY,'w-','linewidth',3,'Markersize',5)
-%         % Join the ends
-%         plot([particleX(end), particleX(1)],[particleY(end), particleY(1)],'w-','linewidth',3,'Markersize',5)
-%     end
-%     
-%    % Horizontal links
-%     for i = 1:4:size(particle,1) % No. of rows in the particle file
-%         particleX1 = particle(i,:);
-%         particleY1 = particle(i+1,:);
-%         particleX2 = particle(i+2,:);
-%         particleY2 = particle(i+3,:);
-%         % Horizontal links
-%         for j = 1:numel(particleX1)
-%             plot([particleX1(j),particleX2(j)],[particleY1(j),particleY2(j)],'w-','linewidth',1,'Markersize',5)
-%         end
-%         
-%         % Diagonal links: 1
-%         for j = 1:numel(particleX1)-1
-%             plot([particleX1(j),particleX2(j+1)],[particleY1(j),particleY2(j+1)],'w-','linewidth',1,'Markersize',5)
-%         end
-%         % Join the ends
-%         plot([particleX1(end),particleX2(1)],[particleY1(end),particleY2(1)],'w-','linewidth',1,'Markersize',5)
-%         
-%          % Diagonal links: 2
-%         for j = 1:numel(particleX1)-1
-%             plot([particleX1(j+1),particleX2(j)],[particleY1(j+1),particleY2(j)],'w-','linewidth',1,'Markersize',5)
-%         end
-%         % Join the ends
-%         plot([particleX1(1),particleX2(end)],[particleY1(1),particleY2(end)],'w-','linewidth',1,'Markersize',5)
-%         
-%     end
-%     
     %% Plot mesh
     mesh(xp,yp,0*xp,'FaceAlpha','0.0','EdgeColor','w','LineStyle','-','EdgeAlpha','0.25')
 %     view(90,0)
     colorbar
     axis equal
     title(uFile(iFile).name)
+    
+    %% Plot tip deflection
+    subplot(1,2,2)
+    tipd = 0.5*(cilia(1,end)+cilia(3,end))-0.25;
+    plot(iFile,tipd,'rx')
+    % Calculate the deflection according to Euler-Bernoulli's beam theory
+    F = 0.0010422;
+    L = 0.2;
+    E = 62.5;
+    I = 6.67e-7;
+    EBd = F*L^3/3/E/I;
+    hold on
+%     plot([0 600],[EBd EBd])
+    
+% 
 %     
 %     %% Plot cilia forces
 %     subplot(2,2,2)
@@ -158,18 +136,6 @@ for iFile = 1:nFiles
 %         ciliaFx = ciliaForce(i,:); % Read x-component force
 %         ciliaFy = ciliaForce(i+1,:); % Read y-component force
 %         quiver(ciliaX,ciliaY,ciliaFx,ciliaFy,0.25,'k')
-%     end
-% 
-%     %% Plot particle forces
-%     particle = load(particleFile(iFile).name);
-%     particleForce = load(particleForceFile(iFile).name);
-%     for i = 1:2:size(particle,1) % No. of rows in the particle file
-%         particleX = particle(i,:); % Read x-coordinates
-%         particleY = particle(i+1,:); % Read y-coordinates
-%         % Read firces
-%         particleFx = particleForce(i,:); % Read x-component force
-%         particleFy = particleForce(i+1,:); % Read y-component force
-%         quiver(particleX,particleY,particleFx,particleFy,0.25,'k')
 %     end
 %     
 %     %% Plot cilia Velocity
@@ -186,24 +152,15 @@ for iFile = 1:nFiles
 %         quiver(ciliaX,ciliaY,ciliaFx,ciliaFy,0.25,'k')
 %     end
 % 
-%     %% Plot particle Velocity
-%     particle = load(particleFile(iFile).name);
-%     particleVelocity = load(particleVelocityFile(iFile).name);
-%     for i = 1:2:size(particle,1) % No. of rows in the particle file
-%         particleX = particle(i,:); % Read x-coordinates
-%         particleY = particle(i+1,:); % Read y-coordinates
-%         % Read firces
-%         particleFx = particleVelocity(i,:); % Read x-component Velocity
-%         particleFy = particleVelocity(i+1,:); % Read y-component Velocity
-%         quiver(particleX,particleY,particleFx,particleFy,0.25,'k')
-%     end
     
     title(uFile(iFile).name)
     
 %     pause(0.5)
-    writeVideo(vid,getframe(gca));
+    writeVideo(vid,getframe(gcf));
     if iFile ~= nFiles
-        clf
+%           cla(fig.Children(1))
+%         cla(fig.Children(2))
+        cla(fig.Children(3))
     end
 end
 close(vid)
