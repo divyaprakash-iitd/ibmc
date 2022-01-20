@@ -177,7 +177,8 @@ contains
 
             call nvtxStartRange("Calculate pressure")
             ! Solve for pressure
-            call calculate_pressure_amgx(A(1:M%Nx-1,:,:),P(1:M%Nx-1,:),R(1:M%Nx-1,:),init_status)
+            ! call calculate_pressure_amgx(A(1:M%Nx-1,:,:),P(1:M%Nx-1,:),R(1:M%Nx-1,:),init_status)
+            call calculate_pressure_amgx(A(2:M%Nx-1,:,:),P(2:M%Nx-1,:),R(2:M%Nx-1,:),init_status)
             ! call calculate_pressure_sparse(A(1:M%Nx-1,:,:),P(1:M%Nx-1,:),R(1:M%Nx-1,:))
             call nvtxEndRange
 
@@ -260,7 +261,8 @@ contains
 
             call nvtxStartRange("Calculate pressure")
             ! Solve for pressure
-            call calculate_pressure_amgx(A(1:M%Nx-1,:,:),P(1:M%Nx-1,:),R(1:M%Nx-1,:),init_status)
+            ! call calculate_pressure_amgx(A(1:M%Nx-1,:,:),P(1:M%Nx-1,:),R(1:M%Nx-1,:),init_status)
+            call calculate_pressure_amgx(A(2:M%Nx-1,:,:),P(2:M%Nx-1,:),R(2:M%Nx-1,:),init_status)
             ! call calculate_pressure_sparse(A(1:M%Nx-1,:,:),P(1:M%Nx-1,:),R(1:M%Nx-1,:))
             call nvtxEndRange
 
