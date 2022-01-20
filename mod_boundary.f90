@@ -34,17 +34,20 @@ contains
         real(real64), intent(in out) :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
 
         ! Apply boundary conditions
+        ! Top
         u(:,M%yu%lb) = 2*ubottom - u(:,M%yu%lb+1);
         u(:,M%yu%ub) = 2*utop    - u(:,M%yu%ub-1);
-        v(M%xv%lb,:) = 2*vleft   - v(M%xv%lb+1,:);
-
-        u(M%xu%lb,:)    = uleft;
+        ! Bottom
         v(:,M%yv%ub)    = vtop;
         v(:,M%yv%lb)    = vbottom;
-
         ! Outlet
         u(M%xu%ub,:)    = u(M%xu%ub-1,:);
         v(M%xv%ub,:)    = v(M%xv%ub-1,:);
+        ! Inlet
+        u(M%xu%lb,:)    = u(M%xu%lb-1,:);
+        v(M%xv%lb,:)    = v(M%xv%lb-1,:); 
+        ! u(M%xu%lb,:)    = uleft;
+        ! v(M%xv%lb,:) = 2*vleft   - v(M%xv%lb+1,:);
     end subroutine apply_boundary_channel
 
     subroutine apply_parabolic_inlet(M,u,uleft)
