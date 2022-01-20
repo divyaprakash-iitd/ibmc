@@ -133,7 +133,7 @@ program ibmc
     Fy  = 0.0d0
 
     ! Define boundary conditions for velocity
-    utop    = 0.0d0
+    utop    = 0.1d0
     vtop    = 0.0d0
     ubottom = 0.0d0
     vbottom = 0.0d0
