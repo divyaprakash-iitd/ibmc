@@ -5,7 +5,8 @@ module mod_boundary
    
     private
     public :: apply_boundary, apply_boundary_channel, &
-              apply_parabolic_inlet, apply_parabolic_initialization
+              apply_parabolic_inlet, apply_parabolic_initialization, &
+              apply_pulsating_inlet
 
 contains
 
@@ -61,6 +62,22 @@ contains
 
     end subroutine apply_parabolic_inlet
 
+    subroutine apply_pulsating_inlet(M,u,uleft,t)
+        class(mesh), intent(in)         :: M
+        real(real64), intent(in out)    :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub)
+        real(real64), intent(in)        :: uleft
+        real(real64), intent(in)        :: t
+
+        integer(int32) :: i
+        real(real64) :: y
+
+        do concurrent (i = M%yu%lb:M%yu%ub)
+            y = M%u_mesh(M%xu%lb,i)%y 
+            ! u(M%xu%lb,i) = 6*uleft*y/M%Ly*(1-y/M%Ly) 
+            u(M%xu%lb,i) = sin(2*3.14159*t)*uleft 
+        end do 
+
+    end subroutine apply_pulsating_inlet
     subroutine apply_parabolic_initialization(M,u,uleft)
         class(mesh), intent(in)         :: M
         real(real64), intent(in out)    :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub)

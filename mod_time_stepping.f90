@@ -143,7 +143,8 @@ contains
             ! Apply velocity boundary conditions
             call nvtxStartRange("Apply BC")
             call apply_boundary_channel(M,u,v,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
-            call apply_parabolic_inlet(M,u,uleft)
+            !call apply_parabolic_inlet(M,u,uleft)
+            call apply_pulsating_inlet(M,u,uleft,t)
             call nvtxEndRange
         
             call nvtxStartRange("Spread Forces")
@@ -164,7 +165,8 @@ contains
             call nvtxStartRange("Apply BC")
             ! Apply velocity boundary conditions to us and vs
             call apply_boundary_channel(M,us,vs,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
-            call apply_parabolic_inlet(M,us,uleft)
+            ! call apply_parabolic_inlet(M,us,uleft)
+            call apply_pulsating_inlet(M,u,uleft,t)
             call nvtxEndRange
 
 
@@ -225,7 +227,8 @@ contains
 
             call nvtxStartRange("Apply BC")
             call apply_boundary_channel(M,umid,vmid,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
-            call apply_parabolic_inlet(M,u,uleft)
+            ! call apply_parabolic_inlet(M,u,uleft)
+            call apply_pulsating_inlet(M,u,uleft,t)
             call nvtxEndRange
 
             call nvtxStartRange("Spread Forces")
@@ -246,7 +249,8 @@ contains
             call nvtxStartRange("Apply BC")
             ! Apply velocity boundary conditions to us and vs
             call apply_boundary_channel(M,us,vs,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
-            call apply_parabolic_inlet(M,us,uleft)
+            ! call apply_parabolic_inlet(M,us,uleft)
+            call apply_pulsating_inlet(M,u,uleft,t)
             call nvtxEndRange
 
             call nvtxStartRange("Calculate RHS")
