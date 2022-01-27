@@ -81,6 +81,7 @@ contains
         end do 
 
     end subroutine apply_pulsating_inlet
+    
     subroutine apply_parabolic_initialization(M,u,uleft)
         class(mesh), intent(in)         :: M
         real(real64), intent(in out)    :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub)
