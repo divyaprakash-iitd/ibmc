@@ -133,11 +133,11 @@ program ibmc
     Fy  = 0.0d0
 
     ! Define boundary conditions for velocity
-    utop    = 0.1d0
+    utop    = 0.2d0
     vtop    = 0.0d0
     ubottom = 0.0d0
     vbottom = 0.0d0
-    uleft   = 0.1d0
+    uleft   = 0.0d0
     vleft   = 0.0d0
     uright  = 0.0d0
     vright  = 0.0d0
@@ -161,7 +161,7 @@ program ibmc
     ! origin  = vec(Lx/2,0.1d0)      ! Location of the first Cilium (Bottom-Left Particle)
     radius = 0.04*Lx
     ! originP = vec(Lx/9,2*Ly/3)
-    originP = vec(0.6,0.4)
+    originP = vec(Lx/4,0.55)
     nparticles = 1
     npparticles = 8
     ! originP = vec(Lx/3,2.25*Ly/3)
