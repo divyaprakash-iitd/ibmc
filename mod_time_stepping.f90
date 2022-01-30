@@ -56,7 +56,7 @@ contains
         real(real64)    :: utop, vtop, ubottom, vbottom, &
                                uleft, vleft, uright, vright, ulid
         ! Spring properties
-        real(real64)    :: ko,kd,Rl,Ftip,kop,kod
+        real(real64)    :: ko,kd,Rl,tp,kop,kod
         
         ! AmgX
         logical         :: init_status
@@ -90,7 +90,7 @@ contains
         kop     = SP(3)
         kod     = SP(4)
         Rl      = SP(5)
-        Ftip    = SP(6)
+        tp    = SP(6)
 
         ! Get fluid properties
         nu  = FP(1)
@@ -113,7 +113,7 @@ contains
         ulid = utop
 
         do while (t.lt.tsim)
-            utop = sin(2*3.1415*t/60.0d0) * ulid
+            utop = sin(2*3.1415*t/tp) * ulid
             call nvtxStartRange("Time Loop")
             t = t + dt
             it = it + 1
