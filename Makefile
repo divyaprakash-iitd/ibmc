@@ -1,11 +1,11 @@
 CC=gcc
-FORT= gfortran
-#FORT= /opt/nvidia/hpc_sdk/Linux_x86_64/2021/compilers/bin/nvfortran
+#FORT= gfortran
+FORT= /opt/nvidia/hpc_sdk/Linux_x86_64/2021/compilers/bin/nvfortran
 #OPTS = -O3 -g -fbounds-check
 #OPTS = -O3 -g -fcheck=bounds
-OPTS = -O3 -fcheck=bounds
+#OPTS = -O3 -fcheck=bounds
 #OPTS = -O3 -g -stdpar -Minfo=accel
-#OPTS = -fast -stdpar=gpu
+OPTS = -fast -stdpar=gpu -Minfo=accel
 #OPTS = -fast
 
 OBJECTS= ibmc.o mod_pressure.o mod_amgx.o ftn_c.o mod_dims.o mod_mesh.o mod_time.o mod_boundary.o mod_time_stepping.o mod_io.o mod_particle.o mod_ib.o mod_vec.o mod_ibm.o mod_cilia.o mod_cilia_array.o mod_closed_cilia.o nvtx.o mod_cell.o mod_inter_particle_force.o
