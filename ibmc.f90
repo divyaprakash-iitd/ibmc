@@ -20,9 +20,11 @@ program ibmc
     ! Namelists for input
     namelist /time/ dt, it_save, tsim
     namelist /grid/ Nx, Ny, Lx, Ly
-    namelist /flow/ nu, rho, uleft
-    namelist /ciliaprop/ nc, np, ko, kd
-    namelist /particleprop/ nparticles, radius, npparticles, kop, kod
+    namelist /flow/ nu, rho, utop, TP
+    namelist /ciliaprop/ nc, lc, xoc, yoc, dc, wbl, ko, kd
+    ! namelist /ciliaprop/ nc, np, ko, kd
+    namelist /particleprop/ nparticles, radius, npparticles, xop, yop, kop, kod
+    ! namelist /particleprop/ nparticles, radius, npparticles, kop, kod
   
     ! Parameters
     integer(int32), parameter :: PI = 3.141592653589793
@@ -69,6 +71,7 @@ program ibmc
     type(vec)       :: origin       ! Origin of the immersed boundary
     real(real64)    :: ibL          ! Length of the immersed boundary
     integer(int32)  :: np           ! Number of particles in the immersed boundary
+    real(real64)  :: lc           ! Length of each cilium
     integer(int32)  :: nl           ! Number of layers in the cilia
     real(real64)    :: dp           ! Spacing between two particles in a cilia
     real(real64)    :: Ll           ! Length of a layer of cilia
@@ -89,6 +92,8 @@ program ibmc
     real(real64) :: kod = 0.50d0
     integer(int32) :: nparticles
     integer(int32) :: npparticles
+    real(real64) :: xoc, yoc
+    real(real64) :: xop, yop
 
     ! Understanding pointers
     type(cilia_array), pointer :: ca_pointer
@@ -157,11 +162,16 @@ program ibmc
     wbl     = Rl                    ! Width/Distance between two Layers
     dc      = 3*Rl                    ! Distance between two Cilia
     nc      = 15                    ! Number of cilia
-    origin  = vec(Lx/4,0.1d0)      ! Location of the first Cilium (Bottom-Left Particle)
+    xoc = Lx/4
+    yoc = 0.1d0
+    xop = 0.6
+    yop = 0.4
+
+    ! origin  = vec(Lx/4,0.1d0)      ! Location of the first Cilium (Bottom-Left Particle)
     ! origin  = vec(Lx/2,0.1d0)      ! Location of the first Cilium (Bottom-Left Particle)
     radius = 0.04*Lx
     ! originP = vec(Lx/9,2*Ly/3)
-    originP = vec(Lx/4,0.55)
+    ! originP = vec(Lx/4,0.55)
     nparticles = 1
     npparticles = 8
     ! originP = vec(Lx/3,2.25*Ly/3)
@@ -177,7 +187,10 @@ program ibmc
     write(*,'(2(A,I8),2(A,1p1e15.6))') "Nx = ",Nx, " Ny = ",Ny, &
     " Lx = ",Lx, " Ly = ",Ly
     
-    write(*,'(2(A,I8),2(A,1p1e15.6))') "nc = ",nc, " np = ",np
+    write(*,'(2(A,I8),2(A,1p1e15.6))') "nc = ",nc, " np = ",np, "wbl = ", wbl, "dc = ", dc
+
+    origin  = vec(xoc,yoc)      ! Location of the first Cilium (Bottom-Left Particle)
+    originP = vec(xop,yop)
 
     ! Create cilia and particle arrays
     CAP = cilia_array(nparticles,nl,npparticles)
@@ -185,7 +198,11 @@ program ibmc
     call create_closed_loop_array(CAP,0.5d0*radius,radius,originP)
     ! Store the original locations
     call store_original_locations(CAP)
+
+    np = floor(lc/dp)
     CA = cilia_array(nc,nl,np)
+    dc = max(dc,3*Rl)
+    wbl = max(wbl,rl)
     call create_cilia_array(CA,wbl,dc,dp,origin)
     ! Store the original locations
     call store_original_locations(CA)
@@ -209,7 +226,7 @@ program ibmc
     ! Arrays to transfer data
     BC = [utop,vtop,ubottom,vbottom,uleft,vleft,uright,vright]
     FP = [nu,rho]
-    SP = [ko,kd,kop,kod,Rl,Ftip]
+    SP = [ko,kd,kop,kod,Rl,tp]
     call time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAP,A,P,R,tsim,dt,it_save)
 
     call cpu_time(finish)
