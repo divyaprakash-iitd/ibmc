@@ -19,13 +19,18 @@ Ny  = 100/         ! Number of points in y direction
 &flow
 nu      = 0.1,     ! Kinematic viscosity
 rho     = 1,        ! Density
-uleft   = 0.05/      ! Inlet velocity
+utop   = 0.05,      ! Inlet velocity
+tp      = 20.0/     ! Time period
 !***********************************
 !***  Parameters related to cilia
 !***********************************
 &ciliaprop
 nc  = 10,          ! Number of cilia
-np  = 6,           ! Number of nodes in each cilium
+lc  = 3,           ! Length of each cilium
+xoc  = 0.25,         ! X-coordinate of the lower-left corner of the first cilium
+yoc  = 0.1,         ! Y-coordinate of the lower-left corner of the first cilium
+dc = 0.11,
+wbl = 0.05,
 ko  = 1.0,         ! Spring-stiffness constant for orthogonal links
 kd  = 0.5/         ! Spring-stiffness constant for non-orthogonal links
 !***********************************
@@ -35,5 +40,7 @@ kd  = 0.5/         ! Spring-stiffness constant for non-orthogonal links
 nparticles  = 1,        ! Number of particle
 radius      = 0.1,     ! Radius of particle
 npparticles = 20,        ! Number of nodes in each layer of particle
+xop         = 0.3,      ! X-coordinate of the lower-left corner of the first cilium
+yop         = 0.4,       ! Y-coordinate of the lower-left corner of the first cilium
 kop         = 5.0,      ! Spring-stiffness constant for orthogonal links
 kdp         = 2.5/      ! Spring-stiffness constant for non-orthogonal links
