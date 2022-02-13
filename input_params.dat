@@ -11,8 +11,8 @@ tsim    = 28.0/       ! Maximum time for which simulation will run
 &grid
 Lx  = 3.0,         ! Size of box in x direction 
 Ly  = 1.0,         ! Size of box in y direction
-Nx  = 300,         ! Number of points in x direction
-Ny  = 100/         ! Number of points in y direction
+Nx  = 900,         ! Number of points in x direction
+Ny  = 300/         ! Number of points in y direction
 !***********************************
 !*** Parameters related to flow
 !***********************************
