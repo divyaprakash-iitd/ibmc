@@ -44,8 +44,8 @@ contains
         u(M%xu%ub,:)    = u(M%xu%ub-1,:);
         v(M%xv%ub,:)    = v(M%xv%ub-1,:);
         ! Inlet
-        u(M%xu%lb,:)    = u(M%xu%lb-1,:);
-        v(M%xv%lb,:)    = v(M%xv%lb-1,:); 
+        u(M%xu%lb,:)    = u(M%xu%lb+1,:);
+        v(M%xv%lb,:)    = v(M%xv%lb+1,:); 
         ! u(M%xu%lb,:)    = uleft;
         ! v(M%xv%lb,:) = 2*vleft   - v(M%xv%lb+1,:);
     end subroutine apply_boundary_channel
