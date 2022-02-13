@@ -15,7 +15,7 @@ module mod_cell
     type :: cell
         type(vec)                           :: loc                  ! Location of the Bottom-Left point
         type(vec)                           :: L                    ! Dimension of the square cell
-        type(particleptr)                   :: Nlist(50)    ! Pointers of all the particles in a cell
+        type(particleptr)                   :: Nlist(100)    ! Pointers of all the particles in a cell
         integer(int32)                      :: NN ! No. of particles in the cell
         integer(int32)                      :: cellId 
     end type 
