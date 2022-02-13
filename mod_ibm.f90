@@ -89,7 +89,6 @@ contains
 
         ! Calculate the x-direction force on the u-velocity cells
         ! Iterating over all the grid points including the boundary values
-        
         do inp = 1,np
             Lx = B%boundary(inp)%x
             Ly = B%boundary(inp)%y
@@ -101,6 +100,11 @@ contains
                     ! print *, floor((Ly-StencilSize*M%dy)/M%dy)
             RightIndex  = LeftIndex     +   2*StencilSize
             TopIndex    = BottomIndex   +   2*StencilSize
+
+            ! print *, 'Left index = ', LeftIndex
+            ! print *, 'Right index = ', RightIndex
+            ! print *, 'Top index = ', TopIndex
+            ! print *, 'Bottom index = ', BottomIndex
 
             do j = BottomIndex,TopIndex
                 do i = LeftIndex,RightIndex
@@ -134,10 +138,9 @@ contains
             end do
         end do
 
-
         contains
 
-        function dirac(x,h)
+        pure function dirac(x,h)
             ! Defined for a uniform grid
             real(real64), intent(in) :: x(2)
             real(real64), intent(in) :: h
