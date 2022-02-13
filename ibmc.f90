@@ -31,11 +31,11 @@ program ibmc
     ! Code execution time
     real(real64)    :: start, finish
     ! Computational Domain
-    real(real64)    :: Lx       = 5.0d0
+    real(real64)    :: Lx       = 1.0d0
     real(real64)    :: Ly       = 1.0d0
     ! Mesh Paramaters
-    integer(int32)  :: Nx       = 500
-    integer(int32)  :: Ny       = 100
+    integer(int32)  :: Nx       = 1000
+    integer(int32)  :: Ny       = 1000
     ! Simulation time Paramaters
     real(real64)    :: tsim     = 1.000d0
     real(real64)    :: dt       = 0.001d0
