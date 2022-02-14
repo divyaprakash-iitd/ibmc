@@ -1,4 +1,15 @@
 module mod_ib
+!
+!   Purpose:
+!       To define the derived type to represent an immersed boundary made up of
+!       an array of the particles derived data type.
+!
+!       o__o__o__o__o__o       
+!       
+!       The structure in the above illustration represents the immersed boundary,
+!       which is basically particles connected by links.
+!    
+
     use iso_fortran_env, only: int32, real64
     use mod_particle
     implicit none
@@ -7,9 +18,9 @@ module mod_ib
     public :: ib
 
     type :: ib
-        integer(int32) :: np
-        type(particle), allocatable :: boundary(:)
-        character(len=1) :: t ! Open or closed
+        integer(int32)              :: np           ! The number of particles in an immersed boundary
+        type(particle), allocatable :: boundary(:)  ! An array of particles
+        character(len=1)            :: t            ! Describes the type of immersed boundary (Open or closed)
         ! To-do: Add neighbours information
     end type ib
 
@@ -20,7 +31,11 @@ module mod_ib
 contains
 
     pure type(ib) function ib_constructor(np) result(self)
-        ! Creates an immersed boundary of particles
+        ! 
+        !   Purpose:
+        !       To create an immersed boundary of particles and initialize it's attributes with zeros.
+        !
+
         integer(int32), intent(in) :: np
 
         ! Indices
