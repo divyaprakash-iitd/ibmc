@@ -1,4 +1,8 @@
 module mod_closed_cilia
+!
+!   Purpose:
+!       To provide subroutines to create closed cilia loops structures
+!       
     use iso_fortran_env, only: int32, real64, real64
     use mod_mesh
     use mod_ib
@@ -16,6 +20,14 @@ module mod_closed_cilia
 contains
 
     subroutine create_closed_loop(C,W,r,origin)
+    !
+    !   Purpose:
+    !       To create closed loop structures consisting of 2 immersed boundaries.
+    !       A circular structure is created with support of 2 layers and np particles.
+    !       The particles are equally spaced along the circumference.
+    !       The particles are assumed to be connected by individual springs.
+    !       The boundary type attribute 't' of the structure is specified as closed.
+    !
         class(cilia),   intent(in out)    :: C
         class(vec),     intent(in)        :: origin
         real(real64),   intent(in)        :: W          ! Width of cilia
@@ -46,6 +58,14 @@ contains
     end subroutine create_closed_loop
    
     subroutine create_closed_loop_ellipse(C,W,r,origin)
+    !
+    !   Purpose:
+    !       To create closed loop structures consisting of 2 immersed boundaries.
+    !       An elliptical structure is created with support of 2 layers and np particles.
+    !       The particles are equally spaced along the circumference.
+    !       The particles are assumed to be connected by individual springs.
+    !       The boundary type attribute 't' of the structure is specified as closed.
+    !
         class(cilia),   intent(in out)    :: C
         class(vec),     intent(in)        :: origin
         real(real64),   intent(in)        :: W          ! Width of cilia
@@ -97,6 +117,10 @@ contains
         contains
 
         function ellipse_points(r1,r2,n) result(coordinates)
+        !
+        !   Purpose:
+        !       To provide equally distributed points along the circumference of an ellipse
+        !
             integer(int32), intent(in) :: n
             real(real64), intent(in) :: r1, r2
 
@@ -153,10 +177,15 @@ contains
     end subroutine create_closed_loop_ellipse
 
     subroutine create_closed_loop_array(CA,W,r,origin)
+    !
+    !   Purpose:
+    !       To create an array of closed loop structures.
+    !       Currently an array consisting of only 1 closed loop structure is supported.
+    !
         class(cilia_array),   intent(in out)    :: CA
-        class(vec),     intent(in)        :: origin
-        real(real64),   intent(in)        :: W          ! Width of cilia
-        real(real64),   intent(in)        :: r          ! Radius of the loop
+        class(vec),     intent(in)              :: origin
+        real(real64),   intent(in)              :: W          ! Width of cilia
+        real(real64),   intent(in)              :: r          ! Radius of the loop
 
         integer(int32) :: ic
 
@@ -168,6 +197,10 @@ contains
     end subroutine create_closed_loop_array
 
     subroutine calculate_closed_loop_array_force(CA,ko,kd,Rlv,Rlh,Rld)
+    !
+    !   Purpose:
+    !       To calculate the forces in the links in a each closed loop of the array of closed loops
+    !
         class(cilia_array), intent(in out)  :: CA      ! Cilia array
         real(real64),       intent(in)      :: ko      ! Horizontal spring stiffness
         real(real64),       intent(in)      :: kd      ! Diagonal spring stiffness
@@ -182,6 +215,10 @@ contains
     end subroutine calculate_closed_loop_array_force
 
     subroutine calculate_closed_loop_force(C,ko,kd,Rlv,Rlh,Rld)
+    !
+    !   Purpose:
+    !       To calculate the forces in the links in a each immersed boundary of a closed loop
+    !
         class(cilia), intent(in out)    :: C         ! Cilia structure
         real(real64), intent(in)        :: ko        ! Horizontal spring stiffness
         real(real64), intent(in)        :: kd        ! Diagonal spring stiffness
