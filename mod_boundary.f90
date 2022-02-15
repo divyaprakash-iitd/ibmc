@@ -1,4 +1,8 @@
 module mod_boundary
+!
+!   Purpose: 
+!       To provide subroutines to apply boundary conditions to computational domain.
+!       
     use iso_fortran_env, only: int32, real64, int32, real64
     use mod_mesh
     implicit none
@@ -11,6 +15,12 @@ module mod_boundary
 contains
 
     pure subroutine apply_boundary(M,u,v,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
+    !
+    !   Purpose: 
+    !       To apply the following boundary conditions.
+    !       Top and Bottom: Wall (No-slip)
+    !       Left and Right: Wall (No-slip)
+    !       (Correction required in the description)
         class(mesh), intent(in) :: M
         real(real64), intent(in) :: utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright
         real(real64), intent(in out) :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
@@ -29,6 +39,12 @@ contains
     end subroutine apply_boundary
     
     pure subroutine apply_boundary_channel(M,u,v,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
+    !
+    !   Purpose: 
+    !       To apply the following boundary conditions.
+    !       Top and Bottom: Wall (No-slip)
+    !       Left and Right: Pressure specified, zero gradient for velocity
+    ! 
         class(mesh), intent(in) :: M
         real(real64), intent(in) :: utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright
         real(real64), intent(in out) :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub), v(M%xv%lb:M%xv%ub,M%yv%lb:M%yv%ub)
@@ -51,6 +67,11 @@ contains
     end subroutine apply_boundary_channel
 
     subroutine apply_parabolic_inlet(M,u,uleft)
+    !
+    !   Purpose: 
+    !       To apply the following boundary conditions.
+    !       Left: Applies a parabolic velocity profile at the inlet
+    ! 
         class(mesh), intent(in)         :: M
         real(real64), intent(in out)    :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub)
         real(real64), intent(in)        :: uleft
@@ -66,6 +87,11 @@ contains
     end subroutine apply_parabolic_inlet
 
     subroutine apply_pulsating_inlet(M,u,uleft,t)
+    !
+    !   Purpose: 
+    !       To apply the following boundary conditions.
+    !       Left: Applies a pulsating velocity profile at the inlet
+    ! 
         class(mesh), intent(in)         :: M
         real(real64), intent(in out)    :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub)
         real(real64), intent(in)        :: uleft
@@ -83,6 +109,11 @@ contains
     end subroutine apply_pulsating_inlet
     
     subroutine apply_parabolic_initialization(M,u,uleft)
+    !
+    !   Purpose: 
+    !       To apply the following boundary conditions.
+    !       Left: Applies a parabolic velocity initialization in the entire domain
+    ! 
         class(mesh), intent(in)         :: M
         real(real64), intent(in out)    :: u(M%xu%lb:M%xu%ub,M%yu%lb:M%yu%ub)
         real(real64), intent(in)        :: uleft

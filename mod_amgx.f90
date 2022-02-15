@@ -1,7 +1,7 @@
 module mod_amgx
 !
 !   Purpose:
-!       To solve a system of linear equations with the AmgX library.
+!       To provide subroutines to solve a system of linear equations with the AmgX library.
 !       This is accomplished in two steps.
 !       (1) Convert the Sparse Laplacian Matrix into CRS format
 !       (2) Solve the system of equations by calling the AmgX functions
