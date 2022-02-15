@@ -1,4 +1,12 @@
 module mod_amgx
+!
+!   Purpose:
+!       To solve a system of linear equations with the AmgX library.
+!       This is accomplished in two steps.
+!       (1) Convert the Sparse Laplacian Matrix into CRS format
+!       (2) Solve the system of equations by calling the AmgX functions
+!           Fortran to C wrapper
+!    
     use iso_fortran_env, only: int32, int32, real64, real64
     use iso_c_binding, only: c_int, c_double, c_loc
     use nvtx
@@ -9,14 +17,15 @@ module mod_amgx
     public :: calculate_pressure_amgx
 
     ! CRS data (Common across all the subroutines in this module)
-    real(c_double), allocatable, target :: val(:)
-    integer(c_int), allocatable, target :: col_ind(:)
-    integer(c_int), allocatable, target :: row_ptr(:)
-    real(c_double), allocatable, target :: rhsv(:)
-    real(c_double), allocatable, target :: sol(:)
-    integer(c_int),dimension(4), target :: crs_data
-    integer(c_int) :: NNZ
-    integer(int32) :: init_am, solve_am ! Return Variables
+    ! CRS format description: http://netlib.org/linalg/html_templates/node91.html
+    real(c_double), allocatable, target :: val(:)       ! The elements of the coefficient matrix
+    integer(c_int), allocatable, target :: col_ind(:)   ! The column indices of the CRS matrix
+    integer(c_int), allocatable, target :: row_ptr(:)   ! The row pointers of the values  
+    real(c_double), allocatable, target :: rhsv(:)      ! The Right Handside Vector 
+    real(c_double), allocatable, target :: sol(:)       ! The Solution vector
+    integer(c_int),dimension(4), target :: crs_data     ! The vector containing information about block size, total no. of unknonws
+    integer(c_int)                      :: NNZ          ! Number of non-zero elements
+    integer(int32)                      :: init_am, solve_am    ! Return Variables for the wrapper functions
     
     ! Domain data
     integer(int32) :: Nx, Ny
@@ -24,10 +33,18 @@ module mod_amgx
     contains
 
     subroutine calculate_pressure_amgx(A,x,b,init_status)
+    !
+    !   Purpose:
+    !       To solve the system of equations Ax = b by using the AmgX library and 
+    !       calling wrapper functions.
+    !       The wrapper functions being called are as follows.
+    !       (1) init_amgx()
+    !       (2) solve_amgx()
+    !
 
-        real(real64), intent(in)        :: A(:,:,:)    ! Coefficient matrix
-        real(real64), intent(in out)    :: x(:,:)        ! Pressure matrix
-        real(real64), intent(in)        :: b(:,:)        ! Divergence matrix 
+        real(real64), intent(in)        :: A(:,:,:)     ! Coefficient matrix
+        real(real64), intent(in out)    :: x(:,:)       ! Pressure matrix
+        real(real64), intent(in)        :: b(:,:)       ! Divergence matrix 
         logical, intent(in out) :: init_status
         
         if (init_status .eqv..False.) then
@@ -63,6 +80,10 @@ module mod_amgx
     end subroutine calculate_pressure_amgx
 
     subroutine generate_crs_matrix_fast(A)
+    !
+    !   Purpose:
+    !       To generate a CRS format matrix from the given sparse matrix
+    !
        
         real(real64), intent(in) :: A(:,:,:)
 
@@ -153,7 +174,10 @@ module mod_amgx
     end subroutine generate_crs_matrix_fast
 
     subroutine generate_crs_matrix(A)
-       
+    !
+    !   Purpose:
+    !       To generate a CRS format matrix from the given sparse matrix
+    !
         real(real64), intent(in) :: A(:,:,:)
 
         integer(int32) :: i,j,flag,L,R,T,B,row,col
