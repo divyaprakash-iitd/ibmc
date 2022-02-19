@@ -113,7 +113,9 @@ contains
         ulid = utop
 
         do while (t.lt.tsim)
-            utop = sin(2*3.1415*t/tp) * ulid
+            ! ulid is the amplitude
+            utop = 2*3.1415/tp*ulid*cos(2*3.1415*t/tp)
+            !utop = sin(2*3.1415*t/tp) * ulid
             call nvtxStartRange("Time Loop")
             t = t + dt
             it = it + 1
