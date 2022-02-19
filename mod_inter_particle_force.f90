@@ -174,7 +174,7 @@ contains
         k = 0.1
 
         ! Cut-off distnace
-        dcutoff = 0.1
+        dcutoff = 0.000002
 
 
         do i = 1,masterC%NN
