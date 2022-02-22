@@ -57,7 +57,7 @@ contains
 
     end subroutine create_closed_loop
    
-    subroutine create_closed_loop_ellipse(C,W,r,origin)
+    subroutine create_closed_loop_ellipse(C,W,r,ar,origin)
     !
     !   Purpose:
     !       To create closed loop structures consisting of 2 immersed boundaries.
@@ -70,6 +70,7 @@ contains
         class(vec),     intent(in)        :: origin
         real(real64),   intent(in)        :: W          ! Width of cilia
         real(real64),   intent(in)        :: r          ! Radius of the loop
+        real(real64),   intent(in)        :: ar         ! Aspect Ratio
 
         real(real64)    :: dtheta   ! Spacing of particles in the closed loop
         integer(int32)  :: nl       ! No. of layers
@@ -81,7 +82,7 @@ contains
 
         ! Semi-minor and semi-major axis
         a = r    
-        b = 2*r
+        b = a/ar
 
         ! Assign values
         nl = C%nl
@@ -176,7 +177,7 @@ contains
 
     end subroutine create_closed_loop_ellipse
 
-    subroutine create_closed_loop_array(CA,W,r,origin)
+    subroutine create_closed_loop_array(CA,W,r,ar,origin)
     !
     !   Purpose:
     !       To create an array of closed loop structures.
@@ -186,13 +187,14 @@ contains
         class(vec),     intent(in)              :: origin
         real(real64),   intent(in)              :: W          ! Width of cilia
         real(real64),   intent(in)              :: r          ! Radius of the loop
+        real(real64),   intent(in)              :: ar         ! Aspect Ratio
 
         integer(int32) :: ic
 
         ! Assign locations to the particles of the cilia
         do ic = 1,CA%nc
             ! call create_closed_loop(CA%array(ic),W,r,origin)
-            call create_closed_loop_ellipse(CA%array(ic),W,r,origin)
+            call create_closed_loop_ellipse(CA%array(ic),W,r,ar,origin)
         end do
     end subroutine create_closed_loop_array
 

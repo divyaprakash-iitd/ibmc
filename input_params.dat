@@ -39,6 +39,7 @@ kd  = 0.5/         ! Spring-stiffness constant for non-orthogonal links
 &particleprop
 nparticles  = 1,        ! Number of particle
 radius      = 0.1,     ! Radius of particle
+ar          = 2,        ! Aspect Ratio
 npparticles = 20,        ! Number of nodes in each layer of particle
 xop         = 0.3,      ! X-coordinate of the lower-left corner of the first cilium
 yop         = 0.4,       ! Y-coordinate of the lower-left corner of the first cilium

@@ -23,7 +23,7 @@ program ibmc
     namelist /flow/ nu, rho, utop, TP
     namelist /ciliaprop/ nc, lc, xoc, yoc, dc, wbl, ko, kd
     ! namelist /ciliaprop/ nc, np, ko, kd
-    namelist /particleprop/ nparticles, radius, npparticles, xop, yop, kop, kod
+    namelist /particleprop/ nparticles, radius, ar, npparticles, xop, yop, kop, kod
     ! namelist /particleprop/ nparticles, radius, npparticles, kop, kod
   
     ! Parameters
@@ -94,6 +94,7 @@ program ibmc
     integer(int32) :: npparticles
     real(real64) :: xoc, yoc
     real(real64) :: xop, yop
+    real(real64) :: ar ! Aspect ratio
 
     ! Understanding pointers
     type(cilia_array), pointer :: ca_pointer
@@ -170,6 +171,7 @@ program ibmc
     ! origin  = vec(Lx/4,0.1d0)      ! Location of the first Cilium (Bottom-Left Particle)
     ! origin  = vec(Lx/2,0.1d0)      ! Location of the first Cilium (Bottom-Left Particle)
     radius = 0.04*Lx
+    ar = 2.0d0
     ! originP = vec(Lx/9,2*Ly/3)
     ! originP = vec(Lx/4,0.55)
     nparticles = 1
@@ -189,13 +191,15 @@ program ibmc
     
     write(*,'(2(A,I8),2(A,1p1e15.6))') "nc = ",nc, " np = ",np, "wbl = ", wbl, "dc = ", dc
 
+    print *, 'Radius: ', radius
+
     origin  = vec(xoc,yoc)      ! Location of the first Cilium (Bottom-Left Particle)
     originP = vec(xop,yop)
 
     ! Create cilia and particle arrays
     CAP = cilia_array(nparticles,nl,npparticles)
     ca_pointer => CAP
-    call create_closed_loop_array(CAP,0.5d0*radius,radius,originP)
+    call create_closed_loop_array(CAP,0.5d0*radius,radius,ar,originP)
     ! Store the original locations
     call store_original_locations(CAP)
 
