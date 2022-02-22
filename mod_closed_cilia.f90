@@ -82,7 +82,7 @@ contains
 
         ! Semi-minor and semi-major axis
         a = r    
-        b = a/ar
+        b = a*ar
 
         ! Assign values
         nl = C%nl
