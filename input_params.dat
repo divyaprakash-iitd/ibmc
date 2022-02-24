@@ -1,4 +1,9 @@
 !***********************************
+!*** Simulation type
+!***********************************
+&stype
+simtype      = 2/       ! Simulation type (1=all,2=cillia,3= particle)    
+!***********************************
 !*** Time related parameters
 !***********************************
 &time

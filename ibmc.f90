@@ -18,6 +18,7 @@ program ibmc
     implicit none
 
     ! Namelists for input
+    namelist /stype/ simtype
     namelist /time/ dt, it_save, tsim
     namelist /grid/ Nx, Ny, Lx, Ly
     namelist /flow/ nu, rho, utop, TP
@@ -25,7 +26,10 @@ program ibmc
     ! namelist /ciliaprop/ nc, np, ko, kd
     namelist /particleprop/ nparticles, radius, ar, npparticles, xop, yop, kop, kod
     ! namelist /particleprop/ nparticles, radius, npparticles, kop, kod
-  
+    
+    ! Simulation type
+    integer(int32) :: simtype
+
     ! Parameters
     integer(int32), parameter :: PI = 3.141592653589793
     ! Code execution time
@@ -148,6 +152,8 @@ program ibmc
     uright  = 0.0d0
     vright  = 0.0d0
 
+   ! Default simulation type
+    simtype = 1
     
     ! Generate Laplacian matrix
     call generate_laplacian_sparse(A,M%dx,M%dy)
@@ -180,6 +186,7 @@ program ibmc
 
     ! Read input data from file
     open(1004,file="input_params.dat",form='formatted')
+    READ(unit=1004,nml=stype,iostat=err)
     READ(unit=1004,nml=time,iostat=err)
     READ(unit=1004,nml=flow,iostat=err)
     READ(unit=1004,nml=ciliaprop,iostat=err)
@@ -231,7 +238,15 @@ program ibmc
     BC = [utop,vtop,ubottom,vbottom,uleft,vleft,uright,vright]
     FP = [nu,rho]
     SP = [ko,kd,kop,kod,Rl,tp]
-    call time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAP,A,P,R,tsim,dt,it_save)
+
+    print *, simtype
+    if (simtype.eq.1) then ! all
+        call time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAP,A,P,R,tsim,dt,it_save)
+    elseif (simtype.eq.2) then ! cilia 
+        call time_loop_cilia(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAP,A,P,R,tsim,dt,it_save)
+    elseif (simtype.eq.3) then ! particle
+        call time_loop_particle(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAP,A,P,R,tsim,dt,it_save)
+    endif
 
     call cpu_time(finish)
     print '("Time = ",f15.10," seconds.")',finish-start
