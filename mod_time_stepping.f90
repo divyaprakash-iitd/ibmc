@@ -137,7 +137,7 @@ contains
             call nvtxEndRange
             
             call nvtxStartRange("Calculate inter-particle forces")
-            call calculate_forces(cell_array)
+            call calculate_forces(cell_array,M)
             call nvtxEndRange
            
             call nvtxStartRange("Copy cilia")
@@ -229,7 +229,7 @@ contains
             call nvtxEndRange
             
             call nvtxStartRange("Calculate inter-particle forces")
-            call calculate_forces(cell_array)
+            call calculate_forces(cell_array,M)
             call nvtxEndRange
 
             call nvtxStartRange("Apply BC")
@@ -431,7 +431,7 @@ contains
             call nvtxEndRange
             
             call nvtxStartRange("Calculate inter-particle forces")
-            call calculate_forces(cell_array)
+            call calculate_forces(cell_array,M)
             call nvtxEndRange
            
             call nvtxStartRange("Copy cilia")
@@ -523,7 +523,7 @@ contains
             call nvtxEndRange
             
             call nvtxStartRange("Calculate inter-particle forces")
-            call calculate_forces(cell_array)
+            call calculate_forces(cell_array,M)
             call nvtxEndRange
 
             call nvtxStartRange("Apply BC")
@@ -725,7 +725,7 @@ contains
             call nvtxEndRange
             
             call nvtxStartRange("Calculate inter-particle forces")
-            call calculate_forces(cell_array)
+            call calculate_forces(cell_array,M)
             call nvtxEndRange
            
             call nvtxStartRange("Copy cilia")
@@ -817,7 +817,7 @@ contains
             call nvtxEndRange
             
             call nvtxStartRange("Calculate inter-particle forces")
-            call calculate_forces(cell_array)
+            call calculate_forces(cell_array,M)
             call nvtxEndRange
 
             call nvtxStartRange("Apply BC")

@@ -126,10 +126,14 @@ contains
         close(fileunit)
     end subroutine write_particle_data
 
-    subroutine calculate_forces(cell_array)
+    subroutine calculate_forces(cell_array,M)
         class(cell), intent(inout) :: cell_array(:,:)
+        class(mesh), intent(in) :: M
 
         integer(int32) :: i, j, NNx, NNy
+        real(real64)   :: dcutoff
+        
+        dcutoff = 2*M%dx
 
         NNx = size(cell_array,1)
         NNy = size(cell_array,2)
@@ -137,45 +141,42 @@ contains
         do j = 1,NNy
             do i = 1,NNx
                 ! ! Calculate same cell forces
-                call calculate_force_neighbouring_cells(cell_array(i,j),cell_array(i,j))
+                call calculate_force_neighbouring_cells(cell_array(i,j),cell_array(i,j),dcutoff)
 
                 ! Right
                 if ((i+1).le.NNx) then
-                    call calculate_force_neighbouring_cells(cell_array(i,j),cell_array(i+1,j))
+                    call calculate_force_neighbouring_cells(cell_array(i,j),cell_array(i+1,j),dcutoff)
                 end if
                 
                 ! Top
                 if ((j+1).le.NNy) then
-                    call calculate_force_neighbouring_cells(cell_array(i,j),cell_array(i,j+1))
+                    call calculate_force_neighbouring_cells(cell_array(i,j),cell_array(i,j+1),dcutoff)
                 end if
 
                 ! Top Right
                 if (((i+1).le.NNx).and.((j+1).le.NNy)) then
-                    call calculate_force_neighbouring_cells(cell_array(i,j),cell_array(i+1,j+1))
+                    call calculate_force_neighbouring_cells(cell_array(i,j),cell_array(i+1,j+1),dcutoff)
                 end if
                 
                 ! Top Left
                 if (((i-1).ge.1).and.((j+1).le.NNy)) then
-                    call calculate_force_neighbouring_cells(cell_array(i,j),cell_array(i-1,j+1))
+                    call calculate_force_neighbouring_cells(cell_array(i,j),cell_array(i-1,j+1),dcutoff)
                 end if
 
             end do
         end do
     end subroutine calculate_forces
 
-    subroutine calculate_force_neighbouring_cells(masterC, slaveC)
+    subroutine calculate_force_neighbouring_cells(masterC, slaveC,dcutoff)
         class(cell), intent(inout) :: masterC
         class(cell), intent(inout) :: slaveC
+        real(real64), intent(in)   :: dcutoff
 
         integer(int32) :: i, j
-        real(real64) :: xm, ym, xsl, ysl, d, Fmx, Fmy, Fslx, Fsly, dcutoff, k
+        real(real64) :: xm, ym, xsl, ysl, d, Fmx, Fmy, Fslx, Fsly, k
 
         ! Spring constants
-        k = 0.1
-
-        ! Cut-off distnace
-        dcutoff = 0.000002
-
+        k = 0.01
 
         do i = 1,masterC%NN
                 ! Master particle location
