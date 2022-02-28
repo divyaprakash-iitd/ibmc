@@ -1002,7 +1002,11 @@ contains
 
         do ic = 1,CA%nc
             corigin%x = origin%x + (ic-1)*(dc+W)
-            call create_cilia(CA%array(ic),W,dp,corigin)
+            if ((ic==1).or.(ic==2).or.(ic==(CA%nc-1)).or.(ic==CA%nc)) then
+                call create_cilia(CA%array(ic),W,1.3*dp,corigin)
+            else
+                call create_cilia(CA%array(ic),W,dp,corigin)
+            endif
         end do
 
     end subroutine create_cilia_array
@@ -1017,7 +1021,11 @@ contains
 
         ! Calculate forces for all the cilia within the array
         do ic = 1,CA%nc
-            call calculate_cilia_force(CA%array(ic),ko,kd,Rl)
+            if ((ic==1).or.(ic==2).or.(ic==(CA%nc-1)).or.(ic==CA%nc)) then
+                call calculate_cilia_force(CA%array(ic),4*ko,4*kd,Rl)
+            else
+                call calculate_cilia_force(CA%array(ic),ko,kd,Rl)
+            endif
         end do
     end subroutine calculate_cilia_array_force
 
