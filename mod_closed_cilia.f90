@@ -15,7 +15,7 @@ module mod_closed_cilia
     real(real64), parameter :: PI = 3.141592653589793
 
     private
-    public:: create_closed_loop, create_closed_loop_array, calculate_closed_loop_array_force
+    public:: create_closed_loop, create_closed_loop_array, calculate_closed_loop_array_force, update_ellipse
     
 contains
 
@@ -252,6 +252,89 @@ contains
         call calculate_diagonal_link_force_pos(C%layers(2),C%layers(1),kd,Rld)
     end subroutine calculate_closed_loop_force
 
+    subroutine update_ellipse(ellipse,Area,radius,t,tp)
+        implicit none
+        class(cilia), intent(inout)   :: ellipse ! The ciliay array representing cilia (only one element in the array)
+        real(real64), intent(in)      :: radius  ! Radius (specified in the input file)
+        real(real64),intent(in)       :: t       ! Time instant in the simulation
+        real(real64),intent(in)       :: tp      ! Time-period of the sinusoidal change of the aspect ratio
+        real(real64),intent(in)       :: Area
 
+        real(real64) :: xc, yc
+        real(real64) :: theta, theta1, theta2
+        real(real64) :: a
+        integer(int32) :: i, j
+        real(real64) :: rotM(2,2)
+        real(real64), allocatable :: Ecor(:,:), C(:,:)
+        real(real64) :: ar, AAr, Armin
+        type(vec) :: origin
+
+        ! Allocate coordinate matrices of the ellipse
+        allocate(Ecor(2,ellipse%np), C(2,ellipse%np))
+        
+        ! Calculate the aspect ratio
+        AAr = 0.50d0
+        Armin = 1.50d0
+        ar = AAr*cos(2*PI/tp*t) + Armin
+        print *, 'Aspect ratio = ', ar
+
+        xc = 0.0d0
+        yc = 0.0d0
+        ! Calculate the center of the ellipse
+        do i = 1,ellipse%layers(1)%np
+            xc = xc + ellipse%layers(1)%boundary(i)%x
+            yc = yc + ellipse%layers(1)%boundary(i)%y
+        end do 
+        xc = xc/ellipse%layers(1)%np
+        yc = yc/ellipse%layers(1)%np
+        origin = vec(xc,yc)
+        ! Center coordinates matrix
+        C(1,:) = xc;
+        C(2,:) = yc;
+
+        ! Calculate the orientation of the current particle
+        theta1 = atan2((ellipse%layers(1)%boundary(2)%y-yc), (ellipse%layers(1)%boundary(2)%x-xc))
+
+
+        ! Create the new values of a and b based on the area
+        a = sqrt(Area/PI/ar)
+        
+        ! Calculate points on the new ellipse using the above function
+        call create_closed_loop_ellipse(ellipse,0.5d0*a,a,ar,origin)
+
+        ! Calculate angle of the default orientation 
+        ! Calculate the center of the ellipse
+        do i = 1,ellipse%layers(1)%np
+            xc = xc + ellipse%layers(1)%boundary(i)%x
+            yc = yc + ellipse%layers(1)%boundary(i)%y
+        end do 
+        xc = xc/ellipse%layers(1)%np
+        yc = yc/ellipse%layers(1)%np
+        theta2 = atan2((ellipse%layers(1)%boundary(2)%y-yc), (ellipse%layers(1)%boundary(2)%x-xc))
+
+        ! Angle by which the ellipse has to be rotated
+        theta = theta2 - theta1
+        print *, theta
+        ! Create the rotation matrix about the z-axis
+        rotM = reshape([cos(theta), -sin(theta), sin(theta), cos(theta)],[2,2],order=[2,1]) 
+        
+        ! Rotate the points according to the above calculated angle
+        do i = 1,2
+            ! Assemble the ellipse points in a matrix
+            do j = 1,ellipse%np
+                Ecor(1,j) = ellipse%layers(i)%boundary(j)%x
+                Ecor(2,j) = ellipse%layers(i)%boundary(j)%y
+            end do
+
+            Ecor = matmul(rotM,(Ecor-C)) + C
+
+            ! Assign the calculated coordinates back to the ellipse object
+            do j = 1,ellipse%np
+                ellipse%layers(i)%boundary(j)%x = Ecor(1,j)
+                ellipse%layers(i)%boundary(j)%y = Ecor(2,j)
+            end do
+        end do
+
+    end subroutine update_ellipse
 
 end module mod_closed_cilia
