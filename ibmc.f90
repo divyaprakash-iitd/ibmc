@@ -241,7 +241,7 @@ program ibmc
 
     print *, simtype
     if (simtype.eq.1) then ! all
-        call time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAP,A,P,R,tsim,dt,it_save)
+        call time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAP,A,P,R,tsim,dt,it_save,radius,ar)
     elseif (simtype.eq.2) then ! cilia 
         call time_loop_cilia(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAP,A,P,R,tsim,dt,it_save)
     elseif (simtype.eq.3) then ! particle

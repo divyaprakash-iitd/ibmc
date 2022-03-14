@@ -607,7 +607,7 @@ contains
         end do
     end subroutine time_loop_cilia
 
-    subroutine time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAP,A,P,R,tsim,dt,it_save)
+    subroutine time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAP,A,P,R,tsim,dt,it_save,radius,ar)
         real(real64), intent(in)          :: FP(:)
         real(real64), intent(in)          :: BC(:)
         class(mesh), intent(inout)        :: M
@@ -625,6 +625,9 @@ contains
         real(real64), intent(in)          :: tsim
         real(real64), intent(in)          :: dt
         integer(int32), intent(in)        :: it_save
+        real(real64), intent(in)          :: radius
+        real(real64), intent(in)          :: ar
+
         ! Intermediate cilia
         type(cilia_array) :: CAmid, CAPmid
 
@@ -702,15 +705,22 @@ contains
 
         do while (t.lt.tsim)
             ! ulid is the amplitude
-            utop = 2*3.1415/tp*ulid*cos(2*3.1415*t/tp)
+            utop = 2*3.1416/tp*ulid*cos(2*3.1415*t/tp)
             !utop = sin(2*3.1415*t/tp) * ulid
             call nvtxStartRange("Time Loop")
             t = t + dt
             it = it + 1
             
+            ! To dynamically change the particle shape we need to change the aspect ratio with
+            ! respect to some rate.
+            ! Let the rate be decided by a periodic function
+            
+            ! To do: Reinitialize the cilia and cilia array
+            call update_ellipse(CAP%array(1),3.1416*radius**2*ar,radius,t,1.0d0)
+            call store_original_locations(CAP)
             ! Calculate forces in the immersed boundary structure
             call nvtxStartRange("RK2:Step-1")
-            
+
             call nvtxStartRange("Assign particles to cells")
             ! Reinitialize the no. of particles before assignment
             cell_array%NN = 0
