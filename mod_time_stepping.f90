@@ -651,7 +651,10 @@ contains
 
         ! Resting lengths
         real(real64) :: RLH, RLD, RLV
-    
+
+        ! Deformation force
+        real(real64) :: fdef
+
         ! Create an array of cells
         type(cell), allocatable, target :: cell_array(:,:)
         integer(int32) :: Nxcell, Nycell
@@ -703,6 +706,8 @@ contains
         do while (t.lt.tsim)
             ! ulid is the amplitude
             utop = 2*3.1415/tp*ulid*cos(2*3.1415*t/tp)
+            
+            fdef = 2*3.1415/tp*0.0000001*cos(2*3.1415*t/tp)
             !utop = sin(2*3.1415*t/tp) * ulid
             call nvtxStartRange("Time Loop")
             t = t + dt
@@ -727,6 +732,9 @@ contains
             call nvtxStartRange("Calculate inter-particle forces")
             call calculate_forces(cell_array,M)
             call nvtxEndRange
+
+            ! Apply particle deformation forces
+            call dynamic_deform(CAP,fdef)
            
             call nvtxStartRange("Copy cilia")
             call copy_cilia(CA,CAmid)
@@ -820,6 +828,9 @@ contains
             call calculate_forces(cell_array,M)
             call nvtxEndRange
 
+            ! Apply particle deformation forces
+            call dynamic_deform(CAPmid,fdef)
+            
             call nvtxStartRange("Apply BC")
             call apply_boundary_channel(M,umid,vmid,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
             ! call apply_parabolic_inlet(M,u,uleft)
