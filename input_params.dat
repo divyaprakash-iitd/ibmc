@@ -42,6 +42,7 @@ kd  = 0.5/         ! Spring-stiffness constant for non-orthogonal links
 !***  Parameters related to particles
 !***********************************
 &particleprop
+fmag = 0.0000001, ! Deformation force
 nparticles  = 1,        ! Number of particle
 radius      = 0.1,     ! Semi-Minor axis
 ar          = 2,        ! Inverse of Aspect Ratio
