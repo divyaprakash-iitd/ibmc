@@ -285,7 +285,7 @@ contains
             Fy = F*ny
 
             ! Loop over the layers
-            do il = 1,CA%array(1)%nl
+            do il = 1,1!CA%array(1)%nl
                 ! Add force to the first half
                 CA%array(1)%layers(il)%boundary(ip)%Fx = CA%array(1)%layers(il)%boundary(ip)%Fx + Fx
                 CA%array(1)%layers(il)%boundary(ip)%Fy = CA%array(1)%layers(il)%boundary(ip)%Fy + Fy
