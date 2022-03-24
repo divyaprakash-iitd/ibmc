@@ -15,7 +15,7 @@ module mod_closed_cilia
     real(real64), parameter :: PI = 3.141592653589793
 
     private
-    public:: create_closed_loop, create_closed_loop_array, calculate_closed_loop_array_force
+    public:: create_closed_loop, create_closed_loop_array, calculate_closed_loop_array_force, dynamic_deform
     
 contains
 
