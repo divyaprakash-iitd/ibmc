@@ -253,5 +253,49 @@ contains
     end subroutine calculate_closed_loop_force
 
 
+    subroutine dynamic_deform(CA,F)
+        class(cilia_array), intent(inout) :: CA     ! Particle cilia array
+        real(real64)                      :: F      ! Force magnitude
+
+        integer(int32)                    :: il,ip, nphalf, ipopp
+        real(real64)                      :: nx, ny, nmag
+        real(real64)                      :: Fx, Fy
+
+        if (mod(CA%array(1)%np,2) == 0) then
+            nphalf = CA%array(1)%np/2 ! np should be even
+        else
+            print *, "The number of nodes in the particle must be even!"
+        endif
+
+        do ip = 1,nphalf
+            ! Opposite node number
+            ipopp = ip + nphalf
+
+            ! Calculate the outward pointing normal
+            nx = CA%array(1)%layers(1)%boundary(ip)%x - CA%array(1)%layers(2)%boundary(ip)%x
+            ny = CA%array(1)%layers(1)%boundary(ip)%y - CA%array(1)%layers(2)%boundary(ip)%y
+
+            !Calculate the direction
+            nmag = sqrt(nx**2+ny**2)
+            nx = nx/nmag
+            ny = ny/nmag
+
+            ! Calculate the force
+            Fx = F*nx
+            Fy = F*ny
+
+            ! Loop over the layers
+            do il = 1,CA%array(1)%nl
+                ! Add force to the first half
+                CA%array(1)%layers(il)%boundary(ip)%Fx = CA%array(1)%layers(il)%boundary(ip)%Fx + Fx
+                CA%array(1)%layers(il)%boundary(ip)%Fy = CA%array(1)%layers(il)%boundary(ip)%Fy + Fy
+
+                ! Add equal and opposite force the second half
+                CA%array(1)%layers(il)%boundary(ipopp)%Fx = CA%array(1)%layers(il)%boundary(ipopp)%Fx - Fx
+                CA%array(1)%layers(il)%boundary(ipopp)%Fy = CA%array(1)%layers(il)%boundary(ipopp)%Fy - Fy
+
+            end do
+        end do
+    end subroutine dynamic_deform
 
 end module mod_closed_cilia
