@@ -24,7 +24,7 @@ program ibmc
     namelist /flow/ nu, rho, utop, TP
     namelist /ciliaprop/ nc, lc, xoc, yoc, dc, wbl, ko, kd
     ! namelist /ciliaprop/ nc, np, ko, kd
-    namelist /particleprop/ nparticles, radius, ar, npparticles, xop, yop, kop, kod
+    namelist /particleprop/ fmag, nparticles, radius, ar, npparticles, xop, yop, kop, kod
     ! namelist /particleprop/ nparticles, radius, npparticles, kop, kod
     
     ! Simulation type
@@ -99,6 +99,7 @@ program ibmc
     real(real64) :: xoc, yoc
     real(real64) :: xop, yop
     real(real64) :: ar ! Aspect ratio
+    real(real64) :: fmag ! Force magnitude for particle deformation
 
     ! Understanding pointers
     type(cilia_array), pointer :: ca_pointer
@@ -241,7 +242,7 @@ program ibmc
 
     print *, simtype
     if (simtype.eq.1) then ! all
-        call time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAP,A,P,R,tsim,dt,it_save)
+        call time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAP,A,P,R,tsim,dt,it_save,fmag)
     elseif (simtype.eq.2) then ! cilia 
         call time_loop_cilia(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAP,A,P,R,tsim,dt,it_save)
     elseif (simtype.eq.3) then ! particle
