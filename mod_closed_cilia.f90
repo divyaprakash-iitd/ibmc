@@ -260,6 +260,7 @@ contains
         integer(int32)                    :: il,ip, nphalf, ipopp
         real(real64)                      :: nx, ny, nmag
         real(real64)                      :: Fx, Fy
+        real(real64)                      :: xc, yc
 
         if (mod(CA%array(1)%np,2) == 0) then
             nphalf = CA%array(1)%np/2 ! np should be even
@@ -267,13 +268,23 @@ contains
             print *, "The number of nodes in the particle must be even!"
         endif
 
+        ! Calculate the center of the ellipse
+        xc = 0.0d0
+        yc = 0.0d0
+        do ip = 1,CA%array(1)%layers(1)%np
+            xc = xc + CA%array(1)%layers(1)%boundary(ip)%x
+            yc = yc + CA%array(1)%layers(1)%boundary(ip)%y
+        end do 
+        xc = xc/CA%array(1)%layers(1)%np
+        yc = yc/CA%array(1)%layers(1)%np
+        
         do ip = 1,nphalf
             ! Opposite node number
             ipopp = ip + nphalf
 
             ! Calculate the outward pointing normal
-            nx = CA%array(1)%layers(1)%boundary(ip)%x - CA%array(1)%layers(2)%boundary(ip)%x
-            ny = CA%array(1)%layers(1)%boundary(ip)%y - CA%array(1)%layers(2)%boundary(ip)%y
+            nx = CA%array(1)%layers(1)%boundary(ip)%x - xc
+            ny = CA%array(1)%layers(1)%boundary(ip)%y - yc
 
             !Calculate the direction
             nmag = sqrt(nx**2+ny**2)
