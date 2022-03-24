@@ -714,10 +714,12 @@ contains
             ! To dynamically change the particle shape we need to change the aspect ratio with
             ! respect to some rate.
             ! Let the rate be decided by a periodic function
-            
-            ! To do: Reinitialize the cilia and cilia array
-            call update_ellipse(CAP%array(1),3.1416*radius**2*ar,radius,t,1.0d0)
-            call store_original_locations(CAP)
+           
+            if (t.gt.0.50d0) then
+                ! To do: Reinitialize the cilia and cilia array
+                call update_ellipse(CAP%array(1),3.1416*radius**2*ar,t,1.0d0)
+                call store_original_locations(CAP)
+            end if
             ! Calculate forces in the immersed boundary structure
             call nvtxStartRange("RK2:Step-1")
 

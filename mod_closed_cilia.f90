@@ -252,10 +252,9 @@ contains
         call calculate_diagonal_link_force_pos(C%layers(2),C%layers(1),kd,Rld)
     end subroutine calculate_closed_loop_force
 
-    subroutine update_ellipse(ellipse,Area,radius,t,tp)
+    subroutine update_ellipse(ellipse,Area,t,tp)
         implicit none
         class(cilia), intent(inout)   :: ellipse ! The ciliay array representing cilia (only one element in the array)
-        real(real64), intent(in)      :: radius  ! Radius (specified in the input file)
         real(real64),intent(in)       :: t       ! Time instant in the simulation
         real(real64),intent(in)       :: tp      ! Time-period of the sinusoidal change of the aspect ratio
         real(real64),intent(in)       :: Area
@@ -293,8 +292,7 @@ contains
         C(2,:) = yc;
 
         ! Calculate the orientation of the current particle
-        theta1 = atan2((ellipse%layers(1)%boundary(2)%y-yc), (ellipse%layers(1)%boundary(2)%x-xc))
-
+        theta1 = atan2((ellipse%layers(1)%boundary(5)%y-yc), (ellipse%layers(1)%boundary(5)%x-xc))
 
         ! Create the new values of a and b based on the area
         a = sqrt(Area/PI/ar)
@@ -310,7 +308,7 @@ contains
         end do 
         xc = xc/ellipse%layers(1)%np
         yc = yc/ellipse%layers(1)%np
-        theta2 = atan2((ellipse%layers(1)%boundary(2)%y-yc), (ellipse%layers(1)%boundary(2)%x-xc))
+        theta2 = atan2((ellipse%layers(1)%boundary(5)%y-yc), (ellipse%layers(1)%boundary(5)%x-xc))
 
         ! Angle by which the ellipse has to be rotated
         theta = theta2 - theta1
