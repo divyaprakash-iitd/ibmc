@@ -607,7 +607,7 @@ contains
         end do
     end subroutine time_loop_cilia
 
-    subroutine time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAP,A,P,R,tsim,dt,it_save)
+    subroutine time_loop(FP,BC,M,u,v,us,vs,Fx,Fy,SP,CA,CAP,A,P,R,tsim,dt,it_save,fmag)
         real(real64), intent(in)          :: FP(:)
         real(real64), intent(in)          :: BC(:)
         class(mesh), intent(inout)        :: M
@@ -625,6 +625,8 @@ contains
         real(real64), intent(in)          :: tsim
         real(real64), intent(in)          :: dt
         integer(int32), intent(in)        :: it_save
+        real(real64), intent(in)          :: fmag
+
         ! Intermediate cilia
         type(cilia_array) :: CAmid, CAPmid
 
@@ -707,7 +709,7 @@ contains
             ! ulid is the amplitude
             utop = 2*3.1415/tp*ulid*cos(2*3.1415*t/tp)
             
-            fdef = 2*3.1415/tp*0.0000001*cos(2*3.1415*t/tp)
+            fdef = fmag*sin(2*3.1415*t/tp)
             !utop = sin(2*3.1415*t/tp) * ulid
             call nvtxStartRange("Time Loop")
             t = t + dt
