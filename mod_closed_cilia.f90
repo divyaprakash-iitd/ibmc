@@ -261,12 +261,26 @@ contains
         real(real64)                      :: nx, ny, nmag
         real(real64)                      :: Fx, Fy
         real(real64)                      :: xc, yc
+        real(real64), allocatable         :: theta(:)
+
+        ! Allocate memory for theta 
+        allocate(theta(CA%array(1)%np))
+
+        if (F.lt.0) then
+            il = 2  ! Apply forces on the inner layer if force is negative (inward)
+        else
+            il = 1  ! Apply forces on the outer layer if force is positive (outward)
+        endif
+
 
         if (mod(CA%array(1)%np,2) == 0) then
             nphalf = CA%array(1)%np/2 ! np should be even
         else
             print *, "The number of nodes in the particle must be even!"
         endif
+
+        ! Calculate angles of the nodes in the particle in the original configuration
+        call calculate_angles(CA,theta)
 
         ! Calculate the center of the ellipse
         xc = 0.0d0
@@ -292,21 +306,43 @@ contains
             ny = ny/nmag
 
             ! Calculate the force
-            Fx = F*nx
-            Fy = F*ny
+            Fx = F*sin(theta(ip))*nx
+            Fy = F*sin(theta(ip))*ny
 
-            ! Loop over the layers
-            do il = 1,1!CA%array(1)%nl
-                ! Add force to the first half
-                CA%array(1)%layers(il)%boundary(ip)%Fx = CA%array(1)%layers(il)%boundary(ip)%Fx + Fx
-                CA%array(1)%layers(il)%boundary(ip)%Fy = CA%array(1)%layers(il)%boundary(ip)%Fy + Fy
+            ! Add force to the first half
+            CA%array(1)%layers(il)%boundary(ip)%Fx = CA%array(1)%layers(il)%boundary(ip)%Fx + Fx
+            CA%array(1)%layers(il)%boundary(ip)%Fy = CA%array(1)%layers(il)%boundary(ip)%Fy + Fy
 
-                ! Add equal and opposite force the second half
-                CA%array(1)%layers(il)%boundary(ipopp)%Fx = CA%array(1)%layers(il)%boundary(ipopp)%Fx - Fx
-                CA%array(1)%layers(il)%boundary(ipopp)%Fy = CA%array(1)%layers(il)%boundary(ipopp)%Fy - Fy
-
-            end do
+            ! Add equal and opposite force the second half
+            CA%array(1)%layers(il)%boundary(ipopp)%Fx = CA%array(1)%layers(il)%boundary(ipopp)%Fx - Fx
+            CA%array(1)%layers(il)%boundary(ipopp)%Fy = CA%array(1)%layers(il)%boundary(ipopp)%Fy - Fy
         end do
     end subroutine dynamic_deform
+
+    subroutine calculate_angles(CA,theta)
+        class(cilia_array), intent(inout)   :: CA
+        real(real64), intent(inout)         :: theta(:)
+
+        integer(int32) :: ip
+        real(real64) :: xc, yc
+        
+        ! Calculate the center of the ellipse (in the original configuration)
+        xc = 0.0d0
+        yc = 0.0d0
+        do ip = 1,CA%array(1)%layers(1)%np
+            xc = xc + CA%array(1)%layers(1)%boundary(ip)%xo
+            yc = yc + CA%array(1)%layers(1)%boundary(ip)%yo
+        end do 
+        xc = xc/CA%array(1)%layers(1)%np
+        yc = yc/CA%array(1)%layers(1)%np
+
+        do ip = 1,CA%array(1)%layers(1)%np
+            ! Calculate the angle between the nodes of ellipse in the
+            ! original configuration and the horizontal
+            theta(ip) = atan2((CA%array(1)%layers(1)%boundary(ip)%yo - yc),(CA%array(1)%layers(1)%boundary(ip)%xo)-xc)
+        end do
+
+        ! print *, theta
+    end subroutine calculate_angles
 
 end module mod_closed_cilia
