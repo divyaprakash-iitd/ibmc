@@ -708,8 +708,9 @@ contains
         do while (t.lt.tsim)
             ! ulid is the amplitude
             utop = 2*3.1415/tp*ulid*cos(2*3.1415*t/tp)
-            
-            fdef = fmag*sin(2*3.1415*t/tp)
+           
+            !print *, fmag
+            fdef = fmag*cos(2*3.1415*t/tp)
             !utop = sin(2*3.1415*t/tp) * ulid
             call nvtxStartRange("Time Loop")
             t = t + dt
