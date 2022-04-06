@@ -266,11 +266,11 @@ contains
         ! Allocate memory for theta 
         allocate(theta(CA%array(1)%np))
 
-        if (F.lt.0) then
-            il = 2  ! Apply forces on the inner layer if force is negative (inward)
-        else
-            il = 1  ! Apply forces on the outer layer if force is positive (outward)
-        endif
+        ! if (F.lt.0) then
+        !     il = 2  ! Apply forces on the inner layer if force is negative (inward)
+        ! else
+        !     il = 1  ! Apply forces on the outer layer if force is positive (outward)
+        ! endif
 
 
         if (mod(CA%array(1)%np,2) == 0) then
@@ -291,32 +291,38 @@ contains
         end do 
         xc = xc/CA%array(1)%layers(1)%np
         yc = yc/CA%array(1)%layers(1)%np
-        
-        do ip = 1,nphalf
-            ! Opposite node number
-            ipopp = ip + nphalf
+       
+        if (F.gt.0.0d0) then
+            do ip = 1,nphalf
+                ! Opposite node number
+                ipopp = ip + nphalf
 
-            ! Calculate the outward pointing normal
-            nx = CA%array(1)%layers(1)%boundary(ip)%x - xc
-            ny = CA%array(1)%layers(1)%boundary(ip)%y - yc
+                ! Calculate the outward pointing normal
+                nx = CA%array(1)%layers(1)%boundary(ip)%x - xc
+                ny = CA%array(1)%layers(1)%boundary(ip)%y - yc
 
-            !Calculate the direction
-            nmag = sqrt(nx**2+ny**2)
-            nx = nx/nmag
-            ny = ny/nmag
+                !Calculate the direction
+                nmag = sqrt(nx**2+ny**2)
+                nx = nx/nmag
+                ny = ny/nmag
 
-            ! Calculate the force
-            Fx = F*sin(theta(ip))*nx
-            Fy = F*sin(theta(ip))*ny
+                ! Calculate the force
+                ! Fx = F*sin(theta(ip))*nx
+                ! Fy = F*sin(theta(ip))*ny
+                Fx = F*nx
+                Fy = F*ny
 
-            ! Add force to the first half
-            CA%array(1)%layers(il)%boundary(ip)%Fx = CA%array(1)%layers(il)%boundary(ip)%Fx + Fx
-            CA%array(1)%layers(il)%boundary(ip)%Fy = CA%array(1)%layers(il)%boundary(ip)%Fy + Fy
+                ! Add force to the first half
+                do il = 1,1
+                    CA%array(1)%layers(il)%boundary(ip)%Fx = CA%array(1)%layers(il)%boundary(ip)%Fx + Fx
+                    CA%array(1)%layers(il)%boundary(ip)%Fy = CA%array(1)%layers(il)%boundary(ip)%Fy + Fy
 
-            ! Add equal and opposite force the second half
-            CA%array(1)%layers(il)%boundary(ipopp)%Fx = CA%array(1)%layers(il)%boundary(ipopp)%Fx - Fx
-            CA%array(1)%layers(il)%boundary(ipopp)%Fy = CA%array(1)%layers(il)%boundary(ipopp)%Fy - Fy
-        end do
+                    ! Add equal and opposite force the second half
+                    CA%array(1)%layers(il)%boundary(ipopp)%Fx = CA%array(1)%layers(il)%boundary(ipopp)%Fx - Fx
+                    CA%array(1)%layers(il)%boundary(ipopp)%Fy = CA%array(1)%layers(il)%boundary(ipopp)%Fy - Fy
+                end do
+            end do
+        end if
     end subroutine dynamic_deform
 
     subroutine calculate_angles(CA,theta)
