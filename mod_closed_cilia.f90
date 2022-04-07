@@ -15,7 +15,7 @@ module mod_closed_cilia
     real(real64), parameter :: PI = 3.141592653589793
 
     private
-    public:: create_closed_loop, create_closed_loop_array, calculate_closed_loop_array_force
+    public:: create_closed_loop, create_closed_loop_array, calculate_closed_loop_array_force, calculate_angles
     
 contains
 
@@ -255,5 +255,30 @@ contains
     end subroutine calculate_closed_loop_force
 
 
+    subroutine calculate_angles(CA)
+        class(cilia_array), intent(inout)   :: CA
 
+        integer(int32) :: ip, il
+        real(real64) :: xc, yc
+        
+        ! Calculate the center of the ellipse (in the original configuration)
+        xc = 0.0d0
+        yc = 0.0d0
+        do ip = 1,CA%array(1)%layers(1)%np
+            xc = xc + CA%array(1)%layers(1)%boundary(ip)%xo
+            yc = yc + CA%array(1)%layers(1)%boundary(ip)%yo
+        end do 
+        xc = xc/CA%array(1)%layers(1)%np
+        yc = yc/CA%array(1)%layers(1)%np
+
+        do il = 1,CA%array(1)%nl
+            do ip = 1,CA%array(1)%layers(il)%np
+                ! Calculate the angle between the nodes of ellipse in the
+                ! original configuration and the horizontal
+                CA%array(1)%layers(il)%boundary(ip)%theta = atan2((CA%array(1)%layers(il)%boundary(ip)%yo - yc), &
+                    (CA%array(1)%layers(il)%boundary(ip)%xo)-xc)
+            end do
+        end do
+
+    end subroutine calculate_angles
 end module mod_closed_cilia
