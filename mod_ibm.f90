@@ -1192,7 +1192,8 @@ contains
         ! Calculate distance between master and slave nodes
         Rl = norm2([(xsl-xm),(ysl-ym)])
         ! Rl = 0.9d0*Rl
-        Rl = Rl * (0.05d0*cos(2*PI*t) + 0.85)
+        Rl = Rl * (0.10d0*cos(2*PI*t) + 0.85) * (0.10d0*cos(master%theta) + 1.0)
+        ! Rl = Rl * (0.05d0*cos(2*PI*t) + 0.85)
         ! print *, 0.9d0*sin(2*PI*t)
         ! Calculate the current spacing between particles
         ! Master node location
