@@ -924,6 +924,7 @@ contains
                     CA2%array(ic)%layers(il)%boundary(ip)%Uy = CA1%array(ic)%layers(il)%boundary(ip)%Uy
                     CA2%array(ic)%layers(il)%boundary(ip)%Fx = CA1%array(ic)%layers(il)%boundary(ip)%Fx
                     CA2%array(ic)%layers(il)%boundary(ip)%Fy = CA1%array(ic)%layers(il)%boundary(ip)%Fy
+                    CA2%array(ic)%layers(il)%boundary(ip)%theta = CA1%array(ic)%layers(il)%boundary(ip)%theta
                 end do
             end do
         end do
