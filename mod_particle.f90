@@ -18,6 +18,7 @@ module mod_particle
         real(real64), allocatable :: xo, yo   ! Original location of the particle
         real(real64), allocatable :: Fx, Fy   ! The componenets of force acting on a particle
         real(real64), allocatable :: Ux, Uy   ! The velocity components of a particle
+        real(real64), allocatable :: theta    ! Angle with respect to the horizontal
     end type particle
 
     interface particle
@@ -39,6 +40,7 @@ contains
             self%Fy = 0.0d0
             self%Ux = 0.0d0
             self%Uy = 0.0d0
+            self%theta = 0.0d0
     end function ib_constructor
     
 end module mod_particle
