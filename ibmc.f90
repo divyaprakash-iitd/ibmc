@@ -103,6 +103,7 @@ program ibmc
     ! Understanding pointers
     type(cilia_array), pointer :: ca_pointer
 
+    integer(int32) :: iii
     ! ! Create an array of cells
     ! type(cell), allocatable, target :: cell_array(:,:)
     ! integer(int32) :: Nxcell, Nycell
@@ -217,6 +218,13 @@ program ibmc
     call create_cilia_array(CA,wbl,dc,dp,origin)
     ! Store the original locations
     call store_original_locations(CA)
+
+    ! Calculate angles for each node
+    call calculate_angles(CAP)
+
+    ! do iii = 1,CAP%array(1)%np
+    !     print *, CAP%array(1)%layers(2)%boundary(iii)%theta
+    ! end do
 
 
     ! ! Neghbour's list computations
