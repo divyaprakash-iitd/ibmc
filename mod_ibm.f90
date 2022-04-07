@@ -616,12 +616,13 @@ contains
         end do
     end subroutine write_location
 
-    subroutine calculate_spring_force(B,ko,kd,Rlo,t)
+    subroutine calculate_spring_force(B,ko,kd,Rlo,t,ti)
         class(ib), intent(in out) :: B    ! Immersed boundary
         real(real64), intent(in)  :: ko   ! Orthogonal Spring stiffness
         real(real64), intent(in)  :: kd   ! Diagonal Spring stiffness
         real(real64),intent(in)   :: Rlo   ! Resting length
         character(1), intent(in)  :: t    ! Boundary type (Open or Closed) 
+        real(real64), intent(in)      :: ti       ! Time instant
 
         integer(int32)  :: np   ! Number of nodes/particle
         integer(int32)  :: lastp ! Last particle while calculating forces
@@ -649,7 +650,7 @@ contains
             end if
             
             ! Calculate the spring force between master and slave nodes
-            F = spring_force(B%boundary(master),B%boundary(slave),ko)
+            F = spring_force(B%boundary(master),B%boundary(slave),ko,ti)
 
             ! Assign fores to master node
             B%boundary(master)%Fx = B%boundary(master)%Fx + F%x
@@ -804,11 +805,12 @@ contains
         ! end do
     end subroutine create_cilia
 
-    subroutine calculate_cilia_force(C,ko,kd,Rl)
+    subroutine calculate_cilia_force(C,ko,kd,Rl,ti)
         class(cilia), intent(in out) :: C       ! Cilia structure
         real(real64), intent(in)  :: ko         ! Horizontal spring stiffness
         real(real64), intent(in)  :: kd         ! Diagonal spring stiffness
         real(real64), intent(in)   :: Rl        ! Resting length
+        real(real64),       intent(in)      :: ti       ! Time instant
 
         character(1)  :: t = 'o'  ! Boundary type (Open for cilia)
         integer(int32) :: il, ip
@@ -823,17 +825,17 @@ contains
 
         ! Calculate forces on the layers
         do il = 1,C%nl
-            call calculate_spring_force(C%layers(il),ko,kd,Rl,t)
+            call calculate_spring_force(C%layers(il),ko,kd,Rl,t,ti)
         end do
 
 
 
         ! Calculate forces on the horizontal links
-        call calculate_horizontal_link_force(C%layers(1),C%layers(2),ko,Rl)
+        call calculate_horizontal_link_force(C%layers(1),C%layers(2),ko,Rl,ti)
 
         ! Calculate forces on the diagonal links (negative slope)
-        call calculate_diagonal_link_force(C%layers(1),C%layers(2),kd,Rl)
-        call calculate_diagonal_link_force_pos(C%layers(2),C%layers(1),kd,Rl)
+        call calculate_diagonal_link_force(C%layers(1),C%layers(2),kd,Rl,ti)
+        call calculate_diagonal_link_force_pos(C%layers(2),C%layers(1),kd,Rl,ti)
 
         ! Calculate forces on the diagonal links (Positive slope)
         ! call calculate_diagonal_link_force(C%layers(1),C%layers(2),ks,Rl)
@@ -846,10 +848,11 @@ contains
 
     end subroutine calculate_cilia_force
 
-    subroutine calculate_horizontal_link_force(masterL,slaveL,ks,Rlo)
+    subroutine calculate_horizontal_link_force(masterL,slaveL,ks,Rlo,t)
         class(ib), intent(in out) :: masterL, slaveL    ! Immersed boundary
         real(real64), intent(in)  :: ks   ! Spring stiffness
         real(real64),intent(in)   :: Rlo   ! Resting length
+        real(real64),       intent(in)      :: t       ! Time instant
 
         integer(int32)  :: np   ! Number of nodes/particle
         integer(int32)  :: ip   ! Indices
@@ -864,7 +867,7 @@ contains
         do ip = 1,np
 
             ! Calculate the spring force between master and slave nodes
-            F = spring_force(masterL%boundary(ip),slaveL%boundary(ip),ks)
+            F = spring_force(masterL%boundary(ip),slaveL%boundary(ip),ks,t)
 
             ! Assign fores to master node
             masterL%boundary(ip)%Fx = masterL%boundary(ip)%Fx + F%x
@@ -877,10 +880,11 @@ contains
 
     end subroutine calculate_horizontal_link_force
 
-    subroutine calculate_diagonal_link_force_pos(masterL,slaveL,kd,Rlo)
+    subroutine calculate_diagonal_link_force_pos(masterL,slaveL,kd,Rlo,t)
         class(ib), intent(in out) :: masterL, slaveL    ! Immersed boundary
         real(real64), intent(in)  :: kd   ! Spring stiffness
         real(real64),intent(in)   :: Rlo   ! Resting length
+        real(real64),       intent(in)      :: t       ! Time instant
 
         integer(int32)  :: np   ! Number of nodes/particle
         integer(int32)  :: ip, master, slave   ! Indices
@@ -898,7 +902,7 @@ contains
             slave = master - 1
 
             ! Calculate the spring force between master and slave nodes
-            F = spring_force(masterL%boundary(master),slaveL%boundary(slave),kd)
+            F = spring_force(masterL%boundary(master),slaveL%boundary(slave),kd,t)
             
             ! Assign fores to master node
             masterL%boundary(master)%Fx = masterL%boundary(master)%Fx + F%x
@@ -916,7 +920,7 @@ contains
             slave = np
 
             ! Calculate the spring force between master and slave nodes
-            F = spring_force(masterL%boundary(master),slaveL%boundary(slave),kd)
+            F = spring_force(masterL%boundary(master),slaveL%boundary(slave),kd,t)
 
             ! Assign fores to master node
             masterL%boundary(master)%Fx = masterL%boundary(master)%Fx + F%x
@@ -929,10 +933,11 @@ contains
 
     end subroutine calculate_diagonal_link_force_pos
 
-    subroutine calculate_diagonal_link_force(masterL,slaveL,kd,Rlo)
+    subroutine calculate_diagonal_link_force(masterL,slaveL,kd,Rlo,t)
         class(ib), intent(in out) :: masterL, slaveL    ! Immersed boundary
         real(real64), intent(in)  :: kd   ! Spring stiffness
         real(real64),intent(in)   :: Rlo   ! Resting length
+        real(real64),       intent(in)      :: t       ! Time instant
 
         integer(int32)  :: np   ! Number of nodes/particle
         integer(int32)  :: ip, master, slave   ! Indices
@@ -955,7 +960,7 @@ contains
             slave = master + 1
 
             ! Calculate the spring force between master and slave nodes
-            F = spring_force(masterL%boundary(master),slaveL%boundary(slave),kd)
+            F = spring_force(masterL%boundary(master),slaveL%boundary(slave),kd,t)
 
             ! Assign fores to master node
             masterL%boundary(master)%Fx = masterL%boundary(master)%Fx + F%x
@@ -973,7 +978,7 @@ contains
             slave = 1
             
             ! Calculate the spring force between master and slave nodes
-            F = spring_force(masterL%boundary(master),slaveL%boundary(slave),kd)
+            F = spring_force(masterL%boundary(master),slaveL%boundary(slave),kd,t)
 
             ! Assign fores to master node
             masterL%boundary(master)%Fx = masterL%boundary(master)%Fx + F%x
@@ -1012,11 +1017,12 @@ contains
 
     end subroutine create_cilia_array
 
-    subroutine calculate_cilia_array_force(CA,ko,kd,Rl)
+    subroutine calculate_cilia_array_force(CA,ko,kd,Rl,t)
         class(cilia_array), intent(in out)  :: CA      ! Cilia array
         real(real64),       intent(in)      :: ko      ! Horizontal spring stiffness
         real(real64),       intent(in)      :: kd      ! Diagonal spring stiffness
         real(real64),       intent(in)      :: Rl      ! Resting length
+        real(real64),       intent(in)      :: t       ! Time instant
 
         integer(int32) :: ic
 
@@ -1024,9 +1030,9 @@ contains
         do ic = 1,CA%nc
             !if ((ic==1).or.(ic==2).or.(ic==(CA%nc-1)).or.(ic==CA%nc)) then
             if ((ic==1).or.(ic==CA%nc)) then
-                call calculate_cilia_force(CA%array(ic),4*ko,4*kd,Rl)
+                call calculate_cilia_force(CA%array(ic),4*ko,4*kd,Rl,t)
             else
-                call calculate_cilia_force(CA%array(ic),ko,kd,Rl)
+                call calculate_cilia_force(CA%array(ic),ko,kd,Rl,t)
             endif
         end do
     end subroutine calculate_cilia_array_force
@@ -1166,9 +1172,10 @@ contains
 
     end subroutine store_original_locations
 
-    function spring_force(master,slave,k) result(F)
+    function spring_force(master,slave,k,t) result(F)
         class(particle), intent(in) :: master, slave
         real(real64), intent(in) :: k
+        real(real64), intent(in)      :: t       ! Time instant
 
         type(vec) :: F
         real(real64) :: xm,ym,xsl,ysl,Rl,d 
@@ -1184,7 +1191,9 @@ contains
 
         ! Calculate distance between master and slave nodes
         Rl = norm2([(xsl-xm),(ysl-ym)])
-        Rl = 0.9d0*Rl
+        ! Rl = 0.9d0*Rl
+        Rl = Rl * (0.05d0*cos(2*PI*t) + 0.85)
+        ! print *, 0.9d0*sin(2*PI*t)
         ! Calculate the current spacing between particles
         ! Master node location
         xm = master%x

@@ -133,7 +133,7 @@ contains
            
             call nvtxStartRange("Calculate cilia forces")
             ! call calculate_cilia_array_force(CA,ko,kd,Rl)
-            call calculate_closed_loop_array_force(CAP,kop,kod,RLV,RLH,RLD)
+            call calculate_closed_loop_array_force(CAP,kop,kod,RLV,RLH,RLD,t)
             call nvtxEndRange
             
             call nvtxStartRange("Calculate inter-particle forces")
@@ -225,7 +225,7 @@ contains
             ! Calculate forces in the immersed boundary structure
             call nvtxStartRange("Calculate cilia forces")
             ! call calculate_cilia_array_force(CAmid,ko,kd,Rl)
-            call calculate_closed_loop_array_force(CAPmid,kop,kod,RLV,RLH,RLD)
+            call calculate_closed_loop_array_force(CAPmid,kop,kod,RLV,RLH,RLD,t)
             call nvtxEndRange
             
             call nvtxStartRange("Calculate inter-particle forces")
@@ -426,7 +426,7 @@ contains
             call nvtxEndRange
            
             call nvtxStartRange("Calculate cilia forces")
-            call calculate_cilia_array_force(CA,ko,kd,Rl)
+            call calculate_cilia_array_force(CA,ko,kd,Rl,t)
             ! call calculate_closed_loop_array_force(CAP,kop,kod,RLV,RLH,RLD)
             call nvtxEndRange
             
@@ -518,7 +518,7 @@ contains
             
             ! Calculate forces in the immersed boundary structure
             call nvtxStartRange("Calculate cilia forces")
-            call calculate_cilia_array_force(CAmid,ko,kd,Rl)
+            call calculate_cilia_array_force(CAmid,ko,kd,Rl,t)
             ! call calculate_closed_loop_array_force(CAPmid,kop,kod,RLV,RLH,RLD)
             call nvtxEndRange
             
@@ -720,8 +720,8 @@ contains
             call nvtxEndRange
            
             call nvtxStartRange("Calculate cilia forces")
-            call calculate_cilia_array_force(CA,ko,kd,Rl)
-            call calculate_closed_loop_array_force(CAP,kop,kod,RLV,RLH,RLD)
+            call calculate_cilia_array_force(CA,ko,kd,Rl,t)
+            call calculate_closed_loop_array_force(CAP,kop,kod,RLV,RLH,RLD,t)
             call nvtxEndRange
             
             call nvtxStartRange("Calculate inter-particle forces")
@@ -812,8 +812,8 @@ contains
             
             ! Calculate forces in the immersed boundary structure
             call nvtxStartRange("Calculate cilia forces")
-            call calculate_cilia_array_force(CAmid,ko,kd,Rl)
-            call calculate_closed_loop_array_force(CAPmid,kop,kod,RLV,RLH,RLD)
+            call calculate_cilia_array_force(CAmid,ko,kd,Rl,t)
+            call calculate_closed_loop_array_force(CAPmid,kop,kod,RLV,RLH,RLD,t)
             call nvtxEndRange
             
             call nvtxStartRange("Calculate inter-particle forces")
