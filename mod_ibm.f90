@@ -1176,10 +1176,37 @@ contains
         class(particle), intent(in) :: master, slave
         real(real64), intent(in) :: k
         real(real64), intent(in)      :: t       ! Time instant
-
+        
+        integer(int32), parameter :: seed = 86456
+        real(real64), allocatable :: phikm(:,:)
         type(vec) :: F
         real(real64) :: xm,ym,xsl,ysl,Rl,d 
+        real(real64) :: alpha
+       
+        integer(int32) :: ik, im, Nk, Ntheta
+        real(real64) :: akm, wk
+
         
+        ! Assign values to parameters
+        Nk      = 1
+        Ntheta  = 4
+        akm     = 0.02d0
+        alpha   = 1
+        wk      = 2*PI/1.0d0
+
+        ! Generate random phase value
+        allocate(phikm(Nk,Ntheta))
+        call random_number(phikm)
+        
+        ! Calculate the value of alpha
+        do ik = 1,Nk
+            do im = 1,Ntheta
+                alpha = alpha + akm * sin(wk*t + PI*phikm(ik,im)) * &
+                                        sin(im*master%theta)
+            end do
+        end do
+
+
         ! Calculate the original spacing between the particles
         ! Master node location
         xm = master%xo
@@ -1189,12 +1216,14 @@ contains
         xsl = slave%xo
         ysl = slave%yo
 
+
         ! Calculate distance between master and slave nodes
         Rl = norm2([(xsl-xm),(ysl-ym)])
         ! Rl = 0.9d0*Rl
-        Rl = Rl * (0.10d0*cos(2*PI*t) + 0.85) * (0.10d0*cos(master%theta) + 1.0)
-        ! Rl = Rl * (0.05d0*cos(2*PI*t) + 0.85)
+        ! alpha = (0.10d0*cos(2*PI*t/1.0d0) + 0.85d0) * (0.1d0*cos(master%theta) + 1.0d0)
+        ! Rl = Rl * (0.10d0*cos(2*PI*t) + 0.85)
         ! print *, 0.9d0*sin(2*PI*t)
+        Rl = alpha * Rl
         ! Calculate the current spacing between particles
         ! Master node location
         xm = master%x
