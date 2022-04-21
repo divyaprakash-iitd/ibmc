@@ -1179,9 +1179,12 @@ contains
         
         integer(int32), parameter :: seed = 86456
         real(real64), allocatable :: phikm(:,:)
+
+        real(real64) :: phirnd
         type(vec) :: F
         real(real64) :: xm,ym,xsl,ysl,Rl,d 
         real(real64) :: alpha
+        real(real64) :: omga
        
         integer(int32) :: ik, im, Nk, Ntheta
         real(real64) :: akm, wk
@@ -1191,9 +1194,9 @@ contains
         Nk      = 1
         Ntheta  = 4
         akm     = 0.02d0
-        alpha   = 1
+        alpha   = 1.0d0
         wk      = 2*PI/1.0d0
-
+        
         ! Generate random phase value
         allocate(phikm(Nk,Ntheta))
         call random_number(phikm)
@@ -1201,12 +1204,12 @@ contains
         ! Calculate the value of alpha
         do ik = 1,Nk
             do im = 1,Ntheta
-                alpha = alpha + akm * sin(wk*t + PI*phikm(ik,im)) * &
-                                        sin(im*master%theta)
+                alpha = alpha + akm * sin(wk*t + 2*PI*phikm(ik,im)) * cos(im*master%theta)
+                ! alpha = alpha + akm * sin(wk*t) * sin(im*master%theta)
             end do
         end do
 
-
+        ! print *, alpha
         ! Calculate the original spacing between the particles
         ! Master node location
         xm = master%xo
@@ -1221,8 +1224,13 @@ contains
         Rl = norm2([(xsl-xm),(ysl-ym)])
         ! Rl = 0.9d0*Rl
         ! alpha = (0.10d0*cos(2*PI*t/1.0d0) + 0.85d0) * (0.1d0*cos(master%theta) + 1.0d0)
+        call random_number(phirnd)
+        omga = 2*PI/0.020d0
+        alpha = 1 + 0.20d0*sin(omga*t) * sin(omga*master%theta)! + phirnd*2*PI)
         ! Rl = Rl * (0.10d0*cos(2*PI*t) + 0.85)
         ! print *, 0.9d0*sin(2*PI*t)
+        
+        ! alpha = 0.70d0
         Rl = alpha * Rl
         ! Calculate the current spacing between particles
         ! Master node location
