@@ -1225,9 +1225,12 @@ contains
         ! Rl = 0.9d0*Rl
         ! alpha = (0.10d0*cos(2*PI*t/1.0d0) + 0.85d0) * (0.1d0*cos(master%theta) + 1.0d0)
         call random_number(phirnd)
-        omga = 2*PI/0.04d0
+        omga = 2*PI/0.5d0
+        ! omga = 2*PI/5.0d0
         ! alpha = 1 + 0.20d0*sin(omga*t) * sin(omga*master%theta)! + phirnd*2*PI)
-        alpha = 1 + 0.50d0*abs(sin(omga*t) * cos(omga*master%theta))! + phirnd*2*PI)
+        ! alpha = 1 + 0.50d0*abs(sin(omga*t) * cos(omga*master%theta))! + phirnd*2*PI)
+        ! alpha = 1 + 0.50d0*sin(omga*t) * abs(sin(omga*master%theta)*sin(omga*slave%theta))! + phirnd*2*PI)
+        alpha = 1 + 0.80d0*sin(omga*t) * abs(sin(master%theta)*sin(slave%theta))! + phirnd*2*PI)
         ! alpha = 1 + 0.40d0*sin(omga*master%theta)! + phirnd*2*PI)
         ! Rl = Rl * (0.10d0*cos(2*PI*t) + 0.85)
         ! print *, 0.9d0*sin(2*PI*t)
