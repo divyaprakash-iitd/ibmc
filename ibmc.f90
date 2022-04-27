@@ -207,7 +207,7 @@ program ibmc
     ! Create cilia and particle arrays
     CAP = cilia_array(nparticles,nl,npparticles)
     ca_pointer => CAP
-    call create_closed_loop_array(CAP,0.5d0*radius,radius,ar,originP)
+    call create_closed_loop_array(CAP,0.25d0*radius,radius,ar,originP)
     ! Store the original locations
     call store_original_locations(CAP)
 
