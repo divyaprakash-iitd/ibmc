@@ -789,11 +789,11 @@ contains
         do il = 1,C%nl
             call initialize_ib(C%layers(il))
             
-            C%layers(il)%boundary(1)%x = origin%x + W*(il-1)
-            C%layers(il)%boundary(1)%y = origin%y
+            C%layers(il)%boundary(1)%x = origin%x
+            C%layers(il)%boundary(1)%y = origin%y + W*(il-1)
             do ip = 2,C%np
-                C%layers(il)%boundary(ip)%x = C%layers(il)%boundary(1)%x
-                C%layers(il)%boundary(ip)%y = C%layers(il)%boundary(ip-1)%y + dp
+                C%layers(il)%boundary(ip)%x = C%layers(il)%boundary(ip-1)%x + dp
+                C%layers(il)%boundary(ip)%y = C%layers(il)%boundary(1)%y
             end do
         end do
 
@@ -1007,12 +1007,7 @@ contains
 
         do ic = 1,CA%nc
             corigin%x = origin%x + (ic-1)*(dc+W)
-            ! if ((ic==1).or.(ic==2).or.(ic==(CA%nc-1)).or.(ic==CA%nc)) then
-            if ((ic==1).or.(ic==CA%nc)) then
-                call create_cilia(CA%array(ic),W,1.3*dp,corigin)
-            else
-                call create_cilia(CA%array(ic),W,dp,corigin)
-            endif
+            call create_cilia(CA%array(ic),W,dp,corigin)
         end do
 
     end subroutine create_cilia_array

@@ -371,7 +371,7 @@ contains
         ! Assign boundary values
         utop    = BC(1)
         vtop    = BC(2)
-        ubottom = BC(3)
+        ubottom = BC(1)
         vbottom = BC(4)
         uleft   = BC(5)
         vleft   = BC(6)
@@ -408,7 +408,7 @@ contains
 
         do while (t.lt.tsim)
             ! ulid is the amplitude
-            utop = 2*3.1415/tp*ulid*cos(2*3.1415*t/tp)
+            ! utop = 2*3.1415/tp*ulid*cos(2*3.1415*t/tp)
             !utop = sin(2*3.1415*t/tp) * ulid
             call nvtxStartRange("Time Loop")
             t = t + dt
@@ -442,7 +442,7 @@ contains
             ! RK2: Step 1
             ! Apply velocity boundary conditions
             call nvtxStartRange("Apply BC")
-            call apply_boundary_channel(M,u,v,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
+            call apply_boundary_channel(M,u,v,utop,utop,uleft,uright,vtop,vbottom,vleft,vright)
             ! call apply_parabolic_inlet(M,u,uleft)
             ! call apply_pulsating_inlet(M,u,uleft,t)
             call nvtxEndRange
@@ -464,7 +464,7 @@ contains
 
             call nvtxStartRange("Apply BC")
             ! Apply velocity boundary conditions to us and vs
-            call apply_boundary_channel(M,us,vs,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
+            call apply_boundary_channel(M,us,vs,utop,utop,uleft,uright,vtop,vbottom,vleft,vright)
             ! call apply_parabolic_inlet(M,us,uleft)
             ! call apply_pulsating_inlet(M,u,uleft,t)
             call nvtxEndRange
@@ -527,7 +527,7 @@ contains
             call nvtxEndRange
 
             call nvtxStartRange("Apply BC")
-            call apply_boundary_channel(M,umid,vmid,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
+            call apply_boundary_channel(M,umid,vmid,utop,utop,uleft,uright,vtop,vbottom,vleft,vright)
             ! call apply_parabolic_inlet(M,u,uleft)
             ! call apply_pulsating_inlet(M,u,uleft,t)
             call nvtxEndRange
@@ -549,7 +549,7 @@ contains
             
             call nvtxStartRange("Apply BC")
             ! Apply velocity boundary conditions to us and vs
-            call apply_boundary_channel(M,us,vs,utop,ubottom,uleft,uright,vtop,vbottom,vleft,vright)
+            call apply_boundary_channel(M,us,vs,utop,utop,uleft,uright,vtop,vbottom,vleft,vright)
             ! call apply_parabolic_inlet(M,us,uleft)
             ! call apply_pulsating_inlet(M,u,uleft,t)
             call nvtxEndRange
@@ -702,8 +702,9 @@ contains
 
         do while (t.lt.tsim)
             ! ulid is the amplitude
-            utop = 2*3.1415/tp*ulid*cos(2*3.1415*t/tp)
-            !utop = sin(2*3.1415*t/tp) * ulid
+            ! utop = 2*3.1415/tp*ulid*cos(2*3.1415*t/tp)
+            ! utop = sin(2*3.1415*t/tp) * ulid
+            ! utop = ulid
             call nvtxStartRange("Time Loop")
             t = t + dt
             it = it + 1
