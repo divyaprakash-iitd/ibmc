@@ -616,17 +616,20 @@ contains
         end do
     end subroutine write_location
 
-    subroutine calculate_spring_force(B,ko,kd,Rlo,t,ti)
-        class(ib), intent(in out) :: B    ! Immersed boundary
-        real(real64), intent(in)  :: ko   ! Orthogonal Spring stiffness
-        real(real64), intent(in)  :: kd   ! Diagonal Spring stiffness
-        real(real64),intent(in)   :: Rlo   ! Resting length
-        character(1), intent(in)  :: t    ! Boundary type (Open or Closed) 
-        real(real64), intent(in)      :: ti       ! Time instant
+    subroutine calculate_spring_force(B,ko,kd,Rlo,t,ti,ilayer)
+        class(ib), intent(in out) :: B      ! Immersed boundary
+        real(real64), intent(in)  :: ko     ! Orthogonal Spring stiffness
+        real(real64), intent(in)  :: kd     ! Diagonal Spring stiffness
+        real(real64),intent(in)   :: Rlo    ! Resting length
+        character(1), intent(in)  :: t      ! Boundary type (Open or Closed) 
+        real(real64), intent(in)  :: ti     ! Time instant
+        integer(int32), intent(in):: ilayer ! Time instant
 
         integer(int32)  :: np   ! Number of nodes/particle
         integer(int32)  :: lastp ! Last particle while calculating forces
         integer(int32)  :: master, slave  ! Indices
+        real(real64), parameter :: beta = 0.9d0 ! Maximum value of coefficient to be multiplied to resting lengths
+        real(real64) :: nbeta ! Value of coefficient to be multiplied to each resting length
 
         type(vec) :: F
 
@@ -642,15 +645,32 @@ contains
             print *, "Wrong type of Immersed Boundary: Enter 'o' or 'c' "
         end if
 
+
         do master = 1,lastp
             if (master == np) then ! This condition will never be satisfied for open case 
                 slave = 1
             else 
                 slave = master+1
             end if
+
+            ! Calculate the value of coefficient for each resting length
+            if ((sin(2*PI*ti)).gt.0) then
+                if ((ilayer == 1)) then
+                        nbeta = -beta/(np-1) * (master-1) + 1;
+                    else
+                        nbeta = 1.0d0
+                endif
+            else
+                if ((ilayer == 2)) then
+                        nbeta = -beta/(np-1) * (master-1) + 1;
+                    else
+                        nbeta = 1.0d0
+                end if
+            end if
+
             
             ! Calculate the spring force between master and slave nodes
-            F = spring_force(B%boundary(master),B%boundary(slave),ko,ti)
+            F = spring_force(B%boundary(master),B%boundary(slave),nbeta*ko,ti,nbeta)
 
             ! Assign fores to master node
             B%boundary(master)%Fx = B%boundary(master)%Fx + F%x
@@ -825,7 +845,7 @@ contains
 
         ! Calculate forces on the layers
         do il = 1,C%nl
-            call calculate_spring_force(C%layers(il),ko,kd,Rl,t,ti)
+            call calculate_spring_force(C%layers(il),ko,kd,Rl,t,ti,il)
         end do
 
 
@@ -1173,12 +1193,12 @@ contains
 
     end subroutine store_original_locations
 
-    function spring_force(master,slave,k,t) result(F)
+    function spring_force(master,slave,k,t,beta) result(F)
         class(particle), intent(in) :: master, slave
         real(real64), intent(in) :: k
         real(real64), intent(in)      :: t       ! Time instant
+        real(real64), intent(in), optional      :: beta    ! Resting length coefficient
 
-        real(real64) :: phirnd
         type(vec) :: F
         real(real64) :: xm,ym,xsl,ysl,Rl,d 
         real(real64) :: alpha
@@ -1195,9 +1215,22 @@ contains
 
         ! Calculate distance between master and slave nodes
         Rl = norm2([(xsl-xm),(ysl-ym)])
-        call random_number(phirnd)
+
+
+
+        ! Calculate the resting length factor if the theta is nonzero
+        ! For a theta value of zero, alpha is going to be 1
+        ! But this implementation nedds to be checked and mofified
+
         omga = 2*PI/1.0d0
         alpha = 1 + 0.40d0*sin(omga*t) * sin(2*master%theta)! + phirnd*2*PI)
+
+        ! If the alpha value is already provided
+        if (present(beta)) then
+            alpha = beta
+        end if
+
+
         Rl = alpha * Rl
         ! Calculate the current spacing between particles
         ! Master node location

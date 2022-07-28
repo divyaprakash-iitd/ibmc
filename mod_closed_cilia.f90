@@ -239,8 +239,8 @@ contains
         end do
 
         ! Calculate forces on the layers
-        call calculate_spring_force(C%layers(1),ko,kd,Rlv,C%layers(1)%t,t)
-        call calculate_spring_force(C%layers(2),ko,kd,0.5d0*Rlv,C%layers(2)%t,t)
+        call calculate_spring_force(C%layers(1),ko,kd,Rlv,C%layers(1)%t,t,1)
+        call calculate_spring_force(C%layers(2),ko,kd,0.5d0*Rlv,C%layers(2)%t,t,2)
 
         ! do il = 1,C%nl
             ! call calculate_spring_force(C%layers(il),ko,kd,Rlv,C%layers(il)%t)
