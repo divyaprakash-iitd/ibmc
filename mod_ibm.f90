@@ -628,7 +628,7 @@ contains
         integer(int32)  :: np   ! Number of nodes/particle
         integer(int32)  :: lastp ! Last particle while calculating forces
         integer(int32)  :: master, slave  ! Indices
-        real(real64), parameter :: beta = 0.9d0 ! Maximum value of coefficient to be multiplied to resting lengths
+        real(real64), parameter :: beta = 0.5d0 ! Maximum value of coefficient to be multiplied to resting lengths
         real(real64) :: nbeta ! Value of coefficient to be multiplied to each resting length
 
         type(vec) :: F
@@ -656,7 +656,7 @@ contains
             ! Calculate the value of coefficient for each resting length
             if ((sin(2*PI*ti)).gt.0) then
                 if ((ilayer == 1)) then
-                        nbeta = -beta/(np-1) * (master-1) + 1;
+                        nbeta = -beta/(np-1) * (master-1) + 1
                     else
                         nbeta = 1.0d0
                 endif
@@ -871,11 +871,15 @@ contains
     subroutine calculate_horizontal_link_force(masterL,slaveL,ks,Rlo,t)
         class(ib), intent(in out) :: masterL, slaveL    ! Immersed boundary
         real(real64), intent(in)  :: ks   ! Spring stiffness
-        real(real64),intent(in)   :: Rlo   ! Resting length
-        real(real64),       intent(in)      :: t       ! Time instant
+        real(real64), intent(in)  :: Rlo   ! Resting length
+        real(real64), intent(in)  :: t       ! Time instant
 
+
+        real(real64), parameter :: beta = 0.5d0 ! Maximum value of coefficient to be multiplied to resting lengths
+        real(real64) :: nbeta ! Value of coefficient to be multiplied to each resting length
         integer(int32)  :: np   ! Number of nodes/particle
         integer(int32)  :: ip   ! Indices
+
 
         type(vec) :: F
 
@@ -886,8 +890,12 @@ contains
 
         do ip = 1,np
 
+            ! Calculate the value of coefficient for each resting length
+            ! nbeta = -beta/(np-1) * (ip-1) + 1
+            nbeta = 1
+
             ! Calculate the spring force between master and slave nodes
-            F = spring_force(masterL%boundary(ip),slaveL%boundary(ip),ks,t)
+            F = spring_force(masterL%boundary(ip),slaveL%boundary(ip),ks,t,nbeta)
 
             ! Assign fores to master node
             masterL%boundary(ip)%Fx = masterL%boundary(ip)%Fx + F%x
