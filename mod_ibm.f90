@@ -1030,7 +1030,8 @@ contains
         do ic = 1,CA%nc
             !if ((ic==1).or.(ic==2).or.(ic==(CA%nc-1)).or.(ic==CA%nc)) then
             if ((ic==1).or.(ic==CA%nc)) then
-                call calculate_cilia_force(CA%array(ic),4*ko,4*kd,Rl,t)
+                ! call calculate_cilia_force(CA%array(ic),4*ko,4*kd,Rl,t)
+                call calculate_cilia_force(CA%array(ic),ko,kd,Rl,t)
             else
                 call calculate_cilia_force(CA%array(ic),ko,kd,Rl,t)
             endif
