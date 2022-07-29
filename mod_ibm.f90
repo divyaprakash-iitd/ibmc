@@ -11,6 +11,7 @@ module mod_ibm
     real(real64), parameter :: PI = 3.141592653589793
     integer(int32) :: switchcounter = 0
     integer(int32) :: nallowed = 0 ! The number of cilia nodes that are allowed to bend
+    integer(int32) :: stroke = 1 ! stroke = 1 for power and  stroke = 2 recovery
 
     private
     public :: initialize_ib, update_ib, spread_force, interpolate_velocity, & 
@@ -634,6 +635,9 @@ contains
         real(real64) :: nbeta ! Value of coefficient to be multiplied to each resting length
         real(real64) :: lcilia ! Original Length of a cilia
         real(real64) :: limL, limR ! Limits of switiching between the two strokes of cilia beat pattern
+        integer(int32) :: npivot ! Pivot point on the recovery stroke
+        real(real64) :: xtip ! Deflection of the tip of x
+        real(real64) :: betatemp
 
         type(vec) :: F
 
@@ -643,6 +647,9 @@ contains
 
         ! Count the number of nodes/particles in the immersed boundary
         np = size(B%boundary)
+
+        ! npivot = ceiling(np/3.0) ! Let the pivot point lie at 1/3rd of the cilia length from the bottom
+        npivot = 1 ! Let the pivot point lie at 1/3rd of the cilia length from the bottom
 
         ! Calculate the forces on each node
         if (t.eq.'o') then
@@ -660,6 +667,15 @@ contains
         limL = -lcilia/10.0d0
         limR = lcilia/8.0d0
 
+        xtip = B%boundary(np)%x-B%boundary(np)%xo
+
+        if (xtip.lt.limL) then
+            stroke = 2 ! Recovery Stroke
+        elseif (xtip.gt.limR) then
+            stroke = 1 ! Power Stroke
+        endif
+
+
         do master = 1,lastp
             if (master == np) then ! This condition will never be satisfied for open case 
                 slave = 1
@@ -668,40 +684,56 @@ contains
             end if
 
             ! Calculate the value of coefficient for each resting length
-            ! if ((B%boundary(np)%x-B%boundary(np)%xo).lt)
-            if ((sin(PI*ti)).gt.0) then
+            ! if ((sin(PI*ti)).gt.0) then
+            if (stroke.eq.1) then
 
                 ! Reset the value of switchcounter and nallowed
                 switchcounter = 0
-                nallowed = 0
+                ! nallowed = 0
 
                 if ((ilayer == 1)) then
                         ! nbeta = -beta/(np-1) * (master-1) + 1
                         ! nbeta = (beta-1)/(np-2) * (master-1) + 1
-                        nbeta = (1-beta)/(np-2) * (master-1) + beta
+                        if (master.gt.1) then
+                            nbeta = (1-beta)/(np-2) * (master-1) + beta
+                            ! nbeta = beta
+                        else 
+                            nbeta = 1.0d0
+                        endif
                     else
                         nbeta = 1.0d0
+                        ! nbeta = (1-beta)/(np-2) * (master-1) + beta
+                        ! nbeta = 2 - nbeta
                 endif
 
-            else
+            elseif(stroke.eq.2) then
 
                 ! Increment the value of switchcounter
                 switchcounter = switchcounter + 1
 
-                if (mod(switchcounter,50).eq.0) then
-                    nallowed = nallowed + 1
-                endif
+                ! if (mod(switchcounter,1).eq.0) then
+                    ! nallowed = nallowed + 1
+                ! endif
 
                 if ((ilayer == 2)) then
                         ! Don't apply to all the nodes
                         ! Check the node number and only allow gradually
-                        if (master.le.nallowed) then
+                        ! if ((master.le.nallowed).and.(master.gt.npivot)) then
                             ! nbeta = -beta/(np-1) * (master-1) + 1;
-                            ! nbeta = (1-beta)/(np-2) * (master-1) + beta
-                            nbeta = (beta-1)/(np-2) * (master-1) + 1
-                        else
+                            ! nbeta = (beta-1)/(np-2) * (master-1) + 1
+                            betatemp = beta*(switchcounter/2000)**2
+                            if (betatemp.gt.beta) then
+                                betatemp = beta
+                            endif
+
+                            if (master.gt.1) then
+                            nbeta = (1-betatemp)/(np-2) * (master-1) + betatemp
+                            ! nbeta = beta
+                            else
                             nbeta = 1.0d0
-                        endif
+                            ! nbeta = (1-beta)/(np-2) * (master-1) + beta
+                            ! nbeta = 2 - nbeta
+                            endif
                     else
                         nbeta = 1.0d0
                 end if
