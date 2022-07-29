@@ -10,7 +10,7 @@ module mod_ibm
    
     real(real64), parameter :: PI = 3.141592653589793
     integer(int32) :: switchcounter = 0
-    integer(int32) :: nallowed = 0
+    integer(int32) :: nallowed = 0 ! The number of cilia nodes that are allowed to bend
 
     private
     public :: initialize_ib, update_ib, spread_force, interpolate_velocity, & 
@@ -663,7 +663,9 @@ contains
                 nallowed = 0
 
                 if ((ilayer == 1)) then
-                        nbeta = -beta/(np-1) * (master-1) + 1
+                        ! nbeta = -beta/(np-1) * (master-1) + 1
+                        ! nbeta = (beta-1)/(np-2) * (master-1) + 1
+                        nbeta = (1-beta)/(np-2) * (master-1) + beta
                     else
                         nbeta = 1.0d0
                 endif
@@ -680,8 +682,11 @@ contains
                 if ((ilayer == 2)) then
                         ! Don't apply to all the nodes
                         ! Check the node number and only allow gradually
-                        if (np.le.nallowed) then
-                            nbeta = -beta/(np-1) * (master-1) + 1;
+                        if (master.le.nallowed) then
+                            ! nbeta = -beta/(np-1) * (master-1) + 1;
+                            nbeta = (1-beta)/(np-2) * (master-1) + beta
+                        else
+                            nbeta = 1.0d0
                         endif
                     else
                         nbeta = 1.0d0
