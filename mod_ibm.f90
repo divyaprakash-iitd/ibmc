@@ -9,6 +9,7 @@ module mod_ibm
     implicit none
    
     real(real64), parameter :: PI = 3.141592653589793
+    integer(int32) :: switchcounter = 0
 
     private
     public :: initialize_ib, update_ib, spread_force, interpolate_velocity, & 
@@ -654,13 +655,22 @@ contains
             end if
 
             ! Calculate the value of coefficient for each resting length
-            if ((sin(PI*ti)).gt.0) then
+            if ((sin(4*PI*ti)).gt.0) then
+
+                ! Reset the value of switchcounter
+                switchcounter = 0
+
                 if ((ilayer == 1)) then
                         nbeta = -beta/(np-1) * (master-1) + 1
                     else
                         nbeta = 1.0d0
                 endif
+
             else
+
+                ! Increment the value of switchcounter
+                switchcounter = switchcounter + 1
+
                 if ((ilayer == 2)) then
                         nbeta = -beta/(np-1) * (master-1) + 1;
                     else
@@ -668,7 +678,7 @@ contains
                 end if
             end if
 
-            
+            ! print *, 'switchcounter=', switchcounter 
             ! Calculate the spring force between master and slave nodes
             F = spring_force(B%boundary(master),B%boundary(slave),nbeta*ko,ti,nbeta)
 
