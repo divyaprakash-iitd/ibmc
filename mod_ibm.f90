@@ -10,6 +10,7 @@ module mod_ibm
    
     real(real64), parameter :: PI = 3.141592653589793
     integer(int32) :: switchcounter = 0
+    integer(int32) :: nallowed = 0
 
     private
     public :: initialize_ib, update_ib, spread_force, interpolate_velocity, & 
@@ -655,10 +656,11 @@ contains
             end if
 
             ! Calculate the value of coefficient for each resting length
-            if ((sin(4*PI*ti)).gt.0) then
+            if ((sin(PI*ti)).gt.0) then
 
-                ! Reset the value of switchcounter
+                ! Reset the value of switchcounter and nallowed
                 switchcounter = 0
+                nallowed = 0
 
                 if ((ilayer == 1)) then
                         nbeta = -beta/(np-1) * (master-1) + 1
@@ -671,8 +673,16 @@ contains
                 ! Increment the value of switchcounter
                 switchcounter = switchcounter + 1
 
+                if (mod(switchcounter,50).eq.0) then
+                    nallowed = nallowed + 1
+                endif
+
                 if ((ilayer == 2)) then
-                        nbeta = -beta/(np-1) * (master-1) + 1;
+                        ! Don't apply to all the nodes
+                        ! Check the node number and only allow gradually
+                        if (np.le.nallowed) then
+                            nbeta = -beta/(np-1) * (master-1) + 1;
+                        endif
                     else
                         nbeta = 1.0d0
                 end if
