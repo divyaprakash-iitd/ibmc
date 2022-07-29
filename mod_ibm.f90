@@ -632,8 +632,14 @@ contains
         integer(int32)  :: master, slave  ! Indices
         real(real64), parameter :: beta = 0.5d0 ! Maximum value of coefficient to be multiplied to resting lengths
         real(real64) :: nbeta ! Value of coefficient to be multiplied to each resting length
+        real(real64) :: lcilia ! Original Length of a cilia
+        real(real64) :: limL, limR ! Limits of switiching between the two strokes of cilia beat pattern
 
         type(vec) :: F
+
+        !!! ALL OF THE FOLLOWING IS FOR AN OPEN CILIA !!!
+        
+        !!! FOR A CLOSED CILIA OR PARTICLE, COPY AND REIMPLEMENT WITH A CONDITION DIFFERENTIATING B/W THE TWO TYPES !!!
 
         ! Count the number of nodes/particles in the immersed boundary
         np = size(B%boundary)
@@ -647,6 +653,12 @@ contains
             print *, "Wrong type of Immersed Boundary: Enter 'o' or 'c' "
         end if
 
+        ! Calculate the length of the boundary
+        lcilia = abs(B%boundary(np)%yo-B%boundary(1)%yo)
+
+        ! Decide the limits of switching
+        limL = -lcilia/10.0d0
+        limR = lcilia/8.0d0
 
         do master = 1,lastp
             if (master == np) then ! This condition will never be satisfied for open case 
@@ -656,6 +668,7 @@ contains
             end if
 
             ! Calculate the value of coefficient for each resting length
+            ! if ((B%boundary(np)%x-B%boundary(np)%xo).lt)
             if ((sin(PI*ti)).gt.0) then
 
                 ! Reset the value of switchcounter and nallowed
@@ -684,7 +697,8 @@ contains
                         ! Check the node number and only allow gradually
                         if (master.le.nallowed) then
                             ! nbeta = -beta/(np-1) * (master-1) + 1;
-                            nbeta = (1-beta)/(np-2) * (master-1) + beta
+                            ! nbeta = (1-beta)/(np-2) * (master-1) + beta
+                            nbeta = (beta-1)/(np-2) * (master-1) + 1
                         else
                             nbeta = 1.0d0
                         endif
