@@ -654,7 +654,7 @@ contains
             end if
 
             ! Calculate the value of coefficient for each resting length
-            if ((sin(2*PI*ti)).gt.0) then
+            if ((sin(PI*ti)).gt.0) then
                 if ((ilayer == 1)) then
                         nbeta = -beta/(np-1) * (master-1) + 1
                     else
