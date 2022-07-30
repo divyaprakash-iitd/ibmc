@@ -1108,7 +1108,8 @@ contains
             corigin%x = origin%x + (ic-1)*(dc+W)
             ! if ((ic==1).or.(ic==2).or.(ic==(CA%nc-1)).or.(ic==CA%nc)) then
             if ((ic==1).or.(ic==CA%nc)) then
-                call create_cilia(CA%array(ic),W,1.3*dp,corigin)
+                ! call create_cilia(CA%array(ic),W,1.3*dp,corigin)
+                call create_cilia(CA%array(ic),W,dp,corigin)
             else
                 call create_cilia(CA%array(ic),W,dp,corigin)
             endif
