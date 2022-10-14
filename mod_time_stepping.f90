@@ -114,8 +114,10 @@ contains
 
         do while (t.lt.tsim)
             ! ulid is the amplitude
-            utop = 2*3.1415/tp*ulid*cos(2*3.1415*t/tp)
+            ! utop = 2*3.1415/tp*ulid*cos(2*3.1415*t/tp)
+            !utop = 2*3.1415/tp*ulid*sin(2*3.1415*t/tp)
             !utop = sin(2*3.1415*t/tp) * ulid
+            utop = ulid
             call nvtxStartRange("Time Loop")
             t = t + dt
             it = it + 1
@@ -702,8 +704,9 @@ contains
 
         do while (t.lt.tsim)
             ! ulid is the amplitude
-            utop = 2*3.1415/tp*ulid*cos(2*3.1415*t/tp)
+            !utop = 2*3.1415/tp*ulid*cos(2*3.1415*t/tp)
             !utop = sin(2*3.1415*t/tp) * ulid
+            utop = ulid
             call nvtxStartRange("Time Loop")
             t = t + dt
             it = it + 1
@@ -793,7 +796,9 @@ contains
             call nvtxStartRange("Update cilia locations")
             ! Update the Immersed Boundary
             call update_cilia_array(CAmid,dt/2)
-            call update_cilia_array(CAPmid,dt/2)
+            if (t.gt.0.4) then
+                call update_cilia_array(CAPmid,dt/2)
+            end if
             call nvtxEndrange
 
 
@@ -877,7 +882,10 @@ contains
             call nvtxStartRange("Update cilia locations")
             ! Update the Immersed Boundary
             call update_cilia_array(CA,dt)
-            call update_cilia_array(CAP,dt)
+            
+            if (t.gt.0.4) then
+                call update_cilia_array(CAP,dt)
+            end if
             call nvtxEndRange
         
             call nvtxEndRange
