@@ -76,10 +76,21 @@ contains
         integer(int32)  :: nl       ! No. of layers
         integer(int32)  :: np       ! No. of particle
         real(real64) :: particle_loc(C%np,2)
+        real(real64) :: particle_loc_temp(C%np,2) ! Non-rotated particle coordinates storage
         integer(int32) :: il,ip
+        real(real64), dimension(2,2) :: Rotz ! Rotation matrix for rotation about the z axis
+        real(real64) :: zangle ! Angle for rotation about the z axis
 
         real(real64) :: a, b
 
+        ! Initialize the rotation matrix
+        zangle = 80.0d0 * PI / 180.0d0
+        Rotz(1,1) = cos(zangle)
+        Rotz(1,2) = -sin(zangle)
+        Rotz(2,1) = sin(zangle)
+        Rotz(2,2) = cos(zangle)
+         
+    
         ! Semi-minor and semi-major axis
         a = r    
         b = a*ar
@@ -98,7 +109,9 @@ contains
             ! Generate the cooridnates of the ilth layer
             a = a - W*(il-1)
             b = b - W*(il-1)
-            particle_loc = ellipse_points(a,b,np)
+            particle_loc_temp = ellipse_points(a,b,np)
+            particle_loc = transpose(matmul(Rotz, transpose(particle_loc_temp)))
+            ! particle_loc = ellipse_points(a,b,np)
             ! print *, particle_loc 
             do ip = 1,np 
                 c%layers(il)%boundary(ip)%x = origin%x + particle_loc(ip,1)
