@@ -704,9 +704,9 @@ contains
 
         do while (t.lt.tsim)
             ! ulid is the amplitude
-            !utop = 2*3.1415/tp*ulid*cos(2*3.1415*t/tp)
-            !utop = sin(2*3.1415*t/tp) * ulid
-            utop = ulid
+            utop = 2*3.1415/tp*ulid*cos(2*3.1415*t/tp)
+            ! utop = sin(2*3.1415*t/tp) * ulid
+            ! utop = ulid
             call nvtxStartRange("Time Loop")
             t = t + dt
             it = it + 1
@@ -775,8 +775,10 @@ contains
             call nvtxStartRange("Calculate pressure")
             ! Solve for pressure
             ! call calculate_pressure_amgx(A(1:M%Nx-1,:,:),P(1:M%Nx-1,:),R(1:M%Nx-1,:),init_status)
-            call calculate_pressure_amgx(A(2:M%Nx-1,:,:),P(2:M%Nx-1,:),R(2:M%Nx-1,:),init_status)
-            ! call calculate_pressure_sparse(A(1:M%Nx-1,:,:),P(1:M%Nx-1,:),R(1:M%Nx-1,:))
+            ! call calculate_pressure_amgx(A(2:M%Nx-1,:,:),P(2:M%Nx-1,:),R(2:M%Nx-1,:),init_status)
+            ! call calculate_pressure_sparse(A(2:M%Nx-1,:,:),P(2:M%Nx-1,:),R(2:M%Nx-1,:))
+            ! call calculate_pressure_sparse(A,P,R)
+            call calculate_pressure_amgx(A,P,R,init_status)
             call nvtxEndRange
 
             call nvtxStartRange("Corrector")
@@ -861,8 +863,11 @@ contains
             call nvtxStartRange("Calculate pressure")
             ! Solve for pressure
             ! call calculate_pressure_amgx(A(1:M%Nx-1,:,:),P(1:M%Nx-1,:),R(1:M%Nx-1,:),init_status)
-            call calculate_pressure_amgx(A(2:M%Nx-1,:,:),P(2:M%Nx-1,:),R(2:M%Nx-1,:),init_status)
-            ! call calculate_pressure_sparse(A(1:M%Nx-1,:,:),P(1:M%Nx-1,:),R(1:M%Nx-1,:))
+            ! call calculate_pressure_amgx(A(2:M%Nx-1,:,:),P(2:M%Nx-1,:),R(2:M%Nx-1,:),init_status)
+            !  call calculate_pressure_sparse(A(2:M%Nx-1,:,:),P(2:M%Nx-1,:),R(2:M%Nx-1,:))
+            ! call calculate_pressure_sparse(A,P,R)
+            call calculate_pressure_amgx(A,P,R,init_status)
+
             call nvtxEndRange
 
             call nvtxStartRange("Corrector")

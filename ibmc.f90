@@ -1,6 +1,6 @@
 program ibmc
     use iso_fortran_env,    only: int32, real64
-    use mod_pressure,       only: generate_laplacian_sparse, calculate_pressure_sparse
+    use mod_pressure,       only: generate_laplacian_sparse, generate_laplacian_sparse_constant, calculate_pressure_sparse
     use mod_amgx,           only: calculate_pressure_amgx
     use mod_mesh
     use mod_time
@@ -152,11 +152,13 @@ program ibmc
     uright  = 0.0d0
     vright  = 0.0d0
 
+    P = 0.0d0
    ! Default simulation type
     simtype = 1
     
     ! Generate Laplacian matrix
-    call generate_laplacian_sparse(A,M%dx,M%dy)
+    ! call generate_laplacian_sparse(A,M%dx,M%dy)
+    call generate_laplacian_sparse_constant(A,M%dx,M%dy)
 
     ! AmgX initialization status
     init_status = .False.
